@@ -1,0 +1,165 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { UserX, UserCheck } from "lucide-react";
+import type { UserProfile, Role } from "@/lib/types";
+
+interface ActiveUsersTableProps {
+  refreshKey: number;
+}
+
+export function ActiveUsersTable({ refreshKey }: ActiveUsersTableProps) {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    const supabase = createClient();
+
+    const [usersRes, rolesRes] = await Promise.all([
+      supabase
+        .from("user_profiles")
+        .select("*, role:roles(*)")
+        .in("status", ["active", "inactive"])
+        .order("created_at", { ascending: false }),
+      supabase.from("roles").select("*").order("name"),
+    ]);
+
+    setUsers((usersRes.data as UserProfile[]) || []);
+    setRoles((rolesRes.data as Role[]) || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData, refreshKey]);
+
+  async function updateRole(userId: string, roleId: string) {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("user_profiles")
+      .update({ role_id: roleId, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (!error) {
+      await supabase.from("audit_log").insert({
+        user_id: userId,
+        action: "role_changed",
+        details: { new_role_id: roleId },
+      });
+      loadData();
+    }
+  }
+
+  async function toggleStatus(userId: string, currentStatus: string) {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("user_profiles")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (!error) {
+      await supabase.from("audit_log").insert({
+        user_id: userId,
+        action: newStatus === "active" ? "user_reactivated" : "user_deactivated",
+        details: {},
+      });
+      loadData();
+    }
+  }
+
+  if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Joined</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map((user) => (
+          <TableRow key={user.id}>
+            <TableCell className="font-medium">
+              {user.full_name || "\u2014"}
+            </TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>
+              <Select
+                defaultValue={user.role_id || undefined}
+                onValueChange={(value: string | null) => { if (value) updateRole(user.id, value); }}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </TableCell>
+            <TableCell>
+              <Badge
+                variant={user.status === "active" ? "default" : "secondary"}
+                className={
+                  user.status === "active"
+                    ? "bg-srsf-green-100 text-srsf-green-700"
+                    : ""
+                }
+              >
+                {user.status}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              {new Date(user.created_at).toLocaleDateString()}
+            </TableCell>
+            <TableCell>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => toggleStatus(user.id, user.status)}
+              >
+                {user.status === "active" ? (
+                  <>
+                    <UserX className="w-4 h-4 mr-1" /> Deactivate
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4 mr-1" /> Reactivate
+                  </>
+                )}
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
