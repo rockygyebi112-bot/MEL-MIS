@@ -46,75 +46,67 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* SRSF Brand Colors - Green */
+  --color-srsf-green-50: #f0fbe8;
+  --color-srsf-green-100: #ddf5cc;
+  --color-srsf-green-200: #bbeb99;
+  --color-srsf-green-300: #8fdb5c;
+  --color-srsf-green-400: #6bcc33;
+  --color-srsf-green-500: #5BBF3A;
+  --color-srsf-green-600: #3d9922;
+  --color-srsf-green-700: #2f7319;
+  --color-srsf-green-800: #285c18;
+  --color-srsf-green-900: #244d19;
+  --color-srsf-green-950: #0f2b08;
+
+  /* SRSF Brand Colors - Purple */
+  --color-srsf-purple-50: #f5f1f9;
+  --color-srsf-purple-100: #ebe4f3;
+  --color-srsf-purple-200: #d4c5e5;
+  --color-srsf-purple-300: #b89cd3;
+  --color-srsf-purple-400: #9a6fbd;
+  --color-srsf-purple-500: #7f4fa6;
+  --color-srsf-purple-600: #6B2D7B;
+  --color-srsf-purple-700: #5a2b72;
+  --color-srsf-purple-800: #4b265e;
+  --color-srsf-purple-900: #3f224e;
+  --color-srsf-purple-950: #250e32;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: hsl(0 0% 97%);
+  --foreground: hsl(260 20% 16%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(260 20% 16%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(260 20% 16%);
+  --primary: hsl(104 53% 49%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(284 46% 33%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(260 10% 93%);
+  --muted-foreground: hsl(260 10% 45%);
+  --accent: hsl(104 53% 93%);
+  --accent-foreground: hsl(104 53% 25%);
+  --destructive: hsl(0 84% 60%);
+  --border: hsl(260 10% 88%);
+  --input: hsl(260 10% 88%);
+  --ring: hsl(104 53% 49%);
+  --chart-1: hsl(104 53% 49%);
+  --chart-2: hsl(284 46% 33%);
+  --chart-3: hsl(104 53% 35%);
+  --chart-4: hsl(284 46% 45%);
+  --chart-5: hsl(104 30% 60%);
+  --radius: 0.5rem;
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(260 20% 16%);
+  --sidebar-primary: hsl(104 53% 49%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(104 53% 93%);
+  --sidebar-accent-foreground: hsl(104 53% 25%);
+  --sidebar-border: hsl(260 10% 88%);
+  --sidebar-ring: hsl(104 53% 49%);
 }
 
 @layer base {
