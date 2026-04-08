@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function SignUpPage() {
@@ -61,77 +62,56 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="border-0 shadow-2xl">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 text-4xl font-bold text-srsf-green-500">
-          SRSF
-        </div>
-        <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>
+    <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden">
+      <CardHeader className="text-center pb-2 pt-8">
+        <Image
+          src="/srsf-logo.png"
+          alt="SRSF"
+          width={80}
+          height={80}
+          className="mx-auto mb-1"
+          priority
+        />
+        <CardTitle className="text-xl font-bold tracking-tight mt-3">Create an account</CardTitle>
+        <CardDescription className="text-sm">
           Sign up to request access to the MIS
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSignUp}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-8">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
               {error}
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="John Doe"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="fullName" className="text-xs font-medium text-gray-600">Full Name</Label>
+            <Input id="fullName" type="text" placeholder="John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} required className="h-10" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium text-gray-600">Email</Label>
+            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-10" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-medium text-gray-600">Password</Label>
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-10" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword" className="text-xs font-medium text-gray-600">Confirm Password</Label>
+            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className="h-10" />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter className="flex flex-col gap-4 px-8 pb-8">
           <Button
             type="submit"
-            className="w-full bg-srsf-green-500 hover:bg-srsf-green-600"
+            className="w-full h-10 bg-srsf-green-500 hover:bg-srsf-green-600 font-semibold shadow-md shadow-srsf-green-500/20 transition-all"
             disabled={loading}
           >
             {loading ? "Creating account..." : "Sign up"}
           </Button>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-srsf-purple-600 hover:underline">
+            <Link href="/login" className="text-srsf-purple-500 font-medium hover:underline">
               Sign in
             </Link>
           </p>

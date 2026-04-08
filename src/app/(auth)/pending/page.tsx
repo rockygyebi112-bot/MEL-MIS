@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Card,
   CardContent,
@@ -10,8 +11,15 @@ export default function PendingPage() {
   return (
     <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden text-center">
       <CardHeader className="pb-2 pt-8">
-        <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-srsf-purple-100 flex items-center justify-center">
-          <Clock className="w-7 h-7 text-srsf-purple-600" />
+        <Image
+          src="/srsf-logo.png"
+          alt="SRSF"
+          width={72}
+          height={72}
+          className="mx-auto mb-3"
+        />
+        <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-srsf-purple-100 flex items-center justify-center">
+          <Clock className="w-5 h-5 text-srsf-purple-600" />
         </div>
         <CardTitle className="text-xl font-bold tracking-tight">
           Account Pending Approval

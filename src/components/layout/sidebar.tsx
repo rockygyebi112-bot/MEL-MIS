@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { NAV_ITEMS } from "@/lib/constants";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { useUser } from "@/hooks/use-user";
@@ -28,11 +29,13 @@ export function Sidebar() {
         <div className="flex items-center justify-between px-5 h-16 border-b border-white/10">
           {!collapsed && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-srsf-green-500 flex items-center justify-center">
-                <span className="text-white text-xs font-black tracking-tight">
-                  S
-                </span>
-              </div>
+              <Image
+                src="/srsf-logo.png"
+                alt="SRSF"
+                width={36}
+                height={36}
+                className="rounded-md"
+              />
               <span className="text-lg font-bold text-white tracking-tight">
                 SRSF MIS
               </span>

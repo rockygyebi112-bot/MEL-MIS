@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -86,9 +87,14 @@ export default function LoginPage() {
   return (
     <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden">
       <CardHeader className="text-center pb-2 pt-8">
-        <div className="mx-auto mb-2 w-14 h-14 rounded-xl bg-srsf-green-500 flex items-center justify-center shadow-lg shadow-srsf-green-500/25">
-          <span className="text-white text-xl font-black">S</span>
-        </div>
+        <Image
+          src="/srsf-logo.png"
+          alt="SRSF"
+          width={80}
+          height={80}
+          className="mx-auto mb-1"
+          priority
+        />
         <CardTitle className="text-xl font-bold tracking-tight mt-3">Welcome back</CardTitle>
         <CardDescription className="text-sm">
           Sign in to the Management Information System
