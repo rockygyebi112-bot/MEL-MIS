@@ -53,18 +53,26 @@ export default function LoginPage() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from("user_profiles")
-        .select("status")
+        .select("status, role_id")
         .eq("id", user.id)
         .single();
 
-      if (profile?.status === "pending" || profile?.status === "rejected") {
+      console.log("LOGIN DEBUG:", { userId: user.id, profile, profileError });
+
+      if (!profile) {
+        // RLS may be blocking — skip client check, let middleware handle it
+        router.push("/dashboard");
+        return;
+      }
+
+      if (profile.status === "pending" || profile.status === "rejected") {
         router.push("/pending");
         return;
       }
 
-      if (profile?.status === "inactive") {
+      if (profile.status === "inactive") {
         await supabase.auth.signOut();
         setError("Your account has been deactivated. Contact an administrator.");
         setLoading(false);
