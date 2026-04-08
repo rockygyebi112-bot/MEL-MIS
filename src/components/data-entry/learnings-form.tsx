@@ -126,7 +126,7 @@ export function LearningsForm({
           <Label htmlFor="program_id">Program *</Label>
           <Select
             value={form.program_id}
-            onValueChange={(v) => setField("program_id", v)}
+            onValueChange={(v) => setField("program_id", v ?? "")}
           >
             <SelectTrigger id="program_id">
               <SelectValue placeholder="Select program" />
@@ -146,7 +146,7 @@ export function LearningsForm({
           <Label htmlFor="category">Category / Theme</Label>
           <Select
             value={form.category}
-            onValueChange={(v) => setField("category", v)}
+            onValueChange={(v) => setField("category", v ?? "")}
           >
             <SelectTrigger id="category">
               <SelectValue placeholder="Select category" />

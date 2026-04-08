@@ -139,7 +139,7 @@ export function AbsaOnboardingForm({
           <Label htmlFor="gender">Gender</Label>
           <Select
             value={form.gender}
-            onValueChange={(v) => setField("gender", v)}
+            onValueChange={(v) => setField("gender", v ?? "")}
           >
             <SelectTrigger id="gender">
               <SelectValue placeholder="Select gender" />
@@ -178,7 +178,7 @@ export function AbsaOnboardingForm({
           <Label htmlFor="region">Region</Label>
           <Select
             value={form.region}
-            onValueChange={(v) => setField("region", v)}
+            onValueChange={(v) => setField("region", v ?? "")}
           >
             <SelectTrigger id="region">
               <SelectValue placeholder="Select region" />
@@ -198,7 +198,7 @@ export function AbsaOnboardingForm({
           <Label htmlFor="employment_status">Employment Status</Label>
           <Select
             value={form.employment_status}
-            onValueChange={(v) => setField("employment_status", v)}
+            onValueChange={(v) => setField("employment_status", v ?? "")}
           >
             <SelectTrigger id="employment_status">
               <SelectValue placeholder="Select status" />
@@ -218,7 +218,7 @@ export function AbsaOnboardingForm({
           <Label htmlFor="disability_status">Disability Status</Label>
           <Select
             value={form.disability_status}
-            onValueChange={(v) => setField("disability_status", v)}
+            onValueChange={(v) => setField("disability_status", v ?? "")}
           >
             <SelectTrigger id="disability_status">
               <SelectValue placeholder="Select" />

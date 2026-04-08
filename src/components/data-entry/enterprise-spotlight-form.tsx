@@ -168,7 +168,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="region">Region</Label>
           <Select
             value={form.region}
-            onValueChange={(v) => setField("region", v)}
+            onValueChange={(v) => setField("region", v ?? "")}
           >
             <SelectTrigger id="region">
               <SelectValue placeholder="Select region" />
@@ -188,7 +188,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="gender">Gender</Label>
           <Select
             value={form.gender}
-            onValueChange={(v) => setField("gender", v)}
+            onValueChange={(v) => setField("gender", v ?? "")}
           >
             <SelectTrigger id="gender">
               <SelectValue placeholder="Select gender" />
@@ -227,7 +227,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="disability_status">Disability Status</Label>
           <Select
             value={form.disability_status}
-            onValueChange={(v) => setField("disability_status", v)}
+            onValueChange={(v) => setField("disability_status", v ?? "")}
           >
             <SelectTrigger id="disability_status">
               <SelectValue placeholder="Select" />
@@ -245,7 +245,7 @@ export function EnterpriseSpotlightForm({
             <Label htmlFor="disability_type">Disability Type</Label>
             <Select
               value={form.disability_type}
-              onValueChange={(v) => setField("disability_type", v)}
+              onValueChange={(v) => setField("disability_type", v ?? "")}
             >
               <SelectTrigger id="disability_type">
                 <SelectValue placeholder="Select type" />
@@ -266,7 +266,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="ownership_type">Ownership Type</Label>
           <Select
             value={form.ownership_type}
-            onValueChange={(v) => setField("ownership_type", v)}
+            onValueChange={(v) => setField("ownership_type", v ?? "")}
           >
             <SelectTrigger id="ownership_type">
               <SelectValue placeholder="Select type" />
@@ -299,7 +299,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="business_size">Business Size</Label>
           <Select
             value={form.business_size}
-            onValueChange={(v) => setField("business_size", v)}
+            onValueChange={(v) => setField("business_size", v ?? "")}
           >
             <SelectTrigger id="business_size">
               <SelectValue placeholder="Select size" />
@@ -319,7 +319,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="funding_status">Funding Status</Label>
           <Select
             value={form.funding_status}
-            onValueChange={(v) => setField("funding_status", v)}
+            onValueChange={(v) => setField("funding_status", v ?? "")}
           >
             <SelectTrigger id="funding_status">
               <SelectValue placeholder="Select status" />
@@ -339,7 +339,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="business_registered">Business Registered</Label>
           <Select
             value={form.business_registered}
-            onValueChange={(v) => setField("business_registered", v)}
+            onValueChange={(v) => setField("business_registered", v ?? "")}
           >
             <SelectTrigger id="business_registered">
               <SelectValue placeholder="Select" />
@@ -356,7 +356,7 @@ export function EnterpriseSpotlightForm({
           <Label htmlFor="business_sector">Business Sector</Label>
           <Select
             value={form.business_sector}
-            onValueChange={(v) => setField("business_sector", v)}
+            onValueChange={(v) => setField("business_sector", v ?? "")}
           >
             <SelectTrigger id="business_sector">
               <SelectValue placeholder="Select sector" />
