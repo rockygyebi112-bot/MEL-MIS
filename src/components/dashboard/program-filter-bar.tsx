@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-
 export type ProgramFilter =
   | "all"
   | "enterprise-spotlight"
@@ -24,21 +22,19 @@ interface ProgramFilterBarProps {
 
 export function ProgramFilterBar({ active, onChange }: ProgramFilterBarProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100 rounded-lg">
       {FILTER_OPTIONS.map((opt) => (
-        <Button
+        <button
           key={opt.value}
-          variant={active === opt.value ? "default" : "outline"}
-          size="sm"
           onClick={() => onChange(opt.value)}
-          className={
+          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
             active === opt.value
-              ? "bg-[#5BBF3A] hover:bg-[#4ea832] text-white"
-              : ""
-          }
+              ? "bg-white text-gray-900 shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
         >
           {opt.label}
-        </Button>
+        </button>
       ))}
     </div>
   );

@@ -1,5 +1,19 @@
 import type { EChartsOption } from "echarts";
 
+// Shared chart text style for clean typography
+const TITLE_STYLE = {
+  fontSize: 13,
+  fontWeight: 600 as const,
+  color: "#374151",
+  fontFamily: "Inter, system-ui, sans-serif",
+};
+
+const AXIS_LABEL_STYLE = {
+  fontSize: 11,
+  color: "#6B7280",
+  fontFamily: "Inter, system-ui, sans-serif",
+};
+
 // SRSF brand chart palette — green, purple, then complementary colors
 export const CHART_COLORS = [
   "#5BBF3A", // srsf green
@@ -62,12 +76,12 @@ export function barChartOption(
   const categories = Object.keys(counts);
   const values = Object.values(counts);
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     xAxis: {
       type: "category",
       data: categories,
-      axisLabel: { rotate: categories.length > 6 ? 30 : 0, fontSize: 11 },
+      axisLabel: { rotate: categories.length > 6 ? 30 : 0, ...AXIS_LABEL_STYLE },
     },
     yAxis: { type: "value" },
     series: [
@@ -93,14 +107,14 @@ export function horizontalBarChartOption(
   const categories = sorted.map(([k]) => k);
   const values = sorted.map(([, v]) => v);
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     xAxis: { type: "value" },
     yAxis: {
       type: "category",
       data: categories,
       inverse: true,
-      axisLabel: { fontSize: 11 },
+      axisLabel: { ...AXIS_LABEL_STYLE },
     },
     series: [
       {
@@ -125,7 +139,7 @@ export function donutChartOption(
     value,
   }));
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
     legend: { bottom: 0, type: "scroll" },
     series: [
@@ -154,7 +168,7 @@ export function pieChartOption(
     value,
   }));
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
     legend: { bottom: 0, type: "scroll" },
     series: [
@@ -182,7 +196,7 @@ export function lineChartOption(
   const months = Object.keys(monthlyData).sort();
   const values = months.map((m) => monthlyData[m]);
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     xAxis: { type: "category", data: months },
     yAxis: { type: "value" },
@@ -212,7 +226,7 @@ export function stackedBarChartOption(
   const categories = Array.from(categorySet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: categories },
@@ -242,7 +256,7 @@ export function multiLineChartOption(
   const months = Array.from(monthSet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: months },
@@ -272,13 +286,13 @@ export function groupedBarChartOption(
   const categories = Array.from(categorySet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    title: { text: title, left: "center", textStyle: TITLE_STYLE },
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: {
       type: "category",
       data: categories,
-      axisLabel: { rotate: categories.length > 6 ? 30 : 0, fontSize: 11 },
+      axisLabel: { rotate: categories.length > 6 ? 30 : 0, ...AXIS_LABEL_STYLE },
     },
     yAxis: { type: "value" },
     series: seriesData.map((s, i) => ({

@@ -17,21 +17,30 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen bg-srsf-purple-700 transition-all duration-300 flex flex-col",
+          "fixed left-0 top-0 z-40 h-screen bg-gradient-to-b from-srsf-purple-800 to-srsf-purple-900 transition-all duration-300 flex flex-col shadow-xl",
           collapsed ? "w-0 overflow-hidden lg:w-16" : "w-64"
         )}
       >
         {/* Logo area */}
-        <div className="flex items-center justify-between px-4 h-16 border-b border-white/10">
+        <div className="flex items-center justify-between px-5 h-16 border-b border-white/10">
           {!collapsed && (
-            <span className="text-xl font-bold text-white">SRSF MIS</span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-srsf-green-500 flex items-center justify-center">
+                <span className="text-white text-xs font-black tracking-tight">
+                  S
+                </span>
+              </div>
+              <span className="text-lg font-bold text-white tracking-tight">
+                SRSF MIS
+              </span>
+            </div>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="text-white/70 hover:text-white hidden lg:block"
+            className="text-white/50 hover:text-white transition-colors hidden lg:block"
           >
             {collapsed ? (
               <PanelLeft className="w-5 h-5" />
@@ -43,7 +52,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         {!collapsed && (
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
             {visibleItems.map((item) => (
               <SidebarNavItem key={item.href} item={item} />
             ))}
@@ -52,8 +61,8 @@ export function Sidebar() {
 
         {/* Bottom branding */}
         {!collapsed && (
-          <div className="px-4 py-3 border-t border-white/10">
-            <p className="text-xs text-white/40">
+          <div className="px-5 py-4 border-t border-white/10">
+            <p className="text-[11px] text-white/30 leading-relaxed">
               Springboard Road Show Foundation
             </p>
           </div>
@@ -64,7 +73,7 @@ export function Sidebar() {
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
-          "fixed top-4 left-4 z-50 p-2 rounded-md bg-srsf-purple-700 text-white lg:hidden",
+          "fixed top-4 left-4 z-50 p-2 rounded-lg bg-srsf-purple-800 text-white shadow-lg lg:hidden",
           !collapsed && "hidden"
         )}
       >

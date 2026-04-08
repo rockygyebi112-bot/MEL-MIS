@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -35,9 +34,12 @@ export function ExportButton({ data, filename, columns }: ExportButtonProps) {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleExport}>
-      <Download className="h-4 w-4 mr-1" />
-      Export Excel
-    </Button>
+    <button
+      onClick={handleExport}
+      className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
+    >
+      <Download className="h-3.5 w-3.5" />
+      Export
+    </button>
   );
 }

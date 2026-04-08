@@ -389,12 +389,22 @@ export function ExecutiveDashboard() {
 
   // ─── Render ───────────────────────────────────────────────────
 
+  // Reusable chart card wrapper class
+  const chartCard = "rounded-xl border border-gray-200/60 bg-white p-5 shadow-sm";
+
   if (loading) {
-    return <p className="text-muted-foreground py-8">Loading executive dashboard...</p>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-3 border-srsf-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-gray-400">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
@@ -458,67 +468,67 @@ export function ExecutiveDashboard() {
       </div>
 
       {/* Demographics Section */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Demographics</h2>
+      <section>
+        <h2 className="text-base font-semibold text-gray-800 mb-4">Demographics</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="rounded-lg border bg-card p-4">
+          <div className={chartCard}>
             <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
           </div>
-          <div className="rounded-lg border bg-card p-4">
+          <div className={chartCard}>
             <EChart
               option={groupedBarChartOption(ageBracketByProgram, "Age Bracket by Program")}
             />
           </div>
           {(showES || showABSA) && (
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={donutChartOption(disabilityCounts, "Disability Status")}
               />
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* Geographic Section */}
       {(showES || showABSA) && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Geographic</h2>
+        <section>
+          <h2 className="text-base font-semibold text-gray-800 mb-4">Geographic</h2>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className="lg:col-span-3 rounded-lg border bg-card p-4">
+            <div className={`lg:col-span-3 ${chartCard}`}>
               <EChart
                 option={horizontalBarChartOption(regionCounts, "Regional Representation")}
               />
             </div>
             <KpiCard label="Regions Represented" value={uniqueRegionCount} />
           </div>
-        </div>
+        </section>
       )}
 
       {/* Enterprise Spotlight Specifics */}
       {showES && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Enterprise Spotlight</h2>
+        <section>
+          <h2 className="text-base font-semibold text-gray-800 mb-4">Enterprise Spotlight</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={pieChartOption(esRegistrationCounts, "Business Registration Status")}
               />
             </div>
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={horizontalBarChartOption(esSectorCounts, "Business Sector")}
               />
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Media Programs Section (VU + Hangout) */}
       {showMedia && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Media Programs</h2>
+        <section>
+          <h2 className="text-base font-semibold text-gray-800 mb-4">Media Programs</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={
                   mediaMonthlyViews.length > 0
@@ -527,7 +537,7 @@ export function ExecutiveDashboard() {
                 }
               />
             </div>
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={
                   mediaMonthlyEpisodes.length > 0
@@ -536,27 +546,27 @@ export function ExecutiveDashboard() {
                 }
               />
             </div>
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={barChartOption(mediaPlatformViews, "Views per Platform")}
               />
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* ABSA Section */}
       {showABSA && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">ABSA Onboarding</h2>
+        <section>
+          <h2 className="text-base font-semibold text-gray-800 mb-4">ABSA Onboarding</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="rounded-lg border bg-card p-4">
+            <div className={chartCard}>
               <EChart
                 option={barChartOption(absaRegionCounts, "Region Breakdown")}
               />
             </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

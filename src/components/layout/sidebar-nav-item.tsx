@@ -29,32 +29,32 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
         <button
           onClick={() => setExpanded(!expanded)}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150",
             isActive
-              ? "bg-srsf-green-500/20 text-srsf-green-300"
-              : "text-white/70 hover:text-white hover:bg-white/10"
+              ? "bg-srsf-green-500/20 text-white"
+              : "text-white/60 hover:text-white hover:bg-white/8"
           )}
         >
-          <Icon className="w-5 h-5 shrink-0" />
+          <Icon className="w-[18px] h-[18px] shrink-0" />
           <span className="flex-1 text-left">{item.label}</span>
           <ChevronDown
             className={cn(
-              "w-4 h-4 transition-transform",
+              "w-3.5 h-3.5 transition-transform duration-200",
               expanded && "rotate-180"
             )}
           />
         </button>
         {expanded && (
-          <div className="ml-8 mt-1 space-y-1">
+          <div className="ml-[30px] mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
             {item.children.map((child) => (
               <Link
                 key={child.href}
                 href={child.href}
                 className={cn(
-                  "block px-3 py-1.5 rounded-md text-sm transition-colors",
+                  "block px-2.5 py-1.5 rounded-md text-[12.5px] transition-all duration-150",
                   pathname === child.href
-                    ? "bg-srsf-green-500/20 text-srsf-green-300"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                    ? "bg-srsf-green-500/20 text-white font-medium"
+                    : "text-white/50 hover:text-white hover:bg-white/8"
                 )}
               >
                 {child.label}
@@ -70,13 +70,13 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150",
         isActive
-          ? "bg-srsf-green-500/20 text-srsf-green-300"
-          : "text-white/70 hover:text-white hover:bg-white/10"
+          ? "bg-srsf-green-500/20 text-white"
+          : "text-white/60 hover:text-white hover:bg-white/8"
       )}
     >
-      <Icon className="w-5 h-5 shrink-0" />
+      <Icon className="w-[18px] h-[18px] shrink-0" />
       <span>{item.label}</span>
     </Link>
   );
