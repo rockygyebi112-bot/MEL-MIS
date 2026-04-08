@@ -1,0 +1,186 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { ProgramSlug, PROGRAM_TABLE_MAP } from "@/lib/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface RecentEntriesTableProps {
+  programSlug: ProgramSlug;
+  refreshKey: number;
+  onEdit: (entry: Record<string, unknown>) => void;
+}
+
+function getDisplayColumns(
+  slug: ProgramSlug
+): { key: string; label: string }[] {
+  switch (slug) {
+    case "enterprise-spotlight":
+      return [
+        { key: "applicant_name", label: "Applicant" },
+        { key: "region", label: "Region" },
+        { key: "gender", label: "Gender" },
+        { key: "business_sector", label: "Sector" },
+      ];
+    case "virtual-university":
+    case "hangout":
+      return [
+        { key: "episode_title", label: "Episode" },
+        { key: "date_aired", label: "Date Aired" },
+        { key: "platforms", label: "Platforms" },
+      ];
+    case "absa-onboarding":
+      return [
+        { key: "participant_name", label: "Participant" },
+        { key: "region", label: "Region" },
+        { key: "gender", label: "Gender" },
+        { key: "employment_status", label: "Employment" },
+      ];
+    case "learnings":
+      return [
+        { key: "title", label: "Title" },
+        { key: "category", label: "Category" },
+        { key: "learning_date", label: "Date" },
+      ];
+  }
+}
+
+function formatCellValue(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+export function RecentEntriesTable({
+  programSlug,
+  refreshKey,
+  onEdit,
+}: RecentEntriesTableProps) {
+  const [entries, setEntries] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+  const tableName = PROGRAM_TABLE_MAP[programSlug];
+  const columns = getDisplayColumns(programSlug);
+
+  const loadEntries = useCallback(async () => {
+    setLoading(true);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const query = supabase
+      .from(tableName)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    const { data, error } = await query;
+    if (error) {
+      toast.error("Failed to load entries");
+    }
+    setEntries((data as Record<string, unknown>[]) ?? []);
+    setLoading(false);
+  }, [supabase, tableName]);
+
+  useEffect(() => {
+    loadEntries();
+  }, [loadEntries, refreshKey]);
+
+  async function handleDelete(id: string) {
+    if (!confirm("Are you sure you want to delete this entry?")) return;
+
+    const { error } = await supabase.from(tableName).delete().eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Entry deleted");
+    loadEntries();
+  }
+
+  if (loading) {
+    return (
+      <p className="text-sm text-muted-foreground py-4">Loading entries...</p>
+    );
+  }
+
+  if (entries.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground py-4">
+        No entries yet. Submit your first entry above.
+      </p>
+    );
+  }
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {columns.map((col) => (
+              <TableHead key={col.key}>{col.label}</TableHead>
+            ))}
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry) => (
+            <TableRow key={entry.id as string}>
+              {columns.map((col) => (
+                <TableCell key={col.key}>
+                  {formatCellValue(entry[col.key])}
+                </TableCell>
+              ))}
+              <TableCell>
+                {entry.is_draft ? (
+                  <Badge variant="secondary">Draft</Badge>
+                ) : (
+                  <Badge className="bg-srsf-green-100 text-srsf-green-800">
+                    Submitted
+                  </Badge>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onEdit(entry)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(entry.id as string)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
