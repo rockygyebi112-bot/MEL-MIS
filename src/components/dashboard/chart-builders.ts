@@ -228,3 +228,67 @@ export function stackedBarChartOption(
     color: CHART_COLORS,
   };
 }
+
+/** Multi-line chart — overlays multiple series for comparison */
+export function multiLineChartOption(
+  seriesDataArr: { name: string; data: Record<string, number> }[],
+  title: string
+): EChartsOption {
+  // Collect all month keys across all series
+  const monthSet = new Set<string>();
+  for (const s of seriesDataArr) {
+    for (const k of Object.keys(s.data)) monthSet.add(k);
+  }
+  const months = Array.from(monthSet).sort();
+
+  return {
+    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    tooltip: { trigger: "axis" },
+    legend: { bottom: 0, type: "scroll" },
+    xAxis: { type: "category", data: months },
+    yAxis: { type: "value" },
+    series: seriesDataArr.map((s, i) => ({
+      name: s.name,
+      type: "line" as const,
+      data: months.map((m) => s.data[m] || 0),
+      smooth: true,
+      itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
+      areaStyle: { opacity: 0.05 },
+    })),
+    grid: { bottom: 60, containLabel: true },
+    color: CHART_COLORS,
+  };
+}
+
+/** Grouped bar chart — multiple series side-by-side (not stacked) */
+export function groupedBarChartOption(
+  seriesData: { name: string; data: Record<string, number> }[],
+  title: string
+): EChartsOption {
+  const categorySet = new Set<string>();
+  for (const s of seriesData) {
+    for (const k of Object.keys(s.data)) categorySet.add(k);
+  }
+  const categories = Array.from(categorySet).sort();
+
+  return {
+    title: { text: title, left: "center", textStyle: { fontSize: 14 } },
+    tooltip: { trigger: "axis" },
+    legend: { bottom: 0, type: "scroll" },
+    xAxis: {
+      type: "category",
+      data: categories,
+      axisLabel: { rotate: categories.length > 6 ? 30 : 0, fontSize: 11 },
+    },
+    yAxis: { type: "value" },
+    series: seriesData.map((s, i) => ({
+      name: s.name,
+      type: "bar" as const,
+      data: categories.map((c) => s.data[c] || 0),
+      itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
+      barMaxWidth: 40,
+    })),
+    grid: { bottom: categories.length > 6 ? 80 : 60, containLabel: true },
+    color: CHART_COLORS,
+  };
+}
