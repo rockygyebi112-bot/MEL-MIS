@@ -75,3 +75,111 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   learnings: "Learnings",
   settings: "Settings",
 };
+
+// ============================================
+// DATA ENTRY FORM OPTIONS
+// ============================================
+
+export const REGIONS = [
+  "Gauteng",
+  "Western Cape",
+  "KwaZulu-Natal",
+  "Eastern Cape",
+  "Free State",
+  "Limpopo",
+  "Mpumalanga",
+  "North West",
+  "Northern Cape",
+] as const;
+
+export const GENDERS = [
+  "Male",
+  "Female",
+  "Non-binary",
+  "Prefer not to say",
+] as const;
+
+export const DISABILITY_TYPES = [
+  "Visual",
+  "Hearing",
+  "Physical",
+  "Intellectual",
+  "Other",
+] as const;
+
+export const OWNERSHIP_TYPES = [
+  "Sole Proprietor",
+  "Partnership",
+  "Close Corporation",
+  "(Pty) Ltd",
+  "Cooperative",
+  "Other",
+] as const;
+
+export const BUSINESS_SIZES = [
+  "Micro (0-10)",
+  "Small (11-50)",
+  "Medium (51-200)",
+  "Large (200+)",
+] as const;
+
+export const FUNDING_STATUSES = [
+  "Self-funded",
+  "Grant-funded",
+  "Loan-funded",
+  "Investor-funded",
+  "Mixed",
+] as const;
+
+export const BUSINESS_SECTORS = [
+  "Agriculture",
+  "Construction",
+  "Education",
+  "Finance",
+  "Healthcare",
+  "Hospitality",
+  "ICT",
+  "Manufacturing",
+  "Mining",
+  "Retail",
+  "Services",
+  "Transport",
+  "Other",
+] as const;
+
+export const EMPLOYMENT_STATUSES = [
+  "Employed",
+  "Unemployed",
+  "Self-employed",
+  "Student",
+  "Other",
+] as const;
+
+export const PLATFORMS = ["Facebook", "YouTube"] as const;
+
+export const AGE_BRACKETS = [
+  "Under 18",
+  "18-24",
+  "25-34",
+  "35-44",
+  "45-54",
+  "55-64",
+  "65+",
+] as const;
+
+export const LEARNING_CATEGORIES = [
+  "Operations",
+  "Partnerships",
+  "Audience Engagement",
+  "Impact",
+  "Other",
+] as const;
+
+// Programs available in data entry (includes Learnings as a data entry option)
+export const DATA_ENTRY_PROGRAMS = [
+  { name: "Enterprise Spotlight", slug: "enterprise-spotlight", description: "Track enterprise development applications and business metrics" },
+  { name: "Virtual University", slug: "virtual-university", description: "Record weekly educational episode data and audience metrics" },
+  { name: "Hangout", slug: "hangout", description: "Record weekly community engagement episode data" },
+  { name: "ABSA Onboarding", slug: "absa-onboarding", description: "Track participant onboarding for the ABSA partnership" },
+  { name: "Learnings", slug: "learnings", description: "Capture learnings and insights across all programs" },
+] as const;
