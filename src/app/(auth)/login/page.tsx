@@ -84,25 +84,25 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-0 shadow-2xl">
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 text-4xl font-bold text-srsf-green-500">
-          SRSF
+    <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden">
+      <CardHeader className="text-center pb-2 pt-8">
+        <div className="mx-auto mb-2 w-14 h-14 rounded-xl bg-srsf-green-500 flex items-center justify-center shadow-lg shadow-srsf-green-500/25">
+          <span className="text-white text-xl font-black">S</span>
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl font-bold tracking-tight mt-3">Welcome back</CardTitle>
+        <CardDescription className="text-sm">
           Sign in to the Management Information System
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-8">
           {(error || errorParam) && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
               {error || errorMessages[errorParam!] || "An error occurred."}
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium text-gray-600">Email</Label>
             <Input
               id="email"
               type="email"
@@ -110,30 +110,32 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="h-10"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-medium text-gray-600">Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="h-10"
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter className="flex flex-col gap-4 px-8 pb-8">
           <Button
             type="submit"
-            className="w-full bg-srsf-green-500 hover:bg-srsf-green-600"
+            className="w-full h-10 bg-srsf-green-500 hover:bg-srsf-green-600 font-semibold shadow-md shadow-srsf-green-500/20 transition-all"
             disabled={loading}
           >
             {loading ? "Signing in..." : "Sign in"}
           </Button>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-gray-400">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-srsf-purple-600 hover:underline">
+            <Link href="/signup" className="text-srsf-purple-500 font-medium hover:underline">
               Sign up
             </Link>
           </p>
