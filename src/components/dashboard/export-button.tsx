@@ -5,7 +5,8 @@ import { Download } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface ExportButtonProps {
-  data: Record<string, unknown>[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: Record<string, any>[];
   filename: string;
   columns?: { key: string; label: string }[];
 }

@@ -20,7 +20,8 @@ export const CHART_COLORS = [
 // ─── Data aggregation helpers ────────────────────────────────────
 
 /** Count occurrences of each value for a given field */
-export function countByField<T extends Record<string, unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function countByField<T extends Record<string, any>>(
   entries: T[],
   field: keyof T
 ): Record<string, number> {
@@ -35,7 +36,8 @@ export function countByField<T extends Record<string, unknown>>(
 }
 
 /** Group entries by month (YYYY-MM) from a date field */
-export function groupByMonth<T extends Record<string, unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function groupByMonth<T extends Record<string, any>>(
   entries: T[],
   dateField: keyof T
 ): Record<string, T[]> {
