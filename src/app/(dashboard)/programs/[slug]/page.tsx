@@ -1,5 +1,8 @@
 import { PROGRAMS } from "@/lib/constants";
 import { notFound } from "next/navigation";
+import { EnterpriseSpotlightDashboard } from "@/components/dashboard/enterprise-spotlight-dashboard";
+import { MediaProgramDashboard } from "@/components/dashboard/media-program-dashboard";
+import { AbsaOnboardingDashboard } from "@/components/dashboard/absa-onboarding-dashboard";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,11 +17,22 @@ export default async function ProgramPage({ params }: Props) {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <h1 className="text-2xl font-bold">{program.name}</h1>
-      <p className="text-muted-foreground mt-2">
-        Program dashboard coming in Phase 3.
-      </p>
+      {slug === "enterprise-spotlight" && <EnterpriseSpotlightDashboard />}
+      {slug === "virtual-university" && (
+        <MediaProgramDashboard
+          tableName="virtual_university_entries"
+          programLabel="Virtual University"
+        />
+      )}
+      {slug === "hangout" && (
+        <MediaProgramDashboard
+          tableName="hangout_entries"
+          programLabel="Hangout"
+        />
+      )}
+      {slug === "absa-onboarding" && <AbsaOnboardingDashboard />}
     </div>
   );
 }
