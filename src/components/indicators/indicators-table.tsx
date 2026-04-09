@@ -12,10 +12,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Pencil, Trash2, GripVertical } from "lucide-react";
+import { Pencil, Trash2, GripVertical, SlidersHorizontal } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Indicator } from "@/lib/types";
+import { TableSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface IndicatorsTableProps {
   indicators: Indicator[];
@@ -65,18 +67,16 @@ export function IndicatorsTable({
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground">
-        Loading indicators...
-      </div>
-    );
+    return <TableSkeleton rows={5} cols={7} />;
   }
 
   if (indicators.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 text-muted-foreground">
-        No indicators configured for this program.
-      </div>
+      <EmptyState
+        icon={SlidersHorizontal}
+        title="No indicators configured"
+        description="Add a custom indicator to start tracking additional data for this program."
+      />
     );
   }
 

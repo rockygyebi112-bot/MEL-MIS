@@ -19,8 +19,10 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UserX, UserCheck } from "lucide-react";
+import { UserX, UserCheck, Users } from "lucide-react";
 import type { UserProfile, Role } from "@/lib/types";
+import { TableSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface ActiveUsersTableProps {
   refreshKey: number;
@@ -87,7 +89,17 @@ export function ActiveUsersTable({ refreshKey }: ActiveUsersTableProps) {
     }
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
+  if (loading) return <TableSkeleton rows={4} cols={6} />;
+
+  if (users.length === 0) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="No active users"
+        description="Users who have been approved will appear here."
+      />
+    );
+  }
 
   return (
     <Table>

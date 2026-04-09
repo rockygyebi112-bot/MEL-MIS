@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { TableSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface RecentEntriesTableProps {
   programSlug: ProgramSlug;
@@ -103,29 +105,49 @@ export function RecentEntriesTable({
     loadEntries();
   }, [loadEntries, refreshKey]);
 
-  async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this entry?")) return;
+  function handleDelete(id: string) {
+    // Optimistic removal from local state
+    const entryToDelete = entries.find((e) => (e.id as string) === id);
+    if (!entryToDelete) return;
+    setEntries((prev) => prev.filter((e) => (e.id as string) !== id));
 
-    const { error } = await supabase.from(tableName).delete().eq("id", id);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Entry deleted");
-    loadEntries();
+    let undone = false;
+    const timeoutId = setTimeout(async () => {
+      if (undone) return;
+      const { error } = await supabase.from(tableName).delete().eq("id", id);
+      if (error) {
+        toast.error("Delete failed: " + error.message);
+        // Restore if the server actually rejected it
+        setEntries((prev) => [entryToDelete, ...prev]);
+      }
+    }, 5000);
+
+    toast("Entry deleted", {
+      description: "The entry will be permanently removed in 5 seconds.",
+      action: {
+        label: "Undo",
+        onClick: () => {
+          undone = true;
+          clearTimeout(timeoutId);
+          setEntries((prev) => [entryToDelete, ...prev]);
+          toast.success("Entry restored");
+        },
+      },
+      duration: 5000,
+    });
   }
 
   if (loading) {
-    return (
-      <p className="text-sm text-muted-foreground py-4">Loading entries...</p>
-    );
+    return <TableSkeleton rows={4} cols={columns.length + 2} />;
   }
 
   if (entries.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4">
-        No entries yet. Submit your first entry above.
-      </p>
+      <EmptyState
+        icon={FileText}
+        title="No entries yet"
+        description="Submit your first entry using the form above — it will show up here."
+      />
     );
   }
 

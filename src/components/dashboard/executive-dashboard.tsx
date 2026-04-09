@@ -12,6 +12,7 @@ import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
 import { ProgramFilterBar, ProgramFilter } from "./program-filter-bar";
+import { DashboardSkeleton } from "./dashboard-skeleton";
 import {
   countByField,
   groupByMonth,
@@ -389,20 +390,13 @@ export function ExecutiveDashboard() {
   const chartCard = "rounded-xl border border-border/60 bg-card p-5 shadow-sm";
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-3 border-srsf-green-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-gray-400">Loading dashboard data...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton kpis={4} charts={4} />;
   }
 
   return (
     <div className="space-y-8">
-      {/* Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* Filter Bar (sticky below topbar) */}
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-center justify-between gap-4">
         <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
         <div className="flex items-center gap-3">
           <DateRangeFilter

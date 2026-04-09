@@ -119,4 +119,24 @@
   html {
     @apply font-sans;
   }
+
+  /* Stronger keyboard focus rings (only visible on keyboard navigation,
+     not mouse clicks). Applies across buttons, links, inputs and any
+     other focusable element. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Ensure elements that already have rounded corners get a matching
+     offset so the ring doesn't clip */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline-offset: 2px;
+  }
 }

@@ -8,10 +8,42 @@ const TITLE_STYLE = {
   fontFamily: "Inter, system-ui, sans-serif",
 };
 
+// Shared top padding for the chart title so toolbox icons don't collide
+const TITLE_TOP = 4;
+
 const AXIS_LABEL_STYLE = {
   fontSize: 11,
   color: "#6B7280",
   fontFamily: "Inter, system-ui, sans-serif",
+};
+
+// Reusable toolbox — adds PNG export + data view toggle to every chart
+const TOOLBOX: EChartsOption["toolbox"] = {
+  show: true,
+  right: 10,
+  top: 6,
+  itemSize: 14,
+  itemGap: 8,
+  iconStyle: {
+    borderColor: "#9CA3AF",
+  },
+  emphasis: {
+    iconStyle: {
+      borderColor: "#5BBF3A",
+    },
+  },
+  feature: {
+    saveAsImage: {
+      title: "Save as PNG",
+      name: "chart",
+      pixelRatio: 2,
+    },
+    dataView: {
+      title: "Data view",
+      lang: ["Data view", "Close", "Refresh"],
+      readOnly: true,
+    },
+  },
 };
 
 // SRSF brand chart palette — green, purple, then complementary colors
@@ -76,7 +108,8 @@ export function barChartOption(
   const categories = Object.keys(counts);
   const values = Object.values(counts);
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     xAxis: {
       type: "category",
@@ -107,7 +140,8 @@ export function horizontalBarChartOption(
   const categories = sorted.map(([k]) => k);
   const values = sorted.map(([, v]) => v);
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     xAxis: { type: "value" },
     yAxis: {
@@ -139,7 +173,8 @@ export function donutChartOption(
     value,
   }));
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
     legend: { bottom: 0, type: "scroll" },
     series: [
@@ -168,7 +203,8 @@ export function pieChartOption(
     value,
   }));
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
     legend: { bottom: 0, type: "scroll" },
     series: [
@@ -196,7 +232,8 @@ export function lineChartOption(
   const months = Object.keys(monthlyData).sort();
   const values = months.map((m) => monthlyData[m]);
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     xAxis: { type: "category", data: months },
     yAxis: { type: "value" },
@@ -226,7 +263,8 @@ export function stackedBarChartOption(
   const categories = Array.from(categorySet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: categories },
@@ -256,7 +294,8 @@ export function multiLineChartOption(
   const months = Array.from(monthSet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: months },
@@ -286,7 +325,8 @@ export function groupedBarChartOption(
   const categories = Array.from(categorySet).sort();
 
   return {
-    title: { text: title, left: "center", textStyle: TITLE_STYLE },
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
     tooltip: { trigger: "axis" },
     legend: { bottom: 0, type: "scroll" },
     xAxis: {

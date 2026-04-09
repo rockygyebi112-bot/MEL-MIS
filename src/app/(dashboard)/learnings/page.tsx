@@ -28,8 +28,12 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Lightbulb,
+  SearchX,
 } from "lucide-react";
 import type { LearningEntry, Program } from "@/lib/types";
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const PAGE_SIZE = 20;
 
@@ -163,8 +167,10 @@ export default function LearningsPage() {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (loading) {
-    return <p className="text-muted-foreground py-8">Loading learnings...</p>;
+    return <DashboardSkeleton kpis={3} charts={3} />;
   }
+
+  const hasNoLearnings = learnings.length === 0;
 
   return (
     <div className="space-y-8">
@@ -327,8 +333,22 @@ export default function LearningsPage() {
         </div>
 
         {paged.length === 0 ? (
-          <div className="rounded-xl border border-border/60 bg-card p-10 text-center text-muted-foreground">
-            No learnings found matching your filters.
+          <div className="rounded-xl border border-border/60 bg-card">
+            {hasNoLearnings ? (
+              <EmptyState
+                icon={Lightbulb}
+                title="No learnings captured yet"
+                description="Record insights from your programs in the Data Entry section and they'll show up here."
+                variant="page"
+              />
+            ) : (
+              <EmptyState
+                icon={SearchX}
+                title="No matches"
+                description="Try adjusting your filters or clearing the search."
+                variant="page"
+              />
+            )}
           </div>
         ) : (
           <div className="space-y-3">

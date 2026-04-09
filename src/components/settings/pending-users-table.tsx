@@ -18,8 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
+import { Check, X, UserPlus } from "lucide-react";
 import type { UserProfile, Role } from "@/lib/types";
+import { TableSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface PendingUsersTableProps {
   onUserUpdated: () => void;
@@ -90,9 +92,16 @@ export function PendingUsersTable({ onUserUpdated }: PendingUsersTableProps) {
     }
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>;
-  if (users.length === 0)
-    return <p className="text-sm text-muted-foreground">No pending users.</p>;
+  if (loading) return <TableSkeleton rows={3} cols={5} />;
+  if (users.length === 0) {
+    return (
+      <EmptyState
+        icon={UserPlus}
+        title="No pending users"
+        description="New signups waiting for approval will appear here."
+      />
+    );
+  }
 
   return (
     <Table>

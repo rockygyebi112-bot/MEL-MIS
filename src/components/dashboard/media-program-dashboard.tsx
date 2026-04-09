@@ -15,6 +15,7 @@ import {
   stackedBarChartOption,
 } from "./chart-builders";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
+import { DashboardSkeleton } from "./dashboard-skeleton";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -203,12 +204,12 @@ export function MediaProgramDashboard({
   }
 
   if (loading) {
-    return <p className="text-muted-foreground py-8">Loading dashboard...</p>;
+    return <DashboardSkeleton kpis={3} charts={4} />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-center justify-between gap-4">
         <DateRangeFilter
           from={from}
           to={to}
