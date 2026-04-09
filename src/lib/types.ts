@@ -33,14 +33,6 @@ export interface UserProfile {
   role?: Role;
 }
 
-export interface AuditLogEntry {
-  id: string;
-  user_id: string;
-  action: string;
-  details: Record<string, unknown>;
-  created_at: string;
-}
-
 export interface Program {
   id: string;
   name: string;
@@ -145,13 +137,6 @@ export interface LearningEntry {
   updated_at: string;
   program?: Program;
 }
-
-// Union type for any entry across programs
-export type ProgramEntry =
-  | EnterpriseSpotlightEntry
-  | MediaProgramEntry
-  | AbsaOnboardingEntry
-  | LearningEntry;
 
 // Slug to table name mapping
 export type ProgramSlug =
