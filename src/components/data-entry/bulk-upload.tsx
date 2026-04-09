@@ -87,6 +87,7 @@ const TEMPLATE_COLUMNS: Record<UploadSlug, { key: string; label: string; require
     { key: "region", label: "Region" },
     { key: "employment_status", label: "Employment Status" },
     { key: "disability_status", label: "Disability Status" },
+    { key: "disability_type", label: "Disability Type" },
     { key: "learning", label: "Learning" },
   ],
   learnings: [
@@ -266,6 +267,8 @@ export function BulkUpload() {
         region: String(row.region ?? ""),
         employment_status: String(row.employment_status ?? ""),
         disability_status: String(row.disability_status ?? ""),
+        disability_type:
+          row.disability_status === "Yes" ? String(row.disability_type ?? "") : null,
         learning: String(row.learning ?? ""),
         is_draft: false,
       };

@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AbsaOnboardingEntry } from "@/lib/types";
 import { getAgeBracket } from "@/lib/utils";
-import { REGIONS, GENDERS, EMPLOYMENT_STATUSES } from "@/lib/constants";
+import {
+  REGIONS,
+  GENDERS,
+  EMPLOYMENT_STATUSES,
+  DISABILITY_TYPES,
+} from "@/lib/constants";
 import { useCoreIndicatorOptions } from "@/lib/hooks/use-core-indicator-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +38,8 @@ const EMPTY_FORM = {
   region: "",
   employment_status: "",
   disability_status: "",
+  disability_type: "",
+  disability_type_other: "",
   learning: "",
 };
 
@@ -51,9 +58,13 @@ export function AbsaOnboardingForm({
   const genderOptions = coreOptions.gender ?? [...GENDERS];
   const employmentOptions = coreOptions.employment_status ?? [...EMPLOYMENT_STATUSES];
   const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
+  const disabilityTypeOptions = coreOptions.disability_type ?? [...DISABILITY_TYPES];
 
   useEffect(() => {
     if (editEntry) {
+      const storedType = editEntry.disability_type ?? "";
+      const isPreset =
+        !storedType || disabilityTypeOptions.includes(storedType);
       setForm({
         participant_name: editEntry.participant_name,
         gender: editEntry.gender,
@@ -61,10 +72,13 @@ export function AbsaOnboardingForm({
         region: editEntry.region,
         employment_status: editEntry.employment_status,
         disability_status: editEntry.disability_status,
+        disability_type: isPreset ? storedType : "Other",
+        disability_type_other: isPreset ? "" : storedType,
         learning: editEntry.learning,
       });
       setCustomFields((editEntry.custom_fields as Record<string, unknown>) ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editEntry]);
 
   function setField(field: string, value: string) {
@@ -88,6 +102,10 @@ export function AbsaOnboardingForm({
     }
 
     const ageNum = form.age ? parseInt(form.age, 10) : null;
+    const resolvedDisabilityType =
+      form.disability_type === "Other"
+        ? form.disability_type_other.trim()
+        : form.disability_type;
     const record = {
       user_id: user.id,
       participant_name: form.participant_name,
@@ -97,6 +115,8 @@ export function AbsaOnboardingForm({
       region: form.region,
       employment_status: form.employment_status,
       disability_status: form.disability_status,
+      disability_type:
+        form.disability_status === "Yes" ? resolvedDisabilityType || null : null,
       learning: form.learning,
       custom_fields: customFields,
       is_draft: isDraft,
@@ -244,6 +264,39 @@ export function AbsaOnboardingForm({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Disability Type (conditional) */}
+        {form.disability_status === "Yes" && (
+          <div className="space-y-2">
+            <Label htmlFor="disability_type">Disability Type</Label>
+            <Select
+              value={form.disability_type}
+              onValueChange={(v) => setField("disability_type", v ?? "")}
+            >
+              <SelectTrigger id="disability_type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                {disabilityTypeOptions.map((d) => (
+                  <SelectItem key={d} value={d}>
+                    {d}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {form.disability_type === "Other" && (
+              <Input
+                id="disability_type_other"
+                value={form.disability_type_other}
+                onChange={(e) =>
+                  setField("disability_type_other", e.target.value)
+                }
+                placeholder="Please specify"
+                className="mt-2"
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Custom Indicators */}

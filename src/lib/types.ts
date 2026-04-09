@@ -125,6 +125,7 @@ export interface AbsaOnboardingEntry {
   region: string;
   employment_status: string;
   disability_status: string;
+  disability_type: string | null;
   custom_fields: Record<string, unknown>;
   learning: string;
   is_draft: boolean;

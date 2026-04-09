@@ -80,30 +80,35 @@ export const MODULE_LABELS: Record<AppModule, string> = {
 // DATA ENTRY FORM OPTIONS
 // ============================================
 
+// Ghana's 16 regions (as of 2019 reorganization)
 export const REGIONS = [
-  "Gauteng",
-  "Western Cape",
-  "KwaZulu-Natal",
-  "Eastern Cape",
-  "Free State",
-  "Limpopo",
-  "Mpumalanga",
-  "North West",
-  "Northern Cape",
+  "Ahafo",
+  "Ashanti",
+  "Bono",
+  "Bono East",
+  "Central",
+  "Eastern",
+  "Greater Accra",
+  "North East",
+  "Northern",
+  "Oti",
+  "Savannah",
+  "Upper East",
+  "Upper West",
+  "Volta",
+  "Western",
+  "Western North",
 ] as const;
 
-export const GENDERS = [
-  "Male",
-  "Female",
-  "Non-binary",
-  "Prefer not to say",
-] as const;
+export const GENDERS = ["Male", "Female"] as const;
 
 export const DISABILITY_TYPES = [
   "Visual",
   "Hearing",
   "Physical",
   "Intellectual",
+  "Speech",
+  "Psychosocial",
   "Other",
 ] as const;
 
