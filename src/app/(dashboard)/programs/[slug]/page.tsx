@@ -17,18 +17,20 @@ export default async function ProgramPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{program.name}</h1>
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold tracking-tight">{program.name}</h1>
       {slug === "enterprise-spotlight" && <EnterpriseSpotlightDashboard />}
       {slug === "virtual-university" && (
         <MediaProgramDashboard
           tableName="virtual_university_entries"
+          programSlug="virtual-university"
           programLabel="Virtual University"
         />
       )}
       {slug === "hangout" && (
         <MediaProgramDashboard
           tableName="hangout_entries"
+          programSlug="hangout"
           programLabel="Hangout"
         />
       )}

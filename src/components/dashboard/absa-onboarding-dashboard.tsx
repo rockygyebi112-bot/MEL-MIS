@@ -13,6 +13,7 @@ import {
   donutChartOption,
   pieChartOption,
 } from "./chart-builders";
+import { CustomIndicatorCharts } from "./custom-indicator-charts";
 
 export function AbsaOnboardingDashboard() {
   const [entries, setEntries] = useState<AbsaOnboardingEntry[]>([]);
@@ -82,25 +83,30 @@ export function AbsaOnboardingDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(ageCounts, "Age Bracket")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(regionCounts, "Region")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={pieChartOption(employmentCounts, "Employment Status")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
         </div>
       </div>
+
+      <CustomIndicatorCharts
+        programSlug="absa-onboarding"
+        entries={entries as unknown as Record<string, unknown>[]}
+      />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
 import { toast } from "sonner";
 
 interface AbsaOnboardingFormProps {
@@ -40,6 +41,7 @@ export function AbsaOnboardingForm({
   onCancel,
 }: AbsaOnboardingFormProps) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
 
@@ -54,6 +56,7 @@ export function AbsaOnboardingForm({
         disability_status: editEntry.disability_status,
         learning: editEntry.learning,
       });
+      setCustomFields((editEntry.custom_fields as Record<string, unknown>) ?? {});
     }
   }, [editEntry]);
 
@@ -88,6 +91,7 @@ export function AbsaOnboardingForm({
       employment_status: form.employment_status,
       disability_status: form.disability_status,
       learning: form.learning,
+      custom_fields: customFields,
       is_draft: isDraft,
     };
 
@@ -117,6 +121,7 @@ export function AbsaOnboardingForm({
           : "Entry submitted"
     );
     setForm(EMPTY_FORM);
+    setCustomFields({});
     onSaved();
   }
 
@@ -230,6 +235,13 @@ export function AbsaOnboardingForm({
           </Select>
         </div>
       </div>
+
+      {/* Custom Indicators */}
+      <CustomFieldsSection
+        programSlug="absa-onboarding"
+        values={customFields}
+        onChange={setCustomFields}
+      />
 
       {/* Learning */}
       <div className="space-y-2">

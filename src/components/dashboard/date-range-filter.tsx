@@ -21,35 +21,35 @@ export function DateRangeFilter({
 }: DateRangeFilterProps) {
   return (
     <div className="flex flex-wrap items-end gap-2">
-      <div className="space-y-1">
-        <Label className="text-[11px] text-gray-400 uppercase tracking-wider">
+      <div className="space-y-1.5">
+        <Label className="text-[11px] text-muted-foreground/70 uppercase tracking-widest font-semibold">
           From
         </Label>
         <Input
           type="date"
           value={from}
           onChange={(e) => onFromChange(e.target.value)}
-          className="w-36 h-8 text-xs bg-white"
+          className="w-36 text-xs"
         />
       </div>
-      <div className="space-y-1">
-        <Label className="text-[11px] text-gray-400 uppercase tracking-wider">
+      <div className="space-y-1.5">
+        <Label className="text-[11px] text-muted-foreground/70 uppercase tracking-widest font-semibold">
           To
         </Label>
         <Input
           type="date"
           value={to}
           onChange={(e) => onToChange(e.target.value)}
-          className="w-36 h-8 text-xs bg-white"
+          className="w-36 text-xs"
         />
       </div>
       {(from || to) && (
         <button
           onClick={onClear}
-          className="h-8 px-2 text-gray-400 hover:text-gray-600 transition-colors"
+          className="h-8 px-2 text-muted-foreground hover:text-foreground transition-colors"
           title="Clear dates"
         >
-          <X className="w-3.5 h-3.5" />
+          <X className="size-3.5" />
         </button>
       )}
     </div>

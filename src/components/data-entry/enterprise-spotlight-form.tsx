@@ -24,6 +24,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
 import { toast } from "sonner";
 
 interface EnterpriseSpotlightFormProps {
@@ -54,6 +55,7 @@ export function EnterpriseSpotlightForm({
   onCancel,
 }: EnterpriseSpotlightFormProps) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
 
@@ -74,6 +76,7 @@ export function EnterpriseSpotlightForm({
         business_sector: editEntry.business_sector,
         learning: editEntry.learning,
       });
+      setCustomFields((editEntry.custom_fields as Record<string, unknown>) ?? {});
     }
   }, [editEntry]);
 
@@ -117,6 +120,7 @@ export function EnterpriseSpotlightForm({
       business_registered: form.business_registered,
       business_sector: form.business_sector,
       learning: form.learning,
+      custom_fields: customFields,
       is_draft: isDraft,
     };
 
@@ -146,6 +150,7 @@ export function EnterpriseSpotlightForm({
           : "Entry submitted"
     );
     setForm(EMPTY_FORM);
+    setCustomFields({});
     onSaved();
   }
 
@@ -371,6 +376,13 @@ export function EnterpriseSpotlightForm({
           </Select>
         </div>
       </div>
+
+      {/* Custom Indicators */}
+      <CustomFieldsSection
+        programSlug="enterprise-spotlight"
+        values={customFields}
+        onChange={setCustomFields}
+      />
 
       {/* Learning */}
       <div className="space-y-2">

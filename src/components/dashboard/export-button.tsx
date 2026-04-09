@@ -36,9 +36,9 @@ export function ExportButton({ data, filename, columns }: ExportButtonProps) {
   return (
     <button
       onClick={handleExport}
-      className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
+      className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-muted-foreground bg-card border border-border rounded-lg hover:bg-muted hover:text-foreground transition-colors shadow-sm"
     >
-      <Download className="h-3.5 w-3.5" />
+      <Download className="size-3.5" />
       Export
     </button>
   );

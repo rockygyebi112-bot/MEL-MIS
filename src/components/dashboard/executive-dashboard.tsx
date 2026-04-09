@@ -390,7 +390,7 @@ export function ExecutiveDashboard() {
   // ─── Render ───────────────────────────────────────────────────
 
   // Reusable chart card wrapper class
-  const chartCard = "rounded-xl border border-gray-200/60 bg-white p-5 shadow-sm";
+  const chartCard = "rounded-xl border border-border/60 bg-card p-5 shadow-sm";
 
   if (loading) {
     return (

@@ -14,6 +14,7 @@ import {
   donutChartOption,
   pieChartOption,
 } from "./chart-builders";
+import { CustomIndicatorCharts } from "./custom-indicator-charts";
 
 export function EnterpriseSpotlightDashboard() {
   const [entries, setEntries] = useState<EnterpriseSpotlightEntry[]>([]);
@@ -117,49 +118,54 @@ export function EnterpriseSpotlightDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(regionCounts, "Regional Representation")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(ageCounts, "Age Bracket")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(disabilityTypeCounts, "Disability Type")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={pieChartOption(ownershipCounts, "Ownership Type")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(longevityCounts, "Business Longevity")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(businessSizeCounts, "Business Size")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={pieChartOption(fundingCounts, "Funding Status")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(registrationCounts, "Registration Status")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={horizontalBarChartOption(sectorCounts, "Business Sector")} />
         </div>
       </div>
+
+      <CustomIndicatorCharts
+        programSlug="enterprise-spotlight"
+        entries={filtered as unknown as Record<string, unknown>[]}
+      />
     </div>
   );
 }

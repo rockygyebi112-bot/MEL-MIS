@@ -8,6 +8,8 @@ import { MediaProgramForm } from "@/components/data-entry/media-program-form";
 import { AbsaOnboardingForm } from "@/components/data-entry/absa-onboarding-form";
 import { LearningsForm } from "@/components/data-entry/learnings-form";
 import { RecentEntriesTable } from "@/components/data-entry/recent-entries-table";
+import { BulkUpload } from "@/components/data-entry/bulk-upload";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -56,6 +58,7 @@ export default function DataEntryPage() {
         return (
           <MediaProgramForm
             tableName="virtual_university_entries"
+            programSlug="virtual-university"
             programLabel="Virtual University"
             editEntry={editEntry as never}
             onSaved={handleSaved}
@@ -66,6 +69,7 @@ export default function DataEntryPage() {
         return (
           <MediaProgramForm
             tableName="hangout_entries"
+            programSlug="hangout"
             programLabel="Hangout"
             editEntry={editEntry as never}
             onSaved={handleSaved}
@@ -94,52 +98,65 @@ export default function DataEntryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Data Entry</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl font-bold tracking-tight">Data Entry</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           Enter data for any program. All submissions feed into dashboards
           automatically.
         </p>
       </div>
 
-      {!selectedProgram ? (
-        <ProgramSelector onSelect={setSelectedProgram} />
-      ) : (
-        <div className="space-y-6">
-          {/* Back button + program title */}
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setSelectedProgram(null);
-                setEditEntry(null);
-              }}
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-            <h2 className="text-lg font-semibold">
-              {PROGRAM_LABELS[selectedProgram]}
-              {editEntry ? " — Editing Entry" : " — New Entry"}
-            </h2>
-          </div>
+      <Tabs defaultValue="single">
+        <TabsList>
+          <TabsTrigger value="single">Single Entry</TabsTrigger>
+          <TabsTrigger value="bulk">Bulk Upload</TabsTrigger>
+        </TabsList>
 
-          {/* Form */}
-          <div className="rounded-lg border bg-card p-6">{renderForm()}</div>
+        <TabsContent value="single">
+          {!selectedProgram ? (
+            <ProgramSelector onSelect={setSelectedProgram} />
+          ) : (
+            <div className="space-y-6">
+              {/* Back button + program title */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedProgram(null);
+                    setEditEntry(null);
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+                <h2 className="text-lg font-semibold">
+                  {PROGRAM_LABELS[selectedProgram]}
+                  {editEntry ? " — Editing Entry" : " — New Entry"}
+                </h2>
+              </div>
 
-          {/* Recent entries */}
-          <div>
-            <h3 className="text-base font-semibold mb-3">Recent Entries</h3>
-            <RecentEntriesTable
-              programSlug={selectedProgram}
-              refreshKey={refreshKey}
-              onEdit={handleEdit}
-            />
-          </div>
-        </div>
-      )}
+              {/* Form */}
+              <div className="rounded-xl border border-border/60 bg-card p-6 shadow-sm">{renderForm()}</div>
+
+              {/* Recent entries */}
+              <div>
+                <h3 className="text-base font-semibold mb-3">Recent Entries</h3>
+                <RecentEntriesTable
+                  programSlug={selectedProgram}
+                  refreshKey={refreshKey}
+                  onEdit={handleEdit}
+                />
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="bulk">
+          <BulkUpload />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

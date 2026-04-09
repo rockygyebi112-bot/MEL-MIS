@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
 import { toast } from "sonner";
 
 interface MediaProgramFormProps {
   tableName: "virtual_university_entries" | "hangout_entries";
+  programSlug: string;
   programLabel: string;
   editEntry?: MediaProgramEntry | null;
   onSaved: () => void;
@@ -35,6 +37,7 @@ const EMPTY_METRICS: PlatformMetrics = {
 
 export function MediaProgramForm({
   tableName,
+  programSlug,
   programLabel,
   editEntry,
   onSaved,
@@ -54,6 +57,7 @@ export function MediaProgramForm({
     Record<string, string>
   >({});
   const [learning, setLearning] = useState("");
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
 
@@ -92,6 +96,7 @@ export function MediaProgramForm({
       }
       setAgeBracketCounts(ac);
       setLearning(editEntry.learning);
+      setCustomFields((editEntry.custom_fields as Record<string, unknown>) ?? {});
     }
   }, [editEntry]);
 
@@ -165,6 +170,7 @@ export function MediaProgramForm({
       metrics,
       demographics,
       learning,
+      custom_fields: customFields,
       is_draft: isDraft,
     };
 
@@ -202,6 +208,7 @@ export function MediaProgramForm({
     setGenderCounts({});
     setAgeBracketCounts({});
     setLearning("");
+    setCustomFields({});
     onSaved();
   }
 
@@ -252,7 +259,7 @@ export function MediaProgramForm({
       {selectedPlatforms.map((platform) => (
         <div
           key={platform}
-          className="rounded-lg border p-4 space-y-3"
+          className="rounded-xl border border-border/60 p-4 space-y-3"
         >
           <h4 className="font-medium">{platform} Metrics</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -273,7 +280,7 @@ export function MediaProgramForm({
       ))}
 
       {/* Audience Demographics — Gender */}
-      <div className="rounded-lg border p-4 space-y-3">
+      <div className="rounded-xl border border-border/60 p-4 space-y-3">
         <h4 className="font-medium">Audience Demographics — Gender</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {GENDERS.map((g) => (
@@ -297,7 +304,7 @@ export function MediaProgramForm({
       </div>
 
       {/* Audience Demographics — Age Bracket */}
-      <div className="rounded-lg border p-4 space-y-3">
+      <div className="rounded-xl border border-border/60 p-4 space-y-3">
         <h4 className="font-medium">Audience Demographics — Age Bracket</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {AGE_BRACKETS.map((ab) => (
@@ -319,6 +326,13 @@ export function MediaProgramForm({
           ))}
         </div>
       </div>
+
+      {/* Custom Indicators */}
+      <CustomFieldsSection
+        programSlug={programSlug}
+        values={customFields}
+        onChange={setCustomFields}
+      />
 
       {/* Learning */}
       <div className="space-y-2">

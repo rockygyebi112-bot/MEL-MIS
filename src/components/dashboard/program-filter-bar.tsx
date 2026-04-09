@@ -22,15 +22,15 @@ interface ProgramFilterBarProps {
 
 export function ProgramFilterBar({ active, onChange }: ProgramFilterBarProps) {
   return (
-    <div className="flex flex-wrap gap-1.5 p-1 bg-gray-100 rounded-lg">
+    <div className="flex flex-wrap gap-1 p-1 bg-muted rounded-lg">
       {FILTER_OPTIONS.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
-          className={`px-3.5 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
             active === opt.value
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {opt.label}

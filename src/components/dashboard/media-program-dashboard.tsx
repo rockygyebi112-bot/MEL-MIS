@@ -14,6 +14,7 @@ import {
   lineChartOption,
   stackedBarChartOption,
 } from "./chart-builders";
+import { CustomIndicatorCharts } from "./custom-indicator-charts";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -28,6 +29,7 @@ import { ArrowUpDown } from "lucide-react";
 
 interface MediaProgramDashboardProps {
   tableName: "virtual_university_entries" | "hangout_entries";
+  programSlug: string;
   programLabel: string;
 }
 
@@ -50,6 +52,7 @@ function totalViews(entry: MediaProgramEntry): number {
 
 export function MediaProgramDashboard({
   tableName,
+  programSlug,
   programLabel,
 }: MediaProgramDashboardProps) {
   const [entries, setEntries] = useState<MediaProgramEntry[]>([]);
@@ -233,34 +236,39 @@ export function MediaProgramDashboard({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={lineChartOption(monthlyViewTotals, "Monthly Trend Analysis", "Views")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(monthlyEpisodeCounts, "Monthly Episodes Aired")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(totalSharesSaves, "Shares / Saves")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(totalLikes, "Likes")} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
         </div>
-        <div className="rounded-lg border bg-card p-4">
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(ageBracketCounts, "Age Bracket")} />
         </div>
       </div>
+
+      <CustomIndicatorCharts
+        programSlug={programSlug}
+        entries={entries as unknown as Record<string, unknown>[]}
+      />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-4">
@@ -272,7 +280,7 @@ export function MediaProgramDashboard({
             className="max-w-xs"
           />
         </div>
-        <div className="rounded-md border">
+        <div className="rounded-xl border border-border/60 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
