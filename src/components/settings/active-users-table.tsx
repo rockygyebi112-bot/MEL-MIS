@@ -110,11 +110,13 @@ export function ActiveUsersTable({ refreshKey }: ActiveUsersTableProps) {
             <TableCell>{user.email}</TableCell>
             <TableCell>
               <Select
-                defaultValue={user.role_id || undefined}
+                value={user.role_id ?? ""}
                 onValueChange={(value: string | null) => { if (value) updateRole(user.id, value); }}
               >
                 <SelectTrigger className="w-48">
-                  <SelectValue />
+                  <SelectValue placeholder="Assign role">
+                    {user.role?.name ?? "No role"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (

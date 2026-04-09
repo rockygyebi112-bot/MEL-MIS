@@ -13,6 +13,7 @@ import {
   FUNDING_STATUSES,
   BUSINESS_SECTORS,
 } from "@/lib/constants";
+import { useCoreIndicatorOptions } from "@/lib/hooks/use-core-indicator-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,16 @@ export function EnterpriseSpotlightForm({
   const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
+  const { options: coreOptions } = useCoreIndicatorOptions("enterprise-spotlight");
+
+  const regionOptions = coreOptions.region ?? [...REGIONS];
+  const genderOptions = coreOptions.gender ?? [...GENDERS];
+  const ownershipOptions = coreOptions.ownership_type ?? [...OWNERSHIP_TYPES];
+  const businessSizeOptions = coreOptions.business_size ?? [...BUSINESS_SIZES];
+  const fundingStatusOptions = coreOptions.funding_status ?? [...FUNDING_STATUSES];
+  const businessSectorOptions = coreOptions.business_sector ?? [...BUSINESS_SECTORS];
+  const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
+  const businessRegisteredOptions = coreOptions.registration_status ?? ["Yes", "No"];
 
   useEffect(() => {
     if (editEntry) {
@@ -179,7 +190,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select region" />
             </SelectTrigger>
             <SelectContent>
-              {REGIONS.map((r) => (
+              {regionOptions.map((r) => (
                 <SelectItem key={r} value={r}>
                   {r}
                 </SelectItem>
@@ -199,7 +210,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
             <SelectContent>
-              {GENDERS.map((g) => (
+              {genderOptions.map((g) => (
                 <SelectItem key={g} value={g}>
                   {g}
                 </SelectItem>
@@ -238,8 +249,11 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Yes">Yes</SelectItem>
-              <SelectItem value="No">No</SelectItem>
+              {disabilityStatusOptions.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -277,7 +291,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
-              {OWNERSHIP_TYPES.map((o) => (
+              {ownershipOptions.map((o) => (
                 <SelectItem key={o} value={o}>
                   {o}
                 </SelectItem>
@@ -310,7 +324,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
             <SelectContent>
-              {BUSINESS_SIZES.map((s) => (
+              {businessSizeOptions.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
                 </SelectItem>
@@ -330,7 +344,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              {FUNDING_STATUSES.map((f) => (
+              {fundingStatusOptions.map((f) => (
                 <SelectItem key={f} value={f}>
                   {f}
                 </SelectItem>
@@ -350,8 +364,11 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Yes">Yes</SelectItem>
-              <SelectItem value="No">No</SelectItem>
+              {businessRegisteredOptions.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -367,7 +384,7 @@ export function EnterpriseSpotlightForm({
               <SelectValue placeholder="Select sector" />
             </SelectTrigger>
             <SelectContent>
-              {BUSINESS_SECTORS.map((s) => (
+              {businessSectorOptions.map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
                 </SelectItem>

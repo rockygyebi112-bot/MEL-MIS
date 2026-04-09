@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PendingUsersTable } from "@/components/settings/pending-users-table";
 import { ActiveUsersTable } from "@/components/settings/active-users-table";
 import { InviteUserModal } from "@/components/settings/invite-user-modal";
+import { PermissionsMatrix } from "@/components/settings/permissions-matrix";
 
 export default function SettingsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -53,9 +54,7 @@ export default function SettingsPage() {
               <CardTitle className="text-lg">Roles &amp; Permissions</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Permission matrix — implemented in next step.
-              </p>
+              <PermissionsMatrix />
             </CardContent>
           </Card>
         </TabsContent>

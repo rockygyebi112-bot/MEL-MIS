@@ -117,12 +117,17 @@ export function PendingUsersTable({ onUserUpdated }: PendingUsersTableProps) {
             </TableCell>
             <TableCell>
               <Select
+                value={selectedRoles[user.id] ?? ""}
                 onValueChange={(value: string | null) => {
                   if (value) setSelectedRoles((prev) => ({ ...prev, [user.id]: value }));
                 }}
               >
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder="Select role">
+                    {selectedRoles[user.id]
+                      ? roles.find((r) => r.id === selectedRoles[user.id])?.name ?? "Select role"
+                      : "Select role"}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((role) => (

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { MediaProgramEntry } from "@/lib/types";
 import { PLATFORMS, GENDERS, AGE_BRACKETS } from "@/lib/constants";
+import { useCoreIndicatorOptions } from "@/lib/hooks/use-core-indicator-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,6 +61,10 @@ export function MediaProgramForm({
   const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
+  const { options: coreOptions } = useCoreIndicatorOptions(programSlug);
+
+  const genderOptions = coreOptions.gender ?? [...GENDERS];
+  const ageBracketOptions = coreOptions.age_bracket ?? [...AGE_BRACKETS];
 
   useEffect(() => {
     if (editEntry) {
@@ -283,7 +288,7 @@ export function MediaProgramForm({
       <div className="rounded-xl border border-border/60 p-4 space-y-3">
         <h4 className="font-medium">Audience Demographics — Gender</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {GENDERS.map((g) => (
+          {genderOptions.map((g) => (
             <div key={g} className="space-y-1">
               <Label className="text-xs">{g}</Label>
               <Input
@@ -307,7 +312,7 @@ export function MediaProgramForm({
       <div className="rounded-xl border border-border/60 p-4 space-y-3">
         <h4 className="font-medium">Audience Demographics — Age Bracket</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {AGE_BRACKETS.map((ab) => (
+          {ageBracketOptions.map((ab) => (
             <div key={ab} className="space-y-1">
               <Label className="text-xs">{ab}</Label>
               <Input

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { AbsaOnboardingEntry } from "@/lib/types";
 import { getAgeBracket } from "@/lib/utils";
 import { REGIONS, GENDERS, EMPLOYMENT_STATUSES } from "@/lib/constants";
+import { useCoreIndicatorOptions } from "@/lib/hooks/use-core-indicator-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +45,12 @@ export function AbsaOnboardingForm({
   const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
+  const { options: coreOptions } = useCoreIndicatorOptions("absa-onboarding");
+
+  const regionOptions = coreOptions.region ?? [...REGIONS];
+  const genderOptions = coreOptions.gender ?? [...GENDERS];
+  const employmentOptions = coreOptions.employment_status ?? [...EMPLOYMENT_STATUSES];
+  const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
 
   useEffect(() => {
     if (editEntry) {
@@ -150,7 +157,7 @@ export function AbsaOnboardingForm({
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
             <SelectContent>
-              {GENDERS.map((g) => (
+              {genderOptions.map((g) => (
                 <SelectItem key={g} value={g}>
                   {g}
                 </SelectItem>
@@ -189,7 +196,7 @@ export function AbsaOnboardingForm({
               <SelectValue placeholder="Select region" />
             </SelectTrigger>
             <SelectContent>
-              {REGIONS.map((r) => (
+              {regionOptions.map((r) => (
                 <SelectItem key={r} value={r}>
                   {r}
                 </SelectItem>
@@ -209,7 +216,7 @@ export function AbsaOnboardingForm({
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              {EMPLOYMENT_STATUSES.map((e) => (
+              {employmentOptions.map((e) => (
                 <SelectItem key={e} value={e}>
                   {e}
                 </SelectItem>
@@ -229,8 +236,11 @@ export function AbsaOnboardingForm({
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Yes">Yes</SelectItem>
-              <SelectItem value="No">No</SelectItem>
+              {disabilityStatusOptions.map((o) => (
+                <SelectItem key={o} value={o}>
+                  {o}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

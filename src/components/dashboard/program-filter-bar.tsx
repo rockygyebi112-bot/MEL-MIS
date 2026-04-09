@@ -1,14 +1,12 @@
 "use client";
 
 export type ProgramFilter =
-  | "all"
   | "enterprise-spotlight"
   | "virtual-university"
   | "hangout"
   | "absa-onboarding";
 
 const FILTER_OPTIONS: { value: ProgramFilter; label: string }[] = [
-  { value: "all", label: "All Programs" },
   { value: "enterprise-spotlight", label: "Enterprise Spotlight" },
   { value: "virtual-university", label: "Virtual University" },
   { value: "hangout", label: "Hangout" },

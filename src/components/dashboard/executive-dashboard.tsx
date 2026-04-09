@@ -58,7 +58,7 @@ export function ExecutiveDashboard() {
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [programFilter, setProgramFilter] = useState<ProgramFilter>("all");
+  const [programFilter, setProgramFilter] = useState<ProgramFilter>("enterprise-spotlight");
   const supabase = createClient();
 
   useEffect(() => {
@@ -116,14 +116,10 @@ export function ExecutiveDashboard() {
 
   // ─── Show/hide based on program filter ────────────────────────
 
-  const showES =
-    programFilter === "all" || programFilter === "enterprise-spotlight";
-  const showVU =
-    programFilter === "all" || programFilter === "virtual-university";
-  const showHangout =
-    programFilter === "all" || programFilter === "hangout";
-  const showABSA =
-    programFilter === "all" || programFilter === "absa-onboarding";
+  const showES = programFilter === "enterprise-spotlight";
+  const showVU = programFilter === "virtual-university";
+  const showHangout = programFilter === "hangout";
+  const showABSA = programFilter === "absa-onboarding";
   const showMedia = showVU || showHangout;
 
   // ─── Demographics: Gender (cross-program) ─────────────────────
