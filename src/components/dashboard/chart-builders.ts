@@ -47,7 +47,7 @@ const TOOLBOX: EChartsOption["toolbox"] = {
 };
 
 // SRSF brand chart palette — green, purple, then complementary colors
-export const CHART_COLORS = [
+const CHART_COLORS = [
   "#5BBF3A", // srsf green
   "#6B2D7B", // srsf purple
   "#3B82F6", // blue
