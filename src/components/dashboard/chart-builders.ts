@@ -107,10 +107,19 @@ export function barChartOption(
 ): EChartsOption {
   const categories = Object.keys(counts);
   const values = Object.values(counts);
+  const total = values.reduce((s, v) => s + v, 0);
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string }>;
+        const p = arr[0];
+        const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+        return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
+      },
+    },
     xAxis: {
       type: "category",
       data: categories,
@@ -123,9 +132,21 @@ export function barChartOption(
         data: values,
         itemStyle: { color: CHART_COLORS[0] },
         barMaxWidth: 50,
+        label: {
+          show: true,
+          position: "top",
+          fontSize: 10,
+          color: "#374151",
+          fontFamily: "Inter, system-ui, sans-serif",
+          formatter: (params: unknown) => {
+            const p = params as { value: number };
+            const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+            return `${p.value.toLocaleString()}\n(${pct}%)`;
+          },
+        },
       },
     ],
-    grid: { bottom: categories.length > 6 ? 80 : 40, containLabel: true },
+    grid: { top: 50, bottom: categories.length > 6 ? 80 : 40, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -139,10 +160,19 @@ export function horizontalBarChartOption(
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const categories = sorted.map(([k]) => k);
   const values = sorted.map(([, v]) => v);
+  const total = values.reduce((s, v) => s + v, 0);
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string }>;
+        const p = arr[0];
+        const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+        return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
+      },
+    },
     xAxis: { type: "value" },
     yAxis: {
       type: "category",
@@ -156,9 +186,21 @@ export function horizontalBarChartOption(
         data: values,
         itemStyle: { color: CHART_COLORS[0] },
         barMaxWidth: 30,
+        label: {
+          show: true,
+          position: "right",
+          fontSize: 10,
+          color: "#374151",
+          fontFamily: "Inter, system-ui, sans-serif",
+          formatter: (params: unknown) => {
+            const p = params as { value: number };
+            const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+            return `${p.value.toLocaleString()} (${pct}%)`;
+          },
+        },
       },
     ],
-    grid: { left: 120, containLabel: false },
+    grid: { left: 120, right: 80, containLabel: false },
     color: CHART_COLORS,
   };
 }
@@ -181,11 +223,18 @@ export function donutChartOption(
       {
         type: "pie",
         radius: ["40%", "70%"],
-        center: ["50%", "50%"],
+        center: ["50%", "45%"],
         data,
-        label: { show: false },
+        label: {
+          show: true,
+          formatter: "{b}\n{c} ({d}%)",
+          fontSize: 10,
+          color: "#374151",
+          fontFamily: "Inter, system-ui, sans-serif",
+        },
+        labelLine: { show: true, length: 8, length2: 8 },
         emphasis: {
-          label: { show: true, fontSize: 14, fontWeight: "bold" },
+          label: { show: true, fontSize: 13, fontWeight: "bold" },
         },
       },
     ],
@@ -210,12 +259,19 @@ export function pieChartOption(
     series: [
       {
         type: "pie",
-        radius: "65%",
-        center: ["50%", "50%"],
+        radius: "60%",
+        center: ["50%", "45%"],
         data,
-        label: { show: false },
+        label: {
+          show: true,
+          formatter: "{b}\n{c} ({d}%)",
+          fontSize: 10,
+          color: "#374151",
+          fontFamily: "Inter, system-ui, sans-serif",
+        },
+        labelLine: { show: true, length: 8, length2: 8 },
         emphasis: {
-          label: { show: true, fontSize: 14, fontWeight: "bold" },
+          label: { show: true, fontSize: 13, fontWeight: "bold" },
         },
       },
     ],
@@ -231,10 +287,19 @@ export function lineChartOption(
 ): EChartsOption {
   const months = Object.keys(monthlyData).sort();
   const values = months.map((m) => monthlyData[m]);
+  const total = values.reduce((s, v) => s + v, 0);
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string; seriesName: string }>;
+        const p = arr[0];
+        const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+        return `${p.name}<br/>${p.marker}${p.seriesName}: <strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
+      },
+    },
     xAxis: { type: "category", data: months },
     yAxis: { type: "value" },
     series: [
@@ -245,8 +310,21 @@ export function lineChartOption(
         smooth: true,
         itemStyle: { color: CHART_COLORS[0] },
         areaStyle: { opacity: 0.1 },
+        label: {
+          show: true,
+          position: "top",
+          fontSize: 10,
+          color: "#374151",
+          fontFamily: "Inter, system-ui, sans-serif",
+          formatter: (params: unknown) => {
+            const p = params as { value: number };
+            const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+            return `${p.value.toLocaleString()} (${pct}%)`;
+          },
+        },
       },
     ],
+    grid: { top: 50, bottom: 40, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -262,10 +340,30 @@ export function stackedBarChartOption(
   }
   const categories = Array.from(categorySet).sort();
 
+  // Per-category totals, used to compute percentage per stacked segment
+  const categoryTotals: Record<string, number> = {};
+  for (const c of categories) {
+    categoryTotals[c] = seriesData.reduce((sum, s) => sum + (s.data[c] || 0), 0);
+  }
+
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string; seriesName: string }>;
+        if (!arr.length) return "";
+        const catTotal = categoryTotals[arr[0].name] || 0;
+        let html = `<strong>${arr[0].name}</strong><br/>`;
+        for (const p of arr) {
+          const pct = catTotal > 0 ? ((p.value / catTotal) * 100).toFixed(1) : "0";
+          html += `${p.marker}${p.seriesName}: <strong>${p.value.toLocaleString()}</strong> (${pct}%)<br/>`;
+        }
+        html += `Total: <strong>${catTotal.toLocaleString()}</strong>`;
+        return html;
+      },
+    },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: categories },
     yAxis: { type: "value" },
@@ -275,8 +373,23 @@ export function stackedBarChartOption(
       stack: "total",
       data: categories.map((c) => s.data[c] || 0),
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
+      label: {
+        show: true,
+        position: "inside",
+        fontSize: 10,
+        color: "#ffffff",
+        fontFamily: "Inter, system-ui, sans-serif",
+        formatter: (params: unknown) => {
+          const p = params as { value: number; dataIndex: number };
+          const catName = categories[p.dataIndex];
+          const catTotal = categoryTotals[catName] || 0;
+          if (!p.value) return "";
+          const pct = catTotal > 0 ? ((p.value / catTotal) * 100).toFixed(0) : "0";
+          return `${p.value.toLocaleString()}\n(${pct}%)`;
+        },
+      },
     })),
-    grid: { bottom: 60, containLabel: true },
+    grid: { top: 50, bottom: 60, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -293,10 +406,29 @@ export function multiLineChartOption(
   }
   const months = Array.from(monthSet).sort();
 
+  // Per-month totals across all series for percentage calculation
+  const monthTotals: Record<string, number> = {};
+  for (const m of months) {
+    monthTotals[m] = seriesDataArr.reduce((sum, s) => sum + (s.data[m] || 0), 0);
+  }
+
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string; seriesName: string }>;
+        if (!arr.length) return "";
+        const monthTotal = monthTotals[arr[0].name] || 0;
+        let html = `<strong>${arr[0].name}</strong><br/>`;
+        for (const p of arr) {
+          const pct = monthTotal > 0 ? ((p.value / monthTotal) * 100).toFixed(1) : "0";
+          html += `${p.marker}${p.seriesName}: <strong>${p.value.toLocaleString()}</strong> (${pct}%)<br/>`;
+        }
+        return html;
+      },
+    },
     legend: { bottom: 0, type: "scroll" },
     xAxis: { type: "category", data: months },
     yAxis: { type: "value" },
@@ -307,8 +439,23 @@ export function multiLineChartOption(
       smooth: true,
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
       areaStyle: { opacity: 0.05 },
+      label: {
+        show: true,
+        position: "top",
+        fontSize: 9,
+        color: "#374151",
+        fontFamily: "Inter, system-ui, sans-serif",
+        formatter: (params: unknown) => {
+          const p = params as { value: number; dataIndex: number };
+          if (!p.value) return "";
+          const monthName = months[p.dataIndex];
+          const monthTotal = monthTotals[monthName] || 0;
+          const pct = monthTotal > 0 ? ((p.value / monthTotal) * 100).toFixed(0) : "0";
+          return `${p.value.toLocaleString()} (${pct}%)`;
+        },
+      },
     })),
-    grid: { bottom: 60, containLabel: true },
+    grid: { top: 50, bottom: 60, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -324,10 +471,30 @@ export function groupedBarChartOption(
   }
   const categories = Array.from(categorySet).sort();
 
+  // Per-category totals across all series for percentage calculation
+  const categoryTotals: Record<string, number> = {};
+  for (const c of categories) {
+    categoryTotals[c] = seriesData.reduce((sum, s) => sum + (s.data[c] || 0), 0);
+  }
+
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      formatter: (params: unknown) => {
+        const arr = params as Array<{ name: string; value: number; marker: string; seriesName: string }>;
+        if (!arr.length) return "";
+        const catTotal = categoryTotals[arr[0].name] || 0;
+        let html = `<strong>${arr[0].name}</strong><br/>`;
+        for (const p of arr) {
+          const pct = catTotal > 0 ? ((p.value / catTotal) * 100).toFixed(1) : "0";
+          html += `${p.marker}${p.seriesName}: <strong>${p.value.toLocaleString()}</strong> (${pct}%)<br/>`;
+        }
+        html += `Total: <strong>${catTotal.toLocaleString()}</strong>`;
+        return html;
+      },
+    },
     legend: { bottom: 0, type: "scroll" },
     xAxis: {
       type: "category",
@@ -341,8 +508,23 @@ export function groupedBarChartOption(
       data: categories.map((c) => s.data[c] || 0),
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
       barMaxWidth: 40,
+      label: {
+        show: true,
+        position: "top",
+        fontSize: 9,
+        color: "#374151",
+        fontFamily: "Inter, system-ui, sans-serif",
+        formatter: (params: unknown) => {
+          const p = params as { value: number; dataIndex: number };
+          if (!p.value) return "";
+          const catName = categories[p.dataIndex];
+          const catTotal = categoryTotals[catName] || 0;
+          const pct = catTotal > 0 ? ((p.value / catTotal) * 100).toFixed(0) : "0";
+          return `${p.value.toLocaleString()}\n(${pct}%)`;
+        },
+      },
     })),
-    grid: { bottom: categories.length > 6 ? 80 : 60, containLabel: true },
+    grid: { top: 50, bottom: categories.length > 6 ? 80 : 60, containLabel: true },
     color: CHART_COLORS,
   };
 }
