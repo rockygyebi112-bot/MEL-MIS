@@ -41,6 +41,7 @@ const EMPTY_FORM = {
   age: "",
   disability_status: "",
   disability_type: "",
+  disability_type_other: "",
   ownership_type: "",
   business_longevity: "",
   business_size: "",
@@ -68,17 +69,23 @@ export function EnterpriseSpotlightForm({
   const fundingStatusOptions = coreOptions.funding_status ?? [...FUNDING_STATUSES];
   const businessSectorOptions = coreOptions.business_sector ?? [...BUSINESS_SECTORS];
   const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
+  const disabilityTypeOptions = coreOptions.disability_type ?? [...DISABILITY_TYPES];
   const businessRegisteredOptions = coreOptions.registration_status ?? ["Yes", "No"];
 
   useEffect(() => {
     if (editEntry) {
+      // If the stored disability_type doesn't match any preset option, treat it as "Other"
+      const storedType = editEntry.disability_type ?? "";
+      const isPreset =
+        !storedType || disabilityTypeOptions.includes(storedType);
       setForm({
         applicant_name: editEntry.applicant_name,
         region: editEntry.region,
         gender: editEntry.gender,
         age: editEntry.age?.toString() ?? "",
         disability_status: editEntry.disability_status,
-        disability_type: editEntry.disability_type ?? "",
+        disability_type: isPreset ? storedType : "Other",
+        disability_type_other: isPreset ? "" : storedType,
         ownership_type: editEntry.ownership_type,
         business_longevity: editEntry.business_longevity?.toString() ?? "",
         business_size: editEntry.business_size,
@@ -89,6 +96,7 @@ export function EnterpriseSpotlightForm({
       });
       setCustomFields((editEntry.custom_fields as Record<string, unknown>) ?? {});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editEntry]);
 
   function setField(field: string, value: string) {
@@ -112,6 +120,11 @@ export function EnterpriseSpotlightForm({
     }
 
     const ageNum = form.age ? parseInt(form.age, 10) : null;
+    // When "Other" is picked, use the free-text value; otherwise use the selected option
+    const resolvedDisabilityType =
+      form.disability_type === "Other"
+        ? form.disability_type_other.trim()
+        : form.disability_type;
     const record = {
       user_id: user.id,
       applicant_name: form.applicant_name,
@@ -121,7 +134,7 @@ export function EnterpriseSpotlightForm({
       age_bracket: ageNum ? getAgeBracket(ageNum) : "",
       disability_status: form.disability_status,
       disability_type:
-        form.disability_status === "Yes" ? form.disability_type : null,
+        form.disability_status === "Yes" ? resolvedDisabilityType || null : null,
       ownership_type: form.ownership_type,
       business_longevity: form.business_longevity
         ? parseInt(form.business_longevity, 10)
@@ -270,13 +283,24 @@ export function EnterpriseSpotlightForm({
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {DISABILITY_TYPES.map((d) => (
+                {disabilityTypeOptions.map((d) => (
                   <SelectItem key={d} value={d}>
                     {d}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {form.disability_type === "Other" && (
+              <Input
+                id="disability_type_other"
+                value={form.disability_type_other}
+                onChange={(e) =>
+                  setField("disability_type_other", e.target.value)
+                }
+                placeholder="Please specify"
+                className="mt-2"
+              />
+            )}
           </div>
         )}
 
