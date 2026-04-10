@@ -67,6 +67,7 @@ export function MediaProgramDashboard({
   const [sortField, setSortField] = useState<SortField>("date_aired");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [granularity, setGranularity] = useState<Granularity>("month");
+  const periodLabel = granularity === "week" ? "Weekly" : granularity === "quarter" ? "Quarterly" : "Monthly";
   const supabase = createClient();
 
   const trendInputs = useMemo(
@@ -256,10 +257,10 @@ export function MediaProgramDashboard({
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-            <EChart option={lineChartOption(monthlyViewTotals, "Monthly Trend Analysis", "Views")} />
+            <EChart option={lineChartOption(monthlyViewTotals, `${periodLabel} Trend Analysis`, "Views")} />
           </div>
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-            <EChart option={barChartOption(monthlyEpisodeCounts, "Monthly Episodes Aired")} />
+            <EChart option={barChartOption(monthlyEpisodeCounts, `${periodLabel} Episodes Aired`)} />
           </div>
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
             <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform")} />

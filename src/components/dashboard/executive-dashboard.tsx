@@ -48,6 +48,7 @@ export function ExecutiveDashboard() {
   const [to, setTo] = useState("");
   const [programFilter, setProgramFilter] = useState<ProgramFilter>("enterprise-spotlight");
   const [granularity, setGranularity] = useState<Granularity>("month");
+  const periodLabel = granularity === "week" ? "Weekly" : granularity === "quarter" ? "Quarterly" : "Monthly";
   const supabase = createClient();
 
   useEffect(() => {
@@ -497,8 +498,8 @@ export function ExecutiveDashboard() {
               <EChart
                 option={
                   mediaMonthlyViews.length > 0
-                    ? multiLineChartOption(mediaMonthlyViews, "Monthly Views Trend")
-                    : barChartOption({}, "Monthly Views Trend")
+                    ? multiLineChartOption(mediaMonthlyViews, `${periodLabel} Views Trend`)
+                    : barChartOption({}, `${periodLabel} Views Trend`)
                 }
               />
             </div>
@@ -506,8 +507,8 @@ export function ExecutiveDashboard() {
               <EChart
                 option={
                   mediaMonthlyEpisodes.length > 0
-                    ? groupedBarChartOption(mediaMonthlyEpisodes, "Monthly Episodes Aired")
-                    : barChartOption({}, "Monthly Episodes Aired")
+                    ? groupedBarChartOption(mediaMonthlyEpisodes, `${periodLabel} Episodes Aired`)
+                    : barChartOption({}, `${periodLabel} Episodes Aired`)
                 }
               />
             </div>
