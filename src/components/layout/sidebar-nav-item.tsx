@@ -9,9 +9,17 @@ import type { NavItem } from "@/lib/constants";
 
 interface SidebarNavItemProps {
   item: NavItem;
+  /** Called after a navigation link is clicked (used to close sidebar on mobile) */
+  onNavigate?: () => void;
+  /** When true, render icon-only mode (collapsed desktop sidebar) */
+  iconOnly?: boolean;
 }
 
-export function SidebarNavItem({ item }: SidebarNavItemProps) {
+export function SidebarNavItem({
+  item,
+  onNavigate,
+  iconOnly = false,
+}: SidebarNavItemProps) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(
     item.children?.some((child) => pathname.startsWith(child.href)) ?? false
@@ -22,6 +30,26 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
     item.children?.some((child) => pathname === child.href);
 
   const Icon = item.icon;
+
+  // Icon-only mode: render a single icon link to the item's href (or first child)
+  if (iconOnly) {
+    const href = item.href;
+    return (
+      <Link
+        href={href}
+        onClick={onNavigate}
+        title={item.label}
+        className={cn(
+          "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150",
+          isActive
+            ? "bg-srsf-green-500/20 text-white"
+            : "text-white/60 hover:text-white hover:bg-white/8"
+        )}
+      >
+        <Icon className="size-5 shrink-0" />
+      </Link>
+    );
+  }
 
   if (item.children) {
     return (
@@ -50,6 +78,7 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
               <Link
                 key={child.href}
                 href={child.href}
+                onClick={onNavigate}
                 className={cn(
                   "block px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150",
                   pathname === child.href
@@ -69,6 +98,7 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
         isActive
