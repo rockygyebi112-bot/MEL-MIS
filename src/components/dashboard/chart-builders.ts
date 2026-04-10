@@ -98,6 +98,73 @@ export function groupByMonth<T extends Record<string, any>>(
   return groups;
 }
 
+export type Granularity = "week" | "month" | "quarter";
+
+/** Group entries by ISO week (YYYY-WNN) from a date field */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function groupByWeek<T extends Record<string, any>>(
+  entries: T[],
+  dateField: keyof T
+): Record<string, T[]> {
+  const groups: Record<string, T[]> = {};
+  for (const entry of entries) {
+    const dateVal = entry[dateField];
+    if (!dateVal) continue;
+    const d = new Date(String(dateVal));
+    if (isNaN(d.getTime())) continue;
+    // ISO week: step to Thursday of the same week, then get its year + week number
+    const day = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    day.setUTCDate(day.getUTCDate() + 4 - (day.getUTCDay() || 7));
+    const year = day.getUTCFullYear();
+    const weekStart = new Date(Date.UTC(year, 0, 1));
+    const week = Math.ceil(
+      ((day.getTime() - weekStart.getTime()) / 86400000 + 1) / 7
+    );
+    const key = `${year}-W${String(week).padStart(2, "0")}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(entry);
+  }
+  return groups;
+}
+
+/** Group entries by quarter (YYYY-QN) from a date field */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function groupByQuarter<T extends Record<string, any>>(
+  entries: T[],
+  dateField: keyof T
+): Record<string, T[]> {
+  const groups: Record<string, T[]> = {};
+  for (const entry of entries) {
+    const dateVal = entry[dateField];
+    if (!dateVal) continue;
+    const d = new Date(String(dateVal));
+    if (isNaN(d.getTime())) continue;
+    const year = d.getFullYear();
+    const quarter = Math.ceil((d.getMonth() + 1) / 3);
+    const key = `${year}-Q${quarter}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(entry);
+  }
+  return groups;
+}
+
+/** Delegate to the correct grouping function based on granularity */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function groupByGranularity<T extends Record<string, any>>(
+  entries: T[],
+  dateField: keyof T,
+  granularity: Granularity
+): Record<string, T[]> {
+  switch (granularity) {
+    case "week":
+      return groupByWeek(entries, dateField);
+    case "quarter":
+      return groupByQuarter(entries, dateField);
+    default:
+      return groupByMonth(entries, dateField);
+  }
+}
+
 // ─── Chart option builders ───────────────────────────────────────
 
 /** Vertical bar chart from counts */
