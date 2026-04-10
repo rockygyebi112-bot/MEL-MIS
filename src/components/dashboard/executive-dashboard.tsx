@@ -15,7 +15,8 @@ import { ProgramFilterBar, ProgramFilter } from "./program-filter-bar";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import {
   countByField,
-  groupByMonth,
+  groupByGranularity,
+  type Granularity,
   barChartOption,
   horizontalBarChartOption,
   donutChartOption,
@@ -23,6 +24,8 @@ import {
   multiLineChartOption,
   groupedBarChartOption,
 } from "./chart-builders";
+import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
+import { GranularityToggle } from "./granularity-toggle";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -31,22 +34,6 @@ function totalMediaViews(entry: MediaProgramEntry): number {
   if (entry.metrics.facebook) total += entry.metrics.facebook.views;
   if (entry.metrics.youtube) total += entry.metrics.youtube.views;
   return total;
-}
-
-function getPreviousPeriodRange(
-  from: string,
-  to: string
-): { prevFrom: string; prevTo: string } | null {
-  if (!from || !to) return null;
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
-  const diffMs = toDate.getTime() - fromDate.getTime();
-  const prevTo = new Date(fromDate.getTime() - 1); // day before "from"
-  const prevFrom = new Date(prevTo.getTime() - diffMs);
-  return {
-    prevFrom: prevFrom.toISOString().slice(0, 10),
-    prevTo: prevTo.toISOString().slice(0, 10),
-  };
 }
 
 // ─── Component ──────────────────────────────────────────────────
@@ -60,6 +47,7 @@ export function ExecutiveDashboard() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [programFilter, setProgramFilter] = useState<ProgramFilter>("enterprise-spotlight");
+  const [granularity, setGranularity] = useState<Granularity>("month");
   const supabase = createClient();
 
   useEffect(() => {
@@ -102,18 +90,16 @@ export function ExecutiveDashboard() {
 
   // ─── Trend calculations (only when date range set) ────────────
 
-  const trends = useMemo(() => {
-    const prev = getPreviousPeriodRange(from, to);
-    if (!prev) return { es: undefined, vu: undefined, hangout: undefined, absa: undefined };
-
-    // We need to re-filter from the full dataset — but we only have the filtered data.
-    // Trends are only meaningful when a date range is explicitly set, and we'd need
-    // unfiltered data for prev period. For simplicity, trends show undefined unless
-    // the user has explicitly set a date range AND we fetch prev period data.
-    // This is a display-only enhancement; we return undefined for now and can
-    // enhance with a second fetch if needed.
-    return { es: undefined, vu: undefined, hangout: undefined, absa: undefined };
-  }, [from, to]);
+  const trendInputs = useMemo(
+    () => [
+      { key: "es", table: "enterprise_spotlight_entries", from, to },
+      { key: "vu", table: "virtual_university_entries", from, to },
+      { key: "hangout", table: "hangout_entries", from, to },
+      { key: "absa", table: "absa_onboarding_entries", from, to },
+    ],
+    [from, to]
+  );
+  const trends = usePreviousPeriodCounts(trendInputs);
 
   // ─── Show/hide based on program filter ────────────────────────
 
@@ -250,31 +236,31 @@ export function ExecutiveDashboard() {
     const series: { name: string; data: Record<string, number> }[] = [];
 
     if (showVU) {
-      const monthGroups = groupByMonth(vuEntries, "created_at");
-      const monthTotals: Record<string, number> = {};
-      for (const [month, items] of Object.entries(monthGroups)) {
-        monthTotals[month] = (items as MediaProgramEntry[]).reduce(
+      const groups = groupByGranularity(vuEntries, "created_at", granularity);
+      const totals: Record<string, number> = {};
+      for (const [period, items] of Object.entries(groups)) {
+        totals[period] = (items as MediaProgramEntry[]).reduce(
           (sum, e) => sum + totalMediaViews(e),
           0
         );
       }
-      series.push({ name: "Virtual University", data: monthTotals });
+      series.push({ name: "Virtual University", data: totals });
     }
 
     if (showHangout) {
-      const monthGroups = groupByMonth(hangoutEntries, "created_at");
-      const monthTotals: Record<string, number> = {};
-      for (const [month, items] of Object.entries(monthGroups)) {
-        monthTotals[month] = (items as MediaProgramEntry[]).reduce(
+      const groups = groupByGranularity(hangoutEntries, "created_at", granularity);
+      const totals: Record<string, number> = {};
+      for (const [period, items] of Object.entries(groups)) {
+        totals[period] = (items as MediaProgramEntry[]).reduce(
           (sum, e) => sum + totalMediaViews(e),
           0
         );
       }
-      series.push({ name: "Hangout", data: monthTotals });
+      series.push({ name: "Hangout", data: totals });
     }
 
     return series;
-  }, [vuEntries, hangoutEntries, showVU, showHangout]);
+  }, [vuEntries, hangoutEntries, showVU, showHangout, granularity]);
 
   // ─── Media Programs: Monthly episodes (grouped bar) ───────────
 
@@ -282,25 +268,25 @@ export function ExecutiveDashboard() {
     const series: { name: string; data: Record<string, number> }[] = [];
 
     if (showVU) {
-      const monthGroups = groupByMonth(vuEntries, "created_at");
+      const groups = groupByGranularity(vuEntries, "created_at", granularity);
       const counts: Record<string, number> = {};
-      for (const [month, items] of Object.entries(monthGroups)) {
-        counts[month] = items.length;
+      for (const [period, items] of Object.entries(groups)) {
+        counts[period] = items.length;
       }
       series.push({ name: "Virtual University", data: counts });
     }
 
     if (showHangout) {
-      const monthGroups = groupByMonth(hangoutEntries, "created_at");
+      const groups = groupByGranularity(hangoutEntries, "created_at", granularity);
       const counts: Record<string, number> = {};
-      for (const [month, items] of Object.entries(monthGroups)) {
-        counts[month] = items.length;
+      for (const [period, items] of Object.entries(groups)) {
+        counts[period] = items.length;
       }
       series.push({ name: "Hangout", data: counts });
     }
 
     return series;
-  }, [vuEntries, hangoutEntries, showVU, showHangout]);
+  }, [vuEntries, hangoutEntries, showVU, showHangout, granularity]);
 
   // ─── Media Programs: Views per platform (stacked bar) ─────────
 
@@ -396,9 +382,11 @@ export function ExecutiveDashboard() {
   return (
     <div className="space-y-8">
       {/* Filter Bar (sticky below topbar) */}
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-center justify-between gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+        {/* Row 1: program filter (full width on mobile) */}
         <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
-        <div className="flex items-center gap-3">
+        {/* Row 2: date + export (right-aligned, wraps below on mobile) */}
+        <div className="flex items-center gap-3 sm:ml-auto">
           <DateRangeFilter
             from={from}
             to={to}
@@ -428,32 +416,16 @@ export function ExecutiveDashboard() {
       {/* KPI Summary Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {showES && (
-          <KpiCard
-            label="Total Applications"
-            value={totalApplications}
-            trend={trends.es}
-          />
+          <KpiCard label="Total Applications" value={totalApplications} trend={trends["es"]} />
         )}
         {showVU && (
-          <KpiCard
-            label="VU Episodes"
-            value={totalVuEpisodes}
-            trend={trends.vu}
-          />
+          <KpiCard label="VU Episodes" value={totalVuEpisodes} trend={trends["vu"]} />
         )}
         {showHangout && (
-          <KpiCard
-            label="Hangout Episodes"
-            value={totalHangoutEpisodes}
-            trend={trends.hangout}
-          />
+          <KpiCard label="Hangout Episodes" value={totalHangoutEpisodes} trend={trends["hangout"]} />
         )}
         {showABSA && (
-          <KpiCard
-            label="ABSA Participants"
-            value={totalAbsaParticipants}
-            trend={trends.absa}
-          />
+          <KpiCard label="ABSA Participants" value={totalAbsaParticipants} trend={trends["absa"]} />
         )}
       </div>
 
@@ -516,7 +488,10 @@ export function ExecutiveDashboard() {
       {/* Media Programs Section (VU + Hangout) */}
       {showMedia && (
         <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Media Programs</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-gray-800">Media Programs</h2>
+            <GranularityToggle value={granularity} onChange={setGranularity} />
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className={chartCard}>
               <EChart
