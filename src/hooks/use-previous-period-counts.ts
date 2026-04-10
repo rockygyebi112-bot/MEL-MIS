@@ -59,6 +59,7 @@ export function usePreviousPeriodCounts(
   useEffect(() => {
     const parsed: PeriodInput[] = JSON.parse(serialized);
     const defaults = getDefaultPeriods();
+    let isMounted = true;
 
     async function load() {
       const results: Record<string, TrendResult> = {};
@@ -89,6 +90,12 @@ export function usePreviousPeriodCounts(
               .lte("created_at", `${prevTo}T23:59:59`),
           ]);
 
+          // Suppress trend if either query errored
+          if (currentRes.error || prevRes.error) {
+            results[key] = undefined;
+            return;
+          }
+
           const current = currentRes.count ?? 0;
           const prev = prevRes.count ?? 0;
 
@@ -98,18 +105,18 @@ export function usePreviousPeriodCounts(
             results[key] = { value: 100, label };
           } else {
             results[key] = {
-              value:
-                Math.round(((current - prev) / prev) * 100 * 10) / 10,
+              value: Math.round(((current - prev) / prev) * 100 * 10) / 10,
               label,
             };
           }
         })
       );
 
-      setTrends(results);
+      if (isMounted) setTrends(results);
     }
 
     load();
+    return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serialized]);
 
