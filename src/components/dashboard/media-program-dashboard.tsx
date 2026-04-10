@@ -8,12 +8,15 @@ import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
 import {
-  groupByMonth,
+  groupByGranularity,
   barChartOption,
   donutChartOption,
   lineChartOption,
   stackedBarChartOption,
 } from "./chart-builders";
+import type { Granularity } from "./chart-builders";
+import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
+import { GranularityToggle } from "./granularity-toggle";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import { Input } from "@/components/ui/input";
@@ -63,7 +66,14 @@ export function MediaProgramDashboard({
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<SortField>("date_aired");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [granularity, setGranularity] = useState<Granularity>("month");
   const supabase = createClient();
+
+  const trendInputs = useMemo(
+    () => [{ key: "episodes", table: tableName, from, to }],
+    [tableName, from, to]
+  );
+  const trends = usePreviousPeriodCounts(trendInputs);
 
   useEffect(() => {
     async function load() {
@@ -87,7 +97,10 @@ export function MediaProgramDashboard({
   const totalEpisodes = entries.length;
   const totalViewsAll = entries.reduce((sum, e) => sum + totalViews(e), 0);
 
-  const monthlyGroups = useMemo(() => groupByMonth(entries, "date_aired"), [entries]);
+  const monthlyGroups = useMemo(
+    () => groupByGranularity(entries, "date_aired", granularity),
+    [entries, granularity]
+  );
 
   const monthlyViewTotals = useMemo(() => {
     const result: Record<string, number> = {};
@@ -232,21 +245,27 @@ export function MediaProgramDashboard({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Episodes" value={totalEpisodes} />
+        <KpiCard label="Total Episodes" value={totalEpisodes} trend={trends["episodes"]} />
         <KpiCard label="Total Views (All Platforms)" value={totalViewsAll.toLocaleString()} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={lineChartOption(monthlyViewTotals, "Monthly Trend Analysis", "Views")} />
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-700">Trends Over Time</h2>
+          <GranularityToggle value={granularity} onChange={setGranularity} />
         </div>
-        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(monthlyEpisodeCounts, "Monthly Episodes Aired")} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
+            <EChart option={lineChartOption(monthlyViewTotals, "Monthly Trend Analysis", "Views")} />
+          </div>
+          <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
+            <EChart option={barChartOption(monthlyEpisodeCounts, "Monthly Episodes Aired")} />
+          </div>
+          <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
+            <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform")} />
+          </div>
         </div>
-        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform")} />
-        </div>
-      </div>
+      </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
