@@ -55,6 +55,7 @@ export function SidebarNavItem({
     return (
       <div>
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className={cn(
             "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",

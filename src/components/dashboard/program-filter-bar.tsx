@@ -53,6 +53,7 @@ export function ProgramFilterBar({ active, onChange }: ProgramFilterBarProps) {
         {FILTER_OPTIONS.map((opt) => (
           <button
             key={opt.value}
+            type="button"
             onClick={() => onChange(opt.value)}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
               active === opt.value

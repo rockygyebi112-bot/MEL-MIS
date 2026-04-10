@@ -20,6 +20,7 @@ export function GranularityToggle({ value, onChange }: GranularityToggleProps) {
       {OPTIONS.map((opt) => (
         <button
           key={opt.value}
+          type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
             "px-2.5 py-1 text-xs font-medium transition-colors",
