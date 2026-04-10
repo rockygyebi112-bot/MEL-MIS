@@ -7,6 +7,7 @@ import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
+import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import {
   countByField,
   barChartOption,
@@ -23,6 +24,12 @@ export function EnterpriseSpotlightDashboard() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const supabase = createClient();
+
+  const trendInputs = useMemo(
+    () => [{ key: "applications", table: "enterprise_spotlight_entries", from, to }],
+    [from, to]
+  );
+  const trends = usePreviousPeriodCounts(trendInputs);
 
   useEffect(() => {
     async function load() {
@@ -114,7 +121,7 @@ export function EnterpriseSpotlightDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Applications" value={totalApplications} />
+        <KpiCard label="Total Applications" value={totalApplications} trend={trends["applications"]} />
         <KpiCard label="Regions Represented" value={uniqueRegions} />
       </div>
 

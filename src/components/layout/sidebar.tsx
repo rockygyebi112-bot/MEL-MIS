@@ -5,7 +5,7 @@ import { NAV_ITEMS } from "@/lib/constants";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { useUser } from "@/hooks/use-user";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
@@ -16,6 +16,13 @@ export function Sidebar() {
     (item) => loading || hasAccess(item.module)
   );
 
+  // Close sidebar on mobile when a nav link is clicked
+  const handleNavigate = useCallback(() => {
+    if (window.innerWidth < 1024) {
+      setCollapsed(true);
+    }
+  }, []);
+
   return (
     <>
       {/* Sidebar */}
@@ -25,8 +32,13 @@ export function Sidebar() {
           collapsed ? "w-0 overflow-hidden lg:w-16" : "w-64"
         )}
       >
-        {/* Logo area */}
-        <div className="flex items-center justify-between px-5 h-16 border-b border-white/10">
+        {/* Logo / collapse button row */}
+        <div
+          className={cn(
+            "flex items-center h-16 border-b border-white/10",
+            collapsed ? "justify-center px-0" : "justify-between px-5"
+          )}
+        >
           {!collapsed && (
             <div className="flex items-center gap-2.5">
               <Image
@@ -44,6 +56,7 @@ export function Sidebar() {
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="text-white/50 hover:text-white transition-colors hidden lg:block"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
               <PanelLeft className="w-5 h-5" />
@@ -54,15 +67,31 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        {!collapsed && (
+        {collapsed ? (
+          /* Collapsed: icon-only nav (desktop only — hidden on mobile via w-0/overflow-hidden) */
+          <nav className="flex-1 flex flex-col items-center py-5 gap-1 overflow-y-auto">
+            {visibleItems.map((item) => (
+              <SidebarNavItem
+                key={item.href}
+                item={item}
+                onNavigate={handleNavigate}
+                iconOnly
+              />
+            ))}
+          </nav>
+        ) : (
           <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
             {visibleItems.map((item) => (
-              <SidebarNavItem key={item.href} item={item} />
+              <SidebarNavItem
+                key={item.href}
+                item={item}
+                onNavigate={handleNavigate}
+              />
             ))}
           </nav>
         )}
 
-        {/* Bottom branding */}
+        {/* Bottom branding (expanded only) */}
         {!collapsed && (
           <div className="px-5 py-4 border-t border-white/10">
             <p className="text-[11px] text-white/30 leading-relaxed">
@@ -72,7 +101,7 @@ export function Sidebar() {
         )}
       </aside>
 
-      {/* Mobile toggle */}
+      {/* Mobile toggle (shown when sidebar is hidden) */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className={cn(

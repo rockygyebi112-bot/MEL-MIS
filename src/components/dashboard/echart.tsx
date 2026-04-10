@@ -2,14 +2,16 @@
 
 import { useRef, useEffect } from "react";
 import * as echarts from "echarts";
+import { cn } from "@/lib/utils";
 
 interface EChartProps {
   option: echarts.EChartsOption;
+  /** Explicit pixel height. When omitted, uses responsive Tailwind class h-56 lg:h-72 */
   height?: number;
   className?: string;
 }
 
-export function EChart({ option, height = 350, className }: EChartProps) {
+export function EChart({ option, height, className }: EChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<echarts.ECharts | null>(null);
 
@@ -36,8 +38,8 @@ export function EChart({ option, height = 350, className }: EChartProps) {
   return (
     <div
       ref={chartRef}
-      style={{ width: "100%", height }}
-      className={className}
+      style={{ width: "100%", ...(height !== undefined ? { height } : {}) }}
+      className={cn(height === undefined ? "h-56 lg:h-72" : undefined, className)}
     />
   );
 }

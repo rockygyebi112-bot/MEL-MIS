@@ -7,6 +7,7 @@ import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
+import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import {
   countByField,
   barChartOption,
@@ -22,6 +23,12 @@ export function AbsaOnboardingDashboard() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const supabase = createClient();
+
+  const trendInputs = useMemo(
+    () => [{ key: "participants", table: "absa_onboarding_entries", from, to }],
+    [from, to]
+  );
+  const trends = usePreviousPeriodCounts(trendInputs);
 
   useEffect(() => {
     async function load() {
@@ -80,7 +87,7 @@ export function AbsaOnboardingDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Participants Onboarded" value={totalParticipants} />
+        <KpiCard label="Total Participants Onboarded" value={totalParticipants} trend={trends["participants"]} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
