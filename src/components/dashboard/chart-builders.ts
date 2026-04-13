@@ -9,7 +9,7 @@ const TITLE_STYLE = {
 };
 
 // Shared top padding for the chart title so toolbox icons don't collide
-const TITLE_TOP = 4;
+const TITLE_TOP = 10;
 
 const AXIS_LABEL_STYLE = {
   fontSize: 11,
@@ -167,16 +167,15 @@ export function groupByGranularity<T extends Record<string, any>>(
 
 // ─── Chart option builders ───────────────────────────────────────
 
-/** Vertical bar chart from counts */
+/** Horizontal bar chart from counts (sorted descending) */
 export function barChartOption(
   counts: Record<string, number>,
   title: string
 ): EChartsOption {
-  const categories = Object.keys(counts);
-  const values = Object.values(counts);
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const categories = sorted.map(([k]) => k);
+  const values = sorted.map(([, v]) => v);
   const total = values.reduce((s, v) => s + v, 0);
-  const rotate = categories.length > 4 ? 45 : 0;
-  const bottomPad = rotate > 0 ? 110 : 50;
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
@@ -189,21 +188,22 @@ export function barChartOption(
         return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
       },
     },
-    xAxis: {
+    xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
+    yAxis: {
       type: "category",
       data: categories,
-      axisLabel: { rotate, interval: 0, ...AXIS_LABEL_STYLE },
+      inverse: true,
+      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 130 },
     },
-    yAxis: { type: "value" },
     series: [
       {
         type: "bar",
         data: values,
         itemStyle: { color: CHART_COLORS[0] },
-        barMaxWidth: 50,
+        barMaxWidth: 30,
         label: {
           show: true,
-          position: "top",
+          position: "right",
           fontSize: 10,
           color: "#374151",
           fontFamily: "Inter, system-ui, sans-serif",
@@ -215,7 +215,7 @@ export function barChartOption(
         },
       },
     ],
-    grid: { top: 50, bottom: bottomPad, left: 8, right: 8, containLabel: true },
+    grid: { left: 8, right: 8, top: 50, bottom: 30, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -247,7 +247,7 @@ export function horizontalBarChartOption(
       type: "category",
       data: categories,
       inverse: true,
-      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 110 },
+      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 130 },
     },
     series: [
       {
@@ -533,7 +533,7 @@ export function multiLineChartOption(
   };
 }
 
-/** Grouped bar chart — multiple series side-by-side (not stacked) */
+/** Grouped horizontal bar chart — multiple series side-by-side (not stacked) */
 export function groupedBarChartOption(
   seriesData: { name: string; data: Record<string, number> }[],
   title: string
@@ -569,21 +569,22 @@ export function groupedBarChartOption(
       },
     },
     legend: { bottom: 0, type: "scroll" },
-    xAxis: {
+    xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
+    yAxis: {
       type: "category",
       data: categories,
-      axisLabel: { rotate: categories.length > 6 ? 30 : 0, ...AXIS_LABEL_STYLE },
+      inverse: true,
+      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 90 },
     },
-    yAxis: { type: "value" },
     series: seriesData.map((s, i) => ({
       name: s.name,
       type: "bar" as const,
       data: categories.map((c) => s.data[c] || 0),
       itemStyle: { color: CHART_COLORS[i % CHART_COLORS.length] },
-      barMaxWidth: 40,
+      barMaxWidth: 22,
       label: {
         show: true,
-        position: "top",
+        position: "right",
         fontSize: 9,
         color: "#374151",
         fontFamily: "Inter, system-ui, sans-serif",
@@ -593,11 +594,11 @@ export function groupedBarChartOption(
           const catName = categories[p.dataIndex];
           const catTotal = categoryTotals[catName] || 0;
           const pct = catTotal > 0 ? ((p.value / catTotal) * 100).toFixed(0) : "0";
-          return `${p.value.toLocaleString()}\n(${pct}%)`;
+          return `${p.value.toLocaleString()} (${pct}%)`;
         },
       },
     })),
-    grid: { top: 50, bottom: categories.length > 6 ? 80 : 60, containLabel: true },
+    grid: { left: 8, right: 8, top: 50, bottom: 40, containLabel: true },
     color: CHART_COLORS,
   };
 }
