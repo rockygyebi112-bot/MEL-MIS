@@ -21,6 +21,10 @@ const PROGRAM_IMAGES: Partial<
     src: "/programs/hangout.jpg",
     alt: "Hangout program card image",
   },
+  "absa-onboarding": {
+    src: "/programs/absa-onboarding.jpg",
+    alt: "ABSA Onboarding program card image",
+  },
   learnings: {
     src: "/programs/learnings.jpg",
     alt: "Learnings program card image",
