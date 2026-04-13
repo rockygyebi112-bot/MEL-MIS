@@ -199,8 +199,9 @@ export function barChartOption(
       {
         type: "bar",
         data: values,
-        itemStyle: { color: CHART_COLORS[0] },
-        barMaxWidth: 30,
+        itemStyle: { color: CHART_COLORS[0], borderRadius: [0, 3, 3, 0] },
+        barMinHeight: 4,
+        barCategoryGap: "35%",
         label: {
           show: true,
           position: "right",
@@ -215,7 +216,7 @@ export function barChartOption(
         },
       },
     ],
-    grid: { left: 8, right: 8, top: 50, bottom: 30, containLabel: true },
+    grid: { left: 8, right: 110, top: 50, bottom: 30, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -253,8 +254,9 @@ export function horizontalBarChartOption(
       {
         type: "bar",
         data: values,
-        itemStyle: { color: CHART_COLORS[0] },
-        barMaxWidth: 30,
+        itemStyle: { color: CHART_COLORS[0], borderRadius: [0, 3, 3, 0] },
+        barMinHeight: 4,
+        barCategoryGap: "35%",
         label: {
           show: true,
           position: "right",
@@ -269,7 +271,7 @@ export function horizontalBarChartOption(
         },
       },
     ],
-    grid: { left: 8, right: 8, top: 50, bottom: 30, containLabel: true },
+    grid: { left: 8, right: 110, top: 50, bottom: 30, containLabel: true },
     color: CHART_COLORS,
   };
 }

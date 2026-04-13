@@ -1,6 +1,29 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+
+/** Persists state in sessionStorage so it survives in-tab navigation */
+function useSessionState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [state, setState] = useState<T>(() => {
+    if (typeof window === "undefined") return defaultValue;
+    try {
+      const stored = sessionStorage.getItem(key);
+      return stored !== null ? (JSON.parse(stored) as T) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(state));
+    } catch {
+      // sessionStorage full or unavailable — silently ignore
+    }
+  }, [key, state]);
+
+  return [state, setState];
+}
 import { createClient } from "@/lib/supabase/client";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -144,12 +167,12 @@ function validateValue(value: unknown, allowed: readonly string[]): boolean {
 }
 
 export function BulkUpload() {
-  const [slug, setSlug] = useState<UploadSlug>("enterprise-spotlight");
+  const [slug, setSlug] = useSessionState<UploadSlug>("bulk-upload:slug", "enterprise-spotlight");
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
-  const [previewFilter, setPreviewFilter] = useState<"all" | "errors">("all");
+  const [parsedRows, setParsedRows] = useSessionState<ParsedRow[]>("bulk-upload:parsedRows", []);
+  const [previewFilter, setPreviewFilter] = useSessionState<"all" | "errors">("bulk-upload:previewFilter", "all");
   const [uploading, setUploading] = useState(false);
-  const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [result, setResult] = useSessionState<{ imported: number; skipped: number } | null>("bulk-upload:result", null);
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
