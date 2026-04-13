@@ -11,6 +11,7 @@ import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import {
   countByField,
   barChartOption,
+  horizontalBarChartOption,
   donutChartOption,
   pieChartOption,
 } from "./chart-builders";
@@ -98,7 +99,10 @@ export function AbsaOnboardingDashboard() {
           <EChart option={barChartOption(ageCounts, "Age Bracket")} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(regionCounts, "Region")} />
+          <EChart
+            option={horizontalBarChartOption(regionCounts, "Region")}
+            height={320}
+          />
         </div>
       </div>
 

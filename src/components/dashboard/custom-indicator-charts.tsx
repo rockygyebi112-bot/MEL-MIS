@@ -4,7 +4,10 @@ import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
-import { barChartOption, donutChartOption } from "./chart-builders";
+import {
+  donutChartOption,
+  horizontalBarChartOption,
+} from "./chart-builders";
 import type { Indicator } from "@/lib/types";
 
 interface CustomIndicatorChartsProps {
@@ -105,8 +108,9 @@ export function CustomIndicatorCharts({
                     option={
                       Object.keys(counts).length <= 5
                         ? donutChartOption(counts, c.indicator.name)
-                        : barChartOption(counts, c.indicator.name)
+                        : horizontalBarChartOption(counts, c.indicator.name)
                     }
+                    height={Object.keys(counts).length > 5 ? 320 : undefined}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-[350px] text-muted-foreground text-sm">
