@@ -39,7 +39,7 @@ export function EChart({ option, height, className }: EChartProps) {
     <div
       ref={chartRef}
       style={{ width: "100%", ...(height !== undefined ? { height } : {}) }}
-      className={cn(height === undefined ? "h-56 lg:h-72" : undefined, className)}
+      className={cn(height === undefined ? "h-64 lg:h-72" : undefined, className)}
     />
   );
 }
