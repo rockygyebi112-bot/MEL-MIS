@@ -171,41 +171,32 @@ export default function LearningsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
-            Program
-          </span>
-          <Select
-            value={programFilter}
-            onValueChange={(v) => setProgramFilter(v ?? "all")}
-          >
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Programs</SelectItem>
-              {programs.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="relative space-y-1">
-          <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
-            Search
-          </span>
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search learnings..."
-              className="pl-7 w-56 h-8 text-xs"
-            />
-          </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={programFilter}
+          onValueChange={(v) => setProgramFilter(v ?? "all")}
+        >
+          <SelectTrigger className="w-40 h-8 text-xs">
+            <SelectValue placeholder="All Programs" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Programs</SelectItem>
+            {programs.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search learnings..."
+            aria-label="Search learnings"
+            className="pl-7 w-44 sm:w-56 h-8 text-xs"
+          />
         </div>
         <DateRangeFilter
           from={from}
@@ -220,7 +211,7 @@ export default function LearningsPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <KpiCard label="Total Learnings" value={totalLearnings} accent="green" />
         <KpiCard label="Learnings This Month" value={learningsThisMonth} accent="purple" />
       </div>

@@ -22,12 +22,12 @@ export function KpiCard({ label, value, trend, accent }: KpiCardProps) {
   const accentClass = accent ? ACCENT_CLASSES[accent] : "";
   return (
     <div
-      className={`rounded-xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-200 ${accentClass}`}
+      className={`rounded-xl border border-border/60 bg-card p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow duration-200 ${accentClass}`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+      <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70 leading-tight">
         {label}
       </p>
-      <p className="text-3xl font-bold mt-1.5 tracking-tight text-foreground">
+      <p className="text-2xl sm:text-3xl font-bold mt-1.5 tracking-tight text-foreground">
         {typeof value === "number" ? value.toLocaleString() : value}
       </p>
       {trend && (

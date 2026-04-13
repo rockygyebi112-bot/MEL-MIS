@@ -87,7 +87,7 @@ function LoginForm() {
 
   return (
     <Card className="border-0 shadow-2xl rounded-2xl overflow-hidden">
-      <CardHeader className="text-center pb-2 pt-8">
+      <CardHeader className="text-center pb-2 pt-6 sm:pt-8">
         <Image
           src="/srsf-logo.png"
           alt="SRSF"
@@ -102,7 +102,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
-        <CardContent className="space-y-4 px-8">
+        <CardContent className="space-y-4 px-5 sm:px-8">
           {(error || errorParam) && (
             <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">
               {error || errorMessages[errorParam!] || "An error occurred."}
@@ -132,7 +132,7 @@ function LoginForm() {
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4 px-8 pb-8">
+        <CardFooter className="flex flex-col gap-4 px-5 sm:px-8 pb-6 sm:pb-8">
           <Button
             type="submit"
             className="w-full h-10 bg-srsf-green-500 hover:bg-srsf-green-600 font-semibold shadow-md shadow-srsf-green-500/20 transition-all"

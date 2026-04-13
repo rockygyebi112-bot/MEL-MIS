@@ -395,7 +395,7 @@ export function ExecutiveDashboard() {
   return (
     <div className="space-y-8">
       {/* Filter Bar (sticky below topbar) */}
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-2.5 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
         {/* Row 1: program filter (full width on mobile) */}
         <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
         {/* Row 2: date + export (right-aligned, wraps below on mobile) */}
@@ -427,7 +427,7 @@ export function ExecutiveDashboard() {
       </div>
 
       {/* KPI Summary Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {showES && (
           <KpiCard label="Total Applications" value={totalApplications} trend={trends["es"]} accent="green" />
         )}
