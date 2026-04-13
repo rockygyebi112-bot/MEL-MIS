@@ -440,6 +440,9 @@ export function ExecutiveDashboard() {
         {showABSA && (
           <KpiCard label="ABSA Participants" value={totalAbsaParticipants} trend={trends["absa"]} accent="amber" />
         )}
+        {(showES || showABSA) && (
+          <KpiCard label="Regions Represented" value={uniqueRegionCount} accent="teal" />
+        )}
       </div>
 
       {/* Demographics Section */}
@@ -468,13 +471,10 @@ export function ExecutiveDashboard() {
       {(showES || showABSA) && (
         <section>
           <h2 className="text-base font-semibold text-gray-800 mb-4">Geographic</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <div className={`lg:col-span-3 ${chartCard}`}>
-              <EChart
-                option={horizontalBarChartOption(regionCounts, "Regional Representation")}
-              />
-            </div>
-            <KpiCard label="Regions Represented" value={uniqueRegionCount} accent="teal" />
+          <div className={chartCard}>
+            <EChart
+              option={horizontalBarChartOption(regionCounts, "Regional Representation")}
+            />
           </div>
         </section>
       )}
@@ -482,7 +482,7 @@ export function ExecutiveDashboard() {
       {/* Enterprise Spotlight Specifics */}
       {showES && (
         <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Enterprise Spotlight</h2>
+          <h2 className="text-base font-semibold text-gray-800 mb-4">Business Information</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart

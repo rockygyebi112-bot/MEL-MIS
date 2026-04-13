@@ -2,21 +2,15 @@
 
 import { DATA_ENTRY_PROGRAMS } from "@/lib/constants";
 import { ProgramSlug } from "@/lib/types";
-import {
-  Briefcase,
-  MonitorPlay,
-  Users,
-  Landmark,
-  Lightbulb,
-  LucideIcon,
-} from "lucide-react";
+import { ImageIcon } from "lucide-react";
 
-const PROGRAM_ICONS: Record<string, LucideIcon> = {
-  "enterprise-spotlight": Briefcase,
-  "virtual-university": MonitorPlay,
-  "hangout": Users,
-  "absa-onboarding": Landmark,
-  "learnings": Lightbulb,
+// Per-program gradient for the image placeholder area
+const PROGRAM_GRADIENTS: Record<string, string> = {
+  "enterprise-spotlight": "from-emerald-400 to-green-600",
+  "virtual-university":   "from-blue-400 to-indigo-600",
+  "hangout":              "from-purple-400 to-violet-600",
+  "absa-onboarding":      "from-amber-400 to-orange-500",
+  "learnings":            "from-teal-400 to-cyan-600",
 };
 
 interface ProgramSelectorProps {
@@ -29,22 +23,22 @@ export function ProgramSelector({ onSelect }: ProgramSelectorProps) {
       <h2 className="text-lg font-semibold mb-4">Select a Program</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {DATA_ENTRY_PROGRAMS.map((program) => {
-          const Icon = PROGRAM_ICONS[program.slug];
+          const gradient = PROGRAM_GRADIENTS[program.slug] ?? "from-gray-300 to-gray-400";
           return (
             <button
               key={program.slug}
+              type="button"
               onClick={() => onSelect(program.slug as ProgramSlug)}
-              className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-card p-5 text-left transition-all hover:border-srsf-green-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-srsf-green-500"
+              className="rounded-xl border border-border/60 bg-card overflow-hidden text-left transition-all hover:border-srsf-green-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-srsf-green-500"
             >
-              <div className="flex items-center gap-3">
-                <div className="rounded-md bg-srsf-green-100 p-2 text-srsf-green-700">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-semibold">{program.name}</h3>
+              {/* Image placeholder */}
+              <div className={`w-full h-40 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                <ImageIcon className="h-10 w-10 text-white/60" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {program.description}
-              </p>
+              {/* Program name */}
+              <div className="px-4 py-3">
+                <h3 className="font-semibold text-sm">{program.name}</h3>
+              </div>
             </button>
           );
         })}
