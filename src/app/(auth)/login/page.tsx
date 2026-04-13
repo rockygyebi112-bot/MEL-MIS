@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -19,7 +20,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -50,7 +51,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Check approval status
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -65,7 +65,6 @@ export default function LoginPage() {
       console.log("LOGIN DEBUG:", { userId: user.id, profile, profileError });
 
       if (!profile) {
-        // RLS may be blocking — skip client check, let middleware handle it
         router.push("/dashboard");
         return;
       }
@@ -150,5 +149,13 @@ export default function LoginPage() {
         </CardFooter>
       </form>
     </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
