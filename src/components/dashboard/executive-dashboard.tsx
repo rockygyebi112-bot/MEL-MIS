@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   EnterpriseSpotlightEntry,
@@ -386,7 +386,14 @@ export function ExecutiveDashboard() {
   // ─── Render ───────────────────────────────────────────────────
 
   // Reusable chart card wrapper class
-  const chartCard = "rounded-xl border border-border/60 bg-card p-5 shadow-sm";
+  const chartCard = "rounded-xl border border-border/60 bg-white p-6 shadow-sm hover:shadow-md transition-shadow duration-200";
+  // Reusable section heading component
+  const SectionHeading = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-center gap-3 mb-5">
+      <span className="w-1 h-6 rounded-full bg-[#5BBF3A] shrink-0" />
+      <h2 className="text-lg font-bold text-gray-900">{children}</h2>
+    </div>
+  );
 
   if (loading) {
     return <DashboardSkeleton kpis={4} charts={4} />;
@@ -447,7 +454,7 @@ export function ExecutiveDashboard() {
 
       {/* Demographics Section */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-4">Demographics</h2>
+        <SectionHeading>Demographics</SectionHeading>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className={chartCard}>
             <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
@@ -470,7 +477,7 @@ export function ExecutiveDashboard() {
       {/* Geographic Section */}
       {(showES || showABSA) && (
         <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Geographic</h2>
+          <SectionHeading>Geographic</SectionHeading>
           <div className={chartCard}>
             <EChart
               option={horizontalBarChartOption(regionCounts, "Regional Representation")}
@@ -483,7 +490,7 @@ export function ExecutiveDashboard() {
       {/* Enterprise Spotlight Specifics */}
       {showES && (
         <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">Business Information</h2>
+          <SectionHeading>Business Information</SectionHeading>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart
@@ -510,8 +517,11 @@ export function ExecutiveDashboard() {
       {/* Media Programs Section (VU + Hangout) */}
       {showMedia && (
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-gray-800">Media Programs</h2>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <span className="w-1 h-6 rounded-full bg-[#5BBF3A] shrink-0" />
+              <h2 className="text-lg font-bold text-gray-900">Media Programs</h2>
+            </div>
             <GranularityToggle value={granularity} onChange={setGranularity} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -563,7 +573,7 @@ export function ExecutiveDashboard() {
       {/* ABSA Section */}
       {showABSA && (
         <section>
-          <h2 className="text-base font-semibold text-gray-800 mb-4">ABSA Onboarding</h2>
+          <SectionHeading>ABSA Onboarding</SectionHeading>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart
