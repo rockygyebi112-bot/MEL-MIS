@@ -34,6 +34,13 @@ interface EnterpriseSpotlightFormProps {
   onCancel?: () => void;
 }
 
+function mergeOptionLists(
+  defaults: readonly string[],
+  dynamic?: string[]
+): string[] {
+  return Array.from(new Set([...(dynamic ?? []), ...defaults]));
+}
+
 const EMPTY_FORM = {
   applicant_name: "",
   region: "",
@@ -62,20 +69,41 @@ export function EnterpriseSpotlightForm({
   const supabase = createClient();
   const { options: coreOptions } = useCoreIndicatorOptions("enterprise-spotlight");
 
-  const regionOptions = coreOptions.region ?? [...REGIONS];
-  const genderOptions = coreOptions.gender ?? [...GENDERS];
-  const ownershipOptions = coreOptions.ownership_type ?? [...OWNERSHIP_TYPES];
-  const businessSizeOptions = coreOptions.business_size ?? [...BUSINESS_SIZES];
-  const fundingStatusOptions = coreOptions.funding_status ?? [...FUNDING_STATUSES];
-  const businessSectorOptions = coreOptions.business_sector ?? [...BUSINESS_SECTORS];
-  const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
-  const disabilityTypeOptions = coreOptions.disability_type ?? [...DISABILITY_TYPES];
+  const regionOptions = mergeOptionLists(REGIONS, coreOptions.region);
+  const genderOptions = mergeOptionLists(GENDERS, coreOptions.gender);
+  const ownershipOptions = mergeOptionLists(
+    OWNERSHIP_TYPES,
+    coreOptions.ownership_type
+  );
+  const businessSizeOptions = mergeOptionLists(
+    BUSINESS_SIZES,
+    coreOptions.business_size
+  );
+  const fundingStatusOptions = mergeOptionLists(
+    FUNDING_STATUSES,
+    coreOptions.funding_status
+  );
+  const businessSectorOptions = mergeOptionLists(
+    BUSINESS_SECTORS,
+    coreOptions.business_sector
+  );
+  const disabilityStatusOptions = mergeOptionLists(
+    ["Yes", "No"],
+    coreOptions.disability_status
+  );
+  const disabilityTypeOptions = mergeOptionLists(
+    DISABILITY_TYPES,
+    coreOptions.disability_type
+  );
   const disabilityTypeSelectOptions =
     form.disability_type === "Other" &&
     !disabilityTypeOptions.includes("Other")
       ? [...disabilityTypeOptions, "Other"]
       : disabilityTypeOptions;
-  const businessRegisteredOptions = coreOptions.registration_status ?? ["Yes", "No"];
+  const businessRegisteredOptions = mergeOptionLists(
+    ["Yes", "No"],
+    coreOptions.registration_status
+  );
 
   useEffect(() => {
     if (editEntry) {
