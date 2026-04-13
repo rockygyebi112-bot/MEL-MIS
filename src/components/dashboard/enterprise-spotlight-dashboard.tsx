@@ -145,10 +145,7 @@ export function EnterpriseSpotlightDashboard() {
           <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart
-            option={barChartOption(disabilityTypeCounts, "Disability Type")}
-            height={Math.max(280, Object.keys(disabilityTypeCounts).length * 40 + 160)}
-          />
+          <EChart option={barChartOption(disabilityTypeCounts, "Disability Type")} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={pieChartOption(ownershipCounts, "Ownership Type")} />

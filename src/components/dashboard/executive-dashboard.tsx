@@ -474,7 +474,6 @@ export function ExecutiveDashboard() {
           <div className={chartCard}>
             <EChart
               option={horizontalBarChartOption(regionCounts, "Regional Representation")}
-              height={Math.max(320, Object.keys(regionCounts).length * 28 + 80)}
             />
           </div>
         </section>
@@ -493,7 +492,6 @@ export function ExecutiveDashboard() {
             <div className={chartCard}>
               <EChart
                 option={horizontalBarChartOption(esSectorCounts, "Business Sector")}
-                height={Math.max(300, Object.keys(esSectorCounts).length * 28 + 80)}
               />
             </div>
           </div>
