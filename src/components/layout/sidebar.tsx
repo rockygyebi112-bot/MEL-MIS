@@ -4,61 +4,101 @@ import Image from "next/image";
 import { NAV_ITEMS } from "@/lib/constants";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { useUser } from "@/hooks/use-user";
+import { useSidebar } from "@/lib/sidebar-context";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const { hasAccess, loading } = useUser();
-  const [collapsed, setCollapsed] = useState(false);
+  const { mobileOpen, closeMobile } = useSidebar();
+
+  // Desktop-only collapsed (icon-only) state
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => loading || hasAccess(item.module)
   );
 
-  // Close sidebar on mobile when a nav link is clicked
+  // Close on mobile nav click
   const handleNavigate = useCallback(() => {
-    if (window.innerWidth < 1024) {
-      setCollapsed(true);
+    closeMobile();
+  }, [closeMobile]);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-  }, []);
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   return (
     <>
-      {/* Sidebar */}
+      {/* ── Mobile backdrop ──────────────────────────────────── */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden",
+          mobileOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        )}
+        onClick={closeMobile}
+      />
+
+      {/* ── Sidebar panel ───────────────────────────────────── */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 h-screen bg-gradient-to-b from-srsf-purple-800 to-srsf-purple-900 transition-all duration-300 flex flex-col shadow-xl",
-          collapsed ? "w-0 overflow-hidden lg:w-16" : "w-64"
+          "fixed left-0 top-0 z-50 h-screen bg-gradient-to-b from-srsf-purple-800 to-srsf-purple-900 flex flex-col shadow-xl",
+          // Mobile: slide in/out via translateX, full nav width
+          "w-72 transition-transform duration-300 ease-in-out",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          // Desktop: always visible, collapse to icon-only via width
+          desktopCollapsed
+            ? "lg:translate-x-0 lg:w-16 lg:overflow-hidden"
+            : "lg:translate-x-0 lg:w-64"
         )}
       >
-        {/* Logo / collapse button row */}
+        {/* Header row */}
         <div
           className={cn(
-            "flex items-center h-16 border-b border-white/10",
-            collapsed ? "justify-center px-0" : "justify-between px-5"
+            "flex items-center h-16 border-b border-white/10 shrink-0",
+            desktopCollapsed
+              ? "lg:justify-center lg:px-0 justify-between px-5"
+              : "justify-between px-5"
           )}
         >
-          {!collapsed && (
-            <div className="flex items-center gap-2.5">
-              <Image
-                src="/srsf-logo.png"
-                alt="SRSF"
-                width={36}
-                height={36}
-                className="rounded-md"
-              />
-              <span className="text-lg font-bold text-white tracking-tight">
-                SRSF MIS
-              </span>
-            </div>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="text-white/50 hover:text-white transition-colors hidden lg:block"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          <div
+            className={cn(
+              "flex items-center gap-2.5",
+              desktopCollapsed && "lg:hidden"
+            )}
           >
-            {collapsed ? (
+            <Image
+              src="/srsf-logo.png"
+              alt="SRSF"
+              width={36}
+              height={36}
+              className="rounded-md shrink-0"
+            />
+            <span className="text-lg font-bold text-white tracking-tight whitespace-nowrap">
+              SRSF MIS
+            </span>
+          </div>
+
+          {/* Desktop collapse/expand button */}
+          <button
+            type="button"
+            onClick={() => setDesktopCollapsed((c) => !c)}
+            className="text-white/50 hover:text-white transition-colors hidden lg:block p-1 rounded"
+            title={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {desktopCollapsed ? (
               <PanelLeft className="w-5 h-5" />
             ) : (
               <PanelLeftClose className="w-5 h-5" />
@@ -67,9 +107,9 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        {collapsed ? (
-          /* Collapsed: icon-only nav (desktop only — hidden on mobile via w-0/overflow-hidden) */
-          <nav className="flex-1 flex flex-col items-center py-5 gap-1 overflow-y-auto">
+        {desktopCollapsed ? (
+          // Desktop icon-only
+          <nav className="flex-1 hidden lg:flex flex-col items-center py-4 gap-1 overflow-y-auto">
             {visibleItems.map((item) => (
               <SidebarNavItem
                 key={item.href}
@@ -80,7 +120,7 @@ export function Sidebar() {
             ))}
           </nav>
         ) : (
-          <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+          <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
             {visibleItems.map((item) => (
               <SidebarNavItem
                 key={item.href}
@@ -91,26 +131,15 @@ export function Sidebar() {
           </nav>
         )}
 
-        {/* Bottom branding (expanded only) */}
-        {!collapsed && (
-          <div className="px-5 py-4 border-t border-white/10">
+        {/* Bottom branding */}
+        {!desktopCollapsed && (
+          <div className="px-5 py-4 border-t border-white/10 shrink-0">
             <p className="text-[11px] text-white/30 leading-relaxed">
               Springboard Road Show Foundation
             </p>
           </div>
         )}
       </aside>
-
-      {/* Mobile toggle (shown when sidebar is hidden) */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className={cn(
-          "fixed top-4 left-4 z-50 p-2 rounded-lg bg-srsf-purple-800 text-white shadow-lg lg:hidden",
-          !collapsed && "hidden"
-        )}
-      >
-        <PanelLeft className="w-5 h-5" />
-      </button>
     </>
   );
 }

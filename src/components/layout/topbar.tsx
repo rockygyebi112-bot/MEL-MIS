@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useUser } from "@/hooks/use-user";
+import { useSidebar } from "@/lib/sidebar-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,10 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, ChevronDown } from "lucide-react";
+import { LogOut, User, ChevronDown, Menu } from "lucide-react";
 
 export function Topbar() {
   const { user, signOut } = useUser();
+  const { toggleMobile } = useSidebar();
 
   const initials = user?.full_name
     ? user.full_name
@@ -25,12 +28,39 @@ export function Topbar() {
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-card/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4 sm:px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-      <div />
+      {/* Left: hamburger (mobile) + logo (mobile) */}
+      <div className="flex items-center gap-3 lg:hidden">
+        <button
+          type="button"
+          onClick={toggleMobile}
+          className="p-2 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          aria-label="Open navigation"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-2">
+          <Image
+            src="/srsf-logo.png"
+            alt="SRSF"
+            width={28}
+            height={28}
+            className="rounded-md"
+          />
+          <span className="text-sm font-bold text-foreground tracking-tight">
+            SRSF MIS
+          </span>
+        </div>
+      </div>
+
+      {/* Desktop left spacer */}
+      <div className="hidden lg:block" />
+
+      {/* Right: role badge + user menu */}
       <div className="flex items-center gap-3">
         {user?.role && (
           <Badge
             variant="secondary"
-            className="bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200 font-medium text-[11px] px-2.5 py-0.5 tracking-wide"
+            className="bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200 font-medium text-[11px] px-2.5 py-0.5 tracking-wide hidden sm:inline-flex"
           >
             {user.role.name}
           </Badge>
@@ -48,6 +78,11 @@ export function Topbar() {
             <ChevronDown className="size-3.5 text-muted-foreground hidden sm:inline" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
+            {user?.role && (
+              <DropdownMenuItem className="gap-2 text-muted-foreground text-xs py-2 sm:hidden">
+                <span className="font-medium text-foreground">{user.role.name}</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem className="gap-2 text-muted-foreground text-xs py-2">
               <User className="size-3.5" />
               {user?.email}

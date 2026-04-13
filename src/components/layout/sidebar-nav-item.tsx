@@ -9,9 +9,7 @@ import type { NavItem } from "@/lib/constants";
 
 interface SidebarNavItemProps {
   item: NavItem;
-  /** Called after a navigation link is clicked (used to close sidebar on mobile) */
   onNavigate?: () => void;
-  /** When true, render icon-only mode (collapsed desktop sidebar) */
   iconOnly?: boolean;
 }
 
@@ -31,12 +29,10 @@ export function SidebarNavItem({
 
   const Icon = item.icon;
 
-  // Icon-only mode: render a single icon link to the item's href (or first child)
   if (iconOnly) {
-    const href = item.href;
     return (
       <Link
-        href={href}
+        href={item.href}
         onClick={onNavigate}
         title={item.label}
         className={cn(
@@ -58,17 +54,17 @@ export function SidebarNavItem({
           type="button"
           onClick={() => setExpanded(!expanded)}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
+            "w-full flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
             isActive
               ? "bg-srsf-green-500/20 text-white"
               : "text-white/60 hover:text-white hover:bg-white/8"
           )}
         >
-          <Icon className="size-4 shrink-0" />
+          <Icon className="size-5 lg:size-4 shrink-0" />
           <span className="flex-1 text-left">{item.label}</span>
           <ChevronDown
             className={cn(
-              "size-3.5 transition-transform duration-200",
+              "size-4 lg:size-3.5 transition-transform duration-200",
               expanded && "rotate-180"
             )}
           />
@@ -81,7 +77,7 @@ export function SidebarNavItem({
                 href={child.href}
                 onClick={onNavigate}
                 className={cn(
-                  "block px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-150",
+                  "block px-2.5 py-2.5 lg:py-1.5 rounded-md text-[13px] transition-all duration-150",
                   pathname === child.href
                     ? "bg-srsf-green-500/20 text-white font-medium"
                     : "text-white/50 hover:text-white hover:bg-white/8"
@@ -101,13 +97,13 @@ export function SidebarNavItem({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150",
+        "flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
         isActive
           ? "bg-srsf-green-500/20 text-white"
           : "text-white/60 hover:text-white hover:bg-white/8"
       )}
     >
-      <Icon className="size-4 shrink-0" />
+      <Icon className="size-5 lg:size-4 shrink-0" />
       <span>{item.label}</span>
     </Link>
   );
