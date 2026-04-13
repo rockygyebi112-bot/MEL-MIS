@@ -16,14 +16,17 @@ const PROGRAM_IMAGES: Partial<
   "virtual-university": {
     src: "/programs/virtual-university.jpg",
     alt: "Virtual University program card image",
+    objectPosition: "object-top",
   },
   hangout: {
     src: "/programs/hangout.jpg",
     alt: "Hangout program card image",
+    objectPosition: "object-top",
   },
   "absa-onboarding": {
     src: "/programs/absa-onboarding.jpg",
     alt: "ABSA Onboarding program card image",
+    objectPosition: "object-top",
   },
   learnings: {
     src: "/programs/learnings.jpg",
