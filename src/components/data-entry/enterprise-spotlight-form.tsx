@@ -70,6 +70,11 @@ export function EnterpriseSpotlightForm({
   const businessSectorOptions = coreOptions.business_sector ?? [...BUSINESS_SECTORS];
   const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
   const disabilityTypeOptions = coreOptions.disability_type ?? [...DISABILITY_TYPES];
+  const disabilityTypeSelectOptions =
+    form.disability_type === "Other" &&
+    !disabilityTypeOptions.includes("Other")
+      ? [...disabilityTypeOptions, "Other"]
+      : disabilityTypeOptions;
   const businessRegisteredOptions = coreOptions.registration_status ?? ["Yes", "No"];
 
   useEffect(() => {
@@ -283,7 +288,7 @@ export function EnterpriseSpotlightForm({
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {disabilityTypeOptions.map((d) => (
+                {disabilityTypeSelectOptions.map((d) => (
                   <SelectItem key={d} value={d}>
                     {d}
                   </SelectItem>
