@@ -26,6 +26,7 @@ import {
 } from "./chart-builders";
 import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import { GranularityToggle } from "./granularity-toggle";
+import { CustomIndicatorCharts } from "./custom-indicator-charts";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -66,10 +67,21 @@ export function ExecutiveDashboard() {
         return q;
       };
 
+      const buildMediaQuery = (table: string) => {
+        let q = supabase
+          .from(table)
+          .select("*")
+          .eq("is_draft", false)
+          .order("date_aired", { ascending: false });
+        if (from) q = q.gte("date_aired", from);
+        if (to) q = q.lte("date_aired", to);
+        return q;
+      };
+
       const [esRes, vuRes, hangoutRes, absaRes] = await Promise.all([
         buildQuery("enterprise_spotlight_entries"),
-        buildQuery("virtual_university_entries"),
-        buildQuery("hangout_entries"),
+        buildMediaQuery("virtual_university_entries"),
+        buildMediaQuery("hangout_entries"),
         buildQuery("absa_onboarding_entries"),
       ]);
 
@@ -237,7 +249,7 @@ export function ExecutiveDashboard() {
     const series: { name: string; data: Record<string, number> }[] = [];
 
     if (showVU) {
-      const groups = groupByGranularity(vuEntries, "created_at", granularity);
+      const groups = groupByGranularity(vuEntries, "date_aired", granularity);
       const totals: Record<string, number> = {};
       for (const [period, items] of Object.entries(groups)) {
         totals[period] = (items as MediaProgramEntry[]).reduce(
@@ -249,7 +261,7 @@ export function ExecutiveDashboard() {
     }
 
     if (showHangout) {
-      const groups = groupByGranularity(hangoutEntries, "created_at", granularity);
+      const groups = groupByGranularity(hangoutEntries, "date_aired", granularity);
       const totals: Record<string, number> = {};
       for (const [period, items] of Object.entries(groups)) {
         totals[period] = (items as MediaProgramEntry[]).reduce(
@@ -269,7 +281,7 @@ export function ExecutiveDashboard() {
     const series: { name: string; data: Record<string, number> }[] = [];
 
     if (showVU) {
-      const groups = groupByGranularity(vuEntries, "created_at", granularity);
+      const groups = groupByGranularity(vuEntries, "date_aired", granularity);
       const counts: Record<string, number> = {};
       for (const [period, items] of Object.entries(groups)) {
         counts[period] = items.length;
@@ -278,7 +290,7 @@ export function ExecutiveDashboard() {
     }
 
     if (showHangout) {
-      const groups = groupByGranularity(hangoutEntries, "created_at", granularity);
+      const groups = groupByGranularity(hangoutEntries, "date_aired", granularity);
       const counts: Record<string, number> = {};
       for (const [period, items] of Object.entries(groups)) {
         counts[period] = items.length;
@@ -383,11 +395,11 @@ export function ExecutiveDashboard() {
   return (
     <div className="space-y-8">
       {/* Filter Bar (sticky below topbar) */}
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
         {/* Row 1: program filter (full width on mobile) */}
         <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
         {/* Row 2: date + export (right-aligned, wraps below on mobile) */}
-        <div className="flex items-center gap-3 sm:ml-auto">
+        <div className="flex items-end gap-3 sm:ml-auto">
           <DateRangeFilter
             from={from}
             to={to}
@@ -417,16 +429,16 @@ export function ExecutiveDashboard() {
       {/* KPI Summary Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {showES && (
-          <KpiCard label="Total Applications" value={totalApplications} trend={trends["es"]} />
+          <KpiCard label="Total Applications" value={totalApplications} trend={trends["es"]} accent="green" />
         )}
         {showVU && (
-          <KpiCard label="VU Episodes" value={totalVuEpisodes} trend={trends["vu"]} />
+          <KpiCard label="VU Episodes" value={totalVuEpisodes} trend={trends["vu"]} accent="blue" />
         )}
         {showHangout && (
-          <KpiCard label="Hangout Episodes" value={totalHangoutEpisodes} trend={trends["hangout"]} />
+          <KpiCard label="Hangout Episodes" value={totalHangoutEpisodes} trend={trends["hangout"]} accent="purple" />
         )}
         {showABSA && (
-          <KpiCard label="ABSA Participants" value={totalAbsaParticipants} trend={trends["absa"]} />
+          <KpiCard label="ABSA Participants" value={totalAbsaParticipants} trend={trends["absa"]} accent="amber" />
         )}
       </div>
 
@@ -462,7 +474,7 @@ export function ExecutiveDashboard() {
                 option={horizontalBarChartOption(regionCounts, "Regional Representation")}
               />
             </div>
-            <KpiCard label="Regions Represented" value={uniqueRegionCount} />
+            <KpiCard label="Regions Represented" value={uniqueRegionCount} accent="teal" />
           </div>
         </section>
       )}
@@ -482,6 +494,13 @@ export function ExecutiveDashboard() {
                 option={horizontalBarChartOption(esSectorCounts, "Business Sector")}
               />
             </div>
+          </div>
+          <div className="mt-4">
+            <CustomIndicatorCharts
+              programSlug="enterprise-spotlight"
+              entries={esEntries as unknown as Record<string, unknown>[]}
+              showOnExecutiveOnly
+            />
           </div>
         </section>
       )}
@@ -518,6 +537,24 @@ export function ExecutiveDashboard() {
               />
             </div>
           </div>
+          {showVU && (
+            <div className="mt-4">
+              <CustomIndicatorCharts
+                programSlug="virtual-university"
+                entries={vuEntries as unknown as Record<string, unknown>[]}
+                showOnExecutiveOnly
+              />
+            </div>
+          )}
+          {showHangout && (
+            <div className="mt-4">
+              <CustomIndicatorCharts
+                programSlug="hangout"
+                entries={hangoutEntries as unknown as Record<string, unknown>[]}
+                showOnExecutiveOnly
+              />
+            </div>
+          )}
         </section>
       )}
 
@@ -531,6 +568,13 @@ export function ExecutiveDashboard() {
                 option={barChartOption(absaRegionCounts, "Region Breakdown")}
               />
             </div>
+          </div>
+          <div className="mt-4">
+            <CustomIndicatorCharts
+              programSlug="absa-onboarding"
+              entries={absaEntries as unknown as Record<string, unknown>[]}
+              showOnExecutiveOnly
+            />
           </div>
         </section>
       )}

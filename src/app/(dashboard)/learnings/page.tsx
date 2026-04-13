@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { LEARNING_CATEGORIES } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -18,7 +17,6 @@ import { EChart } from "@/components/dashboard/echart";
 import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
 import { ExportButton } from "@/components/dashboard/export-button";
 import {
-  donutChartOption,
   lineChartOption,
   barChartOption,
 } from "@/components/dashboard/chart-builders";
@@ -51,7 +49,6 @@ export default function LearningsPage() {
 
   // Filters
   const [programFilter, setProgramFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -86,9 +83,6 @@ export default function LearningsPage() {
     if (programFilter !== "all") {
       result = result.filter((l) => l.program_id === programFilter);
     }
-    if (categoryFilter !== "all") {
-      result = result.filter((l) => l.category === categoryFilter);
-    }
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -104,12 +98,12 @@ export default function LearningsPage() {
       result = result.filter((l) => l.created_at <= `${to}T23:59:59`);
     }
     return result;
-  }, [learnings, programFilter, categoryFilter, search, from, to]);
+  }, [learnings, programFilter, search, from, to]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [programFilter, categoryFilter, search, from, to]);
+  }, [programFilter, search, from, to]);
 
   // Analytics
   const totalLearnings = filtered.length;
@@ -118,31 +112,6 @@ export default function LearningsPage() {
   const learningsThisMonth = filtered.filter(
     (l) => l.created_at.slice(0, 7) === thisMonth
   ).length;
-
-  const mostActiveProgram = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const l of filtered) {
-      const name = l.program?.name ?? "Unknown";
-      counts[name] = (counts[name] || 0) + 1;
-    }
-    let max = 0;
-    let best = "—";
-    for (const [name, count] of Object.entries(counts)) {
-      if (count > max) {
-        max = count;
-        best = name;
-      }
-    }
-    return best;
-  }, [filtered]);
-
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const l of filtered) {
-      if (l.category) counts[l.category] = (counts[l.category] || 0) + 1;
-    }
-    return counts;
-  }, [filtered]);
 
   const monthlyTrend = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -185,7 +154,6 @@ export default function LearningsPage() {
         <ExportButton
           data={filtered.map((l) => ({
             program: l.program?.name ?? "",
-            category: l.category,
             title: l.title,
             description: l.description,
             date: l.learning_date ?? "",
@@ -194,7 +162,6 @@ export default function LearningsPage() {
           filename="learnings-export"
           columns={[
             { key: "program", label: "Program" },
-            { key: "category", label: "Category" },
             { key: "title", label: "Title" },
             { key: "description", label: "Description" },
             { key: "date", label: "Learning Date" },
@@ -221,27 +188,6 @@ export default function LearningsPage() {
               {programs.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
-            Category
-          </span>
-          <Select
-            value={categoryFilter}
-            onValueChange={(v) => setCategoryFilter(v ?? "all")}
-          >
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {LEARNING_CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -274,19 +220,13 @@ export default function LearningsPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <KpiCard label="Total Learnings" value={totalLearnings} />
-        <KpiCard label="Learnings This Month" value={learningsThisMonth} />
-        <KpiCard label="Most Active Program" value={mostActiveProgram} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <KpiCard label="Total Learnings" value={totalLearnings} accent="green" />
+        <KpiCard label="Learnings This Month" value={learningsThisMonth} accent="purple" />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart
-            option={donutChartOption(categoryCounts, "Category Distribution")}
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart
             option={lineChartOption(
@@ -371,9 +311,6 @@ export default function LearningsPage() {
                         >
                           {programName}
                         </Badge>
-                        {l.category && (
-                          <Badge variant="outline">{l.category}</Badge>
-                        )}
                         <span className="text-xs text-muted-foreground">
                           {l.learning_date
                             ? new Date(l.learning_date).toLocaleDateString()
