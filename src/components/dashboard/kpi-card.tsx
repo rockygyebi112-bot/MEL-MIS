@@ -1,14 +1,29 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 
+type AccentColor = "green" | "purple" | "blue" | "amber" | "teal" | "pink";
+
 interface KpiCardProps {
   label: string;
   value: string | number;
   trend?: { value: number; label: string };
+  accent?: AccentColor;
 }
 
-export function KpiCard({ label, value, trend }: KpiCardProps) {
+const ACCENT_CLASSES: Record<AccentColor, string> = {
+  green: "border-t-[3px] border-t-[#5BBF3A]",
+  purple: "border-t-[3px] border-t-[#6B2D7B]",
+  blue: "border-t-[3px] border-t-blue-500",
+  amber: "border-t-[3px] border-t-amber-400",
+  teal: "border-t-[3px] border-t-teal-500",
+  pink: "border-t-[3px] border-t-pink-500",
+};
+
+export function KpiCard({ label, value, trend, accent }: KpiCardProps) {
+  const accentClass = accent ? ACCENT_CLASSES[accent] : "";
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div
+      className={`rounded-xl border border-border/60 bg-card p-5 shadow-sm hover:shadow-md transition-shadow duration-200 ${accentClass}`}
+    >
       <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
         {label}
       </p>

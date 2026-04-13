@@ -83,10 +83,10 @@ export function MediaProgramDashboard({
         .from(tableName)
         .select("*")
         .eq("is_draft", false)
-        .order("created_at", { ascending: false });
+        .order("date_aired", { ascending: false });
 
-      if (from) query = query.gte("created_at", from);
-      if (to) query = query.lte("created_at", `${to}T23:59:59`);
+      if (from) query = query.gte("date_aired", from);
+      if (to) query = query.lte("date_aired", to);
 
       const { data } = await query;
       setEntries((data as MediaProgramEntry[]) ?? []);
@@ -223,7 +223,7 @@ export function MediaProgramDashboard({
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-center justify-between gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-end justify-between gap-4">
         <DateRangeFilter
           from={from}
           to={to}
@@ -246,8 +246,8 @@ export function MediaProgramDashboard({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Episodes" value={totalEpisodes} trend={trends["episodes"]} />
-        <KpiCard label="Total Views (All Platforms)" value={totalViewsAll.toLocaleString()} />
+        <KpiCard label="Total Episodes" value={totalEpisodes} trend={trends["episodes"]} accent="green" />
+        <KpiCard label="Total Views (All Platforms)" value={totalViewsAll.toLocaleString()} accent="purple" />
       </div>
 
       <section>

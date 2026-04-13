@@ -93,7 +93,7 @@ export function EnterpriseSpotlightDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-center justify-between gap-4">
+      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 bg-background/85 backdrop-blur-md border-b border-border/50 flex flex-wrap items-end justify-between gap-4">
         <DateRangeFilter
           from={from}
           to={to}
@@ -121,8 +121,8 @@ export function EnterpriseSpotlightDashboard() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Applications" value={totalApplications} trend={trends["applications"]} />
-        <KpiCard label="Regions Represented" value={uniqueRegions} />
+        <KpiCard label="Total Applications" value={totalApplications} trend={trends["applications"]} accent="green" />
+        <KpiCard label="Regions Represented" value={uniqueRegions} accent="teal" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

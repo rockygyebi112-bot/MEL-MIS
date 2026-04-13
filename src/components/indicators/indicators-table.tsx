@@ -52,17 +52,21 @@ export function IndicatorsTable({
 
   async function handleRemove(indicator: Indicator) {
     if (indicator.is_core) return;
+    const confirmed = window.confirm(
+      `Delete "${indicator.name}"? This will remove it from all dashboards and cannot be undone.`
+    );
+    if (!confirmed) return;
     setRemoving(indicator.id);
     const { error } = await supabase
       .from("indicators")
-      .update({ is_active: false })
+      .delete()
       .eq("id", indicator.id);
     setRemoving(null);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success(`"${indicator.name}" removed`);
+    toast.success(`"${indicator.name}" deleted`);
     onRefresh();
   }
 

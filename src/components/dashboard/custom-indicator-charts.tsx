@@ -10,11 +10,13 @@ import type { Indicator } from "@/lib/types";
 interface CustomIndicatorChartsProps {
   programSlug: string;
   entries: Record<string, unknown>[];
+  showOnExecutiveOnly?: boolean;
 }
 
 export function CustomIndicatorCharts({
   programSlug,
   entries,
+  showOnExecutiveOnly = false,
 }: CustomIndicatorChartsProps) {
   const [indicators, setIndicators] = useState<Indicator[]>([]);
 
@@ -27,17 +29,21 @@ export function CustomIndicatorCharts({
         .eq("slug", programSlug)
         .single();
       if (!program) return;
-      const { data } = await supabase
+      let query = supabase
         .from("indicators")
         .select("*")
         .eq("program_id", program.id)
         .eq("is_core", false)
-        .eq("is_active", true)
-        .order("sort_order");
+        .eq("is_active", true);
+      if (showOnExecutiveOnly) {
+        query = query.eq("show_on_executive", true);
+      }
+      query = query.order("sort_order");
+      const { data } = await query;
       setIndicators((data as Indicator[]) ?? []);
     }
     load();
-  }, [programSlug]);
+  }, [programSlug, showOnExecutiveOnly]);
 
   const charts = useMemo(() => {
     if (indicators.length === 0) return null;
