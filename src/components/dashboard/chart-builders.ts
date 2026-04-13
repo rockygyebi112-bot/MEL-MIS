@@ -175,6 +175,8 @@ export function barChartOption(
   const categories = Object.keys(counts);
   const values = Object.values(counts);
   const total = values.reduce((s, v) => s + v, 0);
+  const rotate = categories.length > 4 ? 45 : 0;
+  const bottomPad = rotate > 0 ? 110 : 50;
   return {
     title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
     toolbox: TOOLBOX,
@@ -190,7 +192,7 @@ export function barChartOption(
     xAxis: {
       type: "category",
       data: categories,
-      axisLabel: { rotate: categories.length > 6 ? 30 : 0, ...AXIS_LABEL_STYLE },
+      axisLabel: { rotate, interval: 0, ...AXIS_LABEL_STYLE },
     },
     yAxis: { type: "value" },
     series: [
@@ -208,12 +210,12 @@ export function barChartOption(
           formatter: (params: unknown) => {
             const p = params as { value: number };
             const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
-            return `${p.value.toLocaleString()}\n(${pct}%)`;
+            return `${p.value.toLocaleString()} (${pct}%)`;
           },
         },
       },
     ],
-    grid: { top: 50, bottom: categories.length > 6 ? 80 : 40, containLabel: true },
+    grid: { top: 50, bottom: bottomPad, left: 8, right: 8, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -240,12 +242,12 @@ export function horizontalBarChartOption(
         return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
       },
     },
-    xAxis: { type: "value" },
+    xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
     yAxis: {
       type: "category",
       data: categories,
       inverse: true,
-      axisLabel: { ...AXIS_LABEL_STYLE },
+      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 110 },
     },
     series: [
       {
@@ -267,7 +269,7 @@ export function horizontalBarChartOption(
         },
       },
     ],
-    grid: { left: 120, right: 80, containLabel: false },
+    grid: { left: 8, right: 8, top: 50, bottom: 30, containLabel: true },
     color: CHART_COLORS,
   };
 }
@@ -289,8 +291,8 @@ export function donutChartOption(
     series: [
       {
         type: "pie",
-        radius: ["40%", "70%"],
-        center: ["50%", "45%"],
+        radius: ["40%", "65%"],
+        center: ["50%", "48%"],
         data,
         label: {
           show: true,
@@ -298,10 +300,12 @@ export function donutChartOption(
           fontSize: 10,
           color: "#374151",
           fontFamily: "Inter, system-ui, sans-serif",
+          overflow: "truncate",
+          width: 80,
         },
-        labelLine: { show: true, length: 8, length2: 8 },
+        labelLine: { show: true, length: 6, length2: 6 },
         emphasis: {
-          label: { show: true, fontSize: 13, fontWeight: "bold" },
+          label: { show: true, fontSize: 12, fontWeight: "bold" },
         },
       },
     ],
@@ -326,8 +330,8 @@ export function pieChartOption(
     series: [
       {
         type: "pie",
-        radius: "60%",
-        center: ["50%", "45%"],
+        radius: "55%",
+        center: ["50%", "48%"],
         data,
         label: {
           show: true,
@@ -335,10 +339,12 @@ export function pieChartOption(
           fontSize: 10,
           color: "#374151",
           fontFamily: "Inter, system-ui, sans-serif",
+          overflow: "truncate",
+          width: 80,
         },
-        labelLine: { show: true, length: 8, length2: 8 },
+        labelLine: { show: true, length: 6, length2: 6 },
         emphasis: {
-          label: { show: true, fontSize: 13, fontWeight: "bold" },
+          label: { show: true, fontSize: 12, fontWeight: "bold" },
         },
       },
     ],
