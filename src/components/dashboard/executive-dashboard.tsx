@@ -565,7 +565,8 @@ export function ExecutiveDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart
-                option={barChartOption(absaRegionCounts, "Region Breakdown")}
+                option={horizontalBarChartOption(absaRegionCounts, "Region Breakdown")}
+                height={320}
               />
             </div>
           </div>
