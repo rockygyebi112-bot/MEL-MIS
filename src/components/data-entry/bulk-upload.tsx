@@ -12,6 +12,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2 } from "lucide-react";
-import { PROGRAMS, REGIONS, GENDERS, AGE_BRACKETS, DISABILITY_TYPES, OWNERSHIP_TYPES, BUSINESS_SIZES, FUNDING_STATUSES, BUSINESS_SECTORS, EMPLOYMENT_STATUSES, LEARNING_CATEGORIES } from "@/lib/constants";
+import { PROGRAMS, REGIONS, GENDERS, DISABILITY_TYPES, OWNERSHIP_TYPES, BUSINESS_SIZES, FUNDING_STATUSES, BUSINESS_SECTORS, EMPLOYMENT_STATUSES, LEARNING_CATEGORIES } from "@/lib/constants";
 import type { Program } from "@/lib/types";
 
 type UploadSlug = "enterprise-spotlight" | "virtual-university" | "hangout" | "absa-onboarding" | "learnings";
@@ -34,6 +35,7 @@ interface RowError {
 }
 
 interface ParsedRow {
+  rowNumber: number;
   data: Record<string, unknown>;
   errors: RowError[];
 }
@@ -124,6 +126,7 @@ export function BulkUpload() {
   const [slug, setSlug] = useState<UploadSlug>("enterprise-spotlight");
   const [programs, setPrograms] = useState<Program[]>([]);
   const [parsedRows, setParsedRows] = useState<ParsedRow[]>([]);
+  const [previewFilter, setPreviewFilter] = useState<"all" | "errors">("all");
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<{ imported: number; skipped: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -166,6 +169,7 @@ export function BulkUpload() {
     const file = e.target.files?.[0];
     if (!file) return;
     setResult(null);
+    setPreviewFilter("all");
 
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -205,7 +209,7 @@ export function BulkUpload() {
           if (mapped.category && !validateValue(mapped.category, LEARNING_CATEGORIES)) errors.push({ row: rowNum, field: "Category", message: "Invalid category" });
         }
 
-        return { data: mapped, errors };
+        return { rowNumber: rowNum, data: mapped, errors };
       });
 
       setParsedRows(parsed);
@@ -217,6 +221,8 @@ export function BulkUpload() {
 
   const validRows = parsedRows.filter((r) => r.errors.length === 0);
   const errorRows = parsedRows.filter((r) => r.errors.length > 0);
+  const previewRows = previewFilter === "errors" ? errorRows : parsedRows;
+  const visiblePreviewRows = previewRows.slice(0, 100);
 
   const buildRecord = useCallback((row: Record<string, unknown>, userId: string) => {
     if (slug === "enterprise-spotlight") {
@@ -331,7 +337,7 @@ export function BulkUpload() {
           <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">
             Program
           </span>
-          <Select value={slug} onValueChange={(v) => { setSlug((v ?? slug) as UploadSlug); setParsedRows([]); setResult(null); }}>
+          <Select value={slug} onValueChange={(v) => { setSlug((v ?? slug) as UploadSlug); setParsedRows([]); setResult(null); setPreviewFilter("all"); }}>
             <SelectTrigger className="w-52">
               <SelectValue />
             </SelectTrigger>
@@ -395,13 +401,30 @@ export function BulkUpload() {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={handleUpload}
-              disabled={uploading || validRows.length === 0}
-              className="bg-srsf-green-500 hover:bg-srsf-green-600"
-            >
-              {uploading ? "Uploading..." : `Import ${validRows.length} Records`}
-            </Button>
+            <div className="flex items-center gap-3">
+              {errorRows.length > 0 && (
+                <Tabs
+                  value={previewFilter}
+                  onValueChange={(value) =>
+                    setPreviewFilter((value as "all" | "errors") ?? "all")
+                  }
+                >
+                  <TabsList>
+                    <TabsTrigger value="all">All Rows</TabsTrigger>
+                    <TabsTrigger value="errors">
+                      Errors Only ({errorRows.length})
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
+              <Button
+                onClick={handleUpload}
+                disabled={uploading || validRows.length === 0}
+                className="bg-srsf-green-500 hover:bg-srsf-green-600"
+              >
+                {uploading ? "Uploading..." : `Import ${validRows.length} Records`}
+              </Button>
+            </div>
           </div>
 
           <div className="rounded-xl border border-border/60 overflow-x-auto max-h-96 overflow-y-auto shadow-sm">
@@ -416,12 +439,12 @@ export function BulkUpload() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {parsedRows.slice(0, 100).map((pr, idx) => {
+                {visiblePreviewRows.map((pr) => {
                   const hasErrors = pr.errors.length > 0;
                   const errorFields = new Set(pr.errors.map((e) => e.field));
                   return (
-                    <TableRow key={idx} className={hasErrors ? "bg-red-50/50" : ""}>
-                      <TableCell className="text-xs text-muted-foreground">{idx + 2}</TableCell>
+                    <TableRow key={pr.rowNumber} className={hasErrors ? "bg-red-50/50" : ""}>
+                      <TableCell className="text-xs text-muted-foreground">{pr.rowNumber}</TableCell>
                       <TableCell>
                         {hasErrors ? (
                           <Badge variant="destructive" className="text-[10px] px-1.5" title={pr.errors.map((e) => `${e.field}: ${e.message}`).join(", ")}>
@@ -444,8 +467,11 @@ export function BulkUpload() {
               </TableBody>
             </Table>
           </div>
-          {parsedRows.length > 100 && (
-            <p className="text-xs text-muted-foreground">Showing first 100 of {parsedRows.length} rows</p>
+          {previewRows.length > 100 && (
+            <p className="text-xs text-muted-foreground">
+              Showing first 100 of {previewRows.length}{" "}
+              {previewFilter === "errors" ? "error rows" : "rows"}
+            </p>
           )}
         </div>
       )}

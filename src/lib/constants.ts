@@ -147,6 +147,7 @@ export const BUSINESS_SECTORS = [
   "Manufacturing",
   "Marketing & Advertising",
   "Media, Entertainment & Sports",
+  "Profesional Services",
   "Professional Services",
   "Professional Devt and Entrepreneurship Support",
   "Social Services and Community Development",
