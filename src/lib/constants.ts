@@ -80,45 +80,43 @@ export const MODULE_LABELS: Record<AppModule, string> = {
 // DATA ENTRY FORM OPTIONS
 // ============================================
 
-// Ghana's 16 regions (as of 2019 reorganization)
 export const REGIONS = [
-  "Ahafo",
-  "Ashanti",
-  "Bono",
-  "Bono East",
-  "Central",
-  "Eastern",
-  "Greater Accra",
-  "North East",
-  "Northern",
-  "Oti",
-  "Savannah",
-  "Upper East",
-  "Upper West",
-  "Volta",
-  "Western",
-  "Western North",
+  "Ahafo Region",
+  "Ashanti Region",
+  "Bono East Region",
+  "Bono Region",
+  "Central Region",
+  "Eastern Region",
+  "Greater Accra Region",
+  "North East Region",
+  "Northern Region",
+  "Oti Region",
+  "Savannah Region",
+  "Upper East Region",
+  "Upper West Region",
+  "Volta Region",
+  "Western North Region",
+  "Western Region",
 ] as const;
 
 export const GENDERS = ["Male", "Female"] as const;
 
 export const DISABILITY_TYPES = [
-  "Visual",
-  "Hearing",
-  "Physical",
-  "Intellectual",
-  "Speech",
-  "Psychosocial",
-  "Other",
+  "Lame",
+  "None",
+  "Partially Blind",
+  "Partially Deaf",
+  "Person with Albinism",
+  "Physically Challenged",
+  "Speech Impaired",
+  "Spinal cord",
+  "Totally Blind",
 ] as const;
 
 export const OWNERSHIP_TYPES = [
-  "Sole Proprietor",
+  "Limited liability",
   "Partnership",
-  "Close Corporation",
-  "(Pty) Ltd",
-  "Cooperative",
-  "Other",
+  "Sole Proprietorship",
 ] as const;
 
 export const BUSINESS_SIZES = [
@@ -129,27 +127,32 @@ export const BUSINESS_SIZES = [
 ] as const;
 
 export const FUNDING_STATUSES = [
-  "Self-funded",
-  "Grant-funded",
-  "Loan-funded",
-  "Investor-funded",
-  "Mixed",
+  "No",
+  "Yes",
 ] as const;
 
 export const BUSINESS_SECTORS = [
-  "Agriculture",
+  "Agriculture & Agribusiness",
   "Construction",
+  "Consumer Goods and Retail",
+  "Creative Arts, Design & Printing Services",
   "Education",
-  "Finance",
+  "Electrical & Electronics",
+  "Energy & Utilities",
+  "Fashion Design and Cosmetology",
+  "Financial Services",
   "Healthcare",
-  "Hospitality",
-  "ICT",
+  "Hospitality & Tourism",
+  "Information Technology (IT)",
   "Manufacturing",
-  "Mining",
-  "Retail",
-  "Services",
-  "Transport",
-  "Other",
+  "Marketing & Advertising",
+  "Media, Entertainment & Sports",
+  "Professional Services",
+  "Professional Devt and Entrepreneurship Support",
+  "Social Services and Community Development",
+  "Transportation & Logistics",
+  "Waste Management",
+  "Engineering",
 ] as const;
 
 export const EMPLOYMENT_STATUSES = [

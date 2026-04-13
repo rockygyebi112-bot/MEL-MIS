@@ -59,6 +59,11 @@ export function AbsaOnboardingForm({
   const employmentOptions = coreOptions.employment_status ?? [...EMPLOYMENT_STATUSES];
   const disabilityStatusOptions = coreOptions.disability_status ?? ["Yes", "No"];
   const disabilityTypeOptions = coreOptions.disability_type ?? [...DISABILITY_TYPES];
+  const disabilityTypeSelectOptions =
+    form.disability_type === "Other" &&
+    !disabilityTypeOptions.includes("Other")
+      ? [...disabilityTypeOptions, "Other"]
+      : disabilityTypeOptions;
 
   useEffect(() => {
     if (editEntry) {
@@ -277,7 +282,7 @@ export function AbsaOnboardingForm({
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                {disabilityTypeOptions.map((d) => (
+                {disabilityTypeSelectOptions.map((d) => (
                   <SelectItem key={d} value={d}>
                     {d}
                   </SelectItem>
