@@ -118,8 +118,29 @@ function getAgeBracket(age: number): string {
   return "65+";
 }
 
+function normalizeOptionValue(value: unknown): string {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function resolveAllowedOption(value: unknown, allowed: readonly string[]): string {
+  const normalizedValue = normalizeOptionValue(value);
+  if (!normalizedValue) return "";
+
+  const matchedOption = allowed.find(
+    (option) => normalizeOptionValue(option) === normalizedValue
+  );
+
+  return matchedOption ?? normalizedValue;
+}
+
 function validateValue(value: unknown, allowed: readonly string[]): boolean {
-  return !value || allowed.includes(String(value));
+  const normalizedValue = normalizeOptionValue(value);
+  return (
+    !normalizedValue ||
+    allowed.some((option) => normalizeOptionValue(option) === normalizedValue)
+  );
 }
 
 export function BulkUpload() {
@@ -194,6 +215,28 @@ export function BulkUpload() {
 
         // Program-specific validation
         if (slug === "enterprise-spotlight") {
+          mapped.region = resolveAllowedOption(mapped.region, REGIONS);
+          mapped.gender = resolveAllowedOption(mapped.gender, GENDERS);
+          mapped.disability_type = resolveAllowedOption(
+            mapped.disability_type,
+            DISABILITY_TYPES
+          );
+          mapped.ownership_type = resolveAllowedOption(
+            mapped.ownership_type,
+            OWNERSHIP_TYPES
+          );
+          mapped.business_size = resolveAllowedOption(
+            mapped.business_size,
+            BUSINESS_SIZES
+          );
+          mapped.funding_status = resolveAllowedOption(
+            mapped.funding_status,
+            FUNDING_STATUSES
+          );
+          mapped.business_sector = resolveAllowedOption(
+            mapped.business_sector,
+            BUSINESS_SECTORS
+          );
           if (mapped.region && !validateValue(mapped.region, REGIONS)) errors.push({ row: rowNum, field: "Region", message: "Invalid region" });
           if (mapped.gender && !validateValue(mapped.gender, GENDERS)) errors.push({ row: rowNum, field: "Gender", message: "Invalid gender" });
           if (mapped.disability_type && !validateValue(mapped.disability_type, DISABILITY_TYPES)) errors.push({ row: rowNum, field: "Disability Type", message: "Invalid type" });
@@ -202,10 +245,20 @@ export function BulkUpload() {
           if (mapped.funding_status && !validateValue(mapped.funding_status, FUNDING_STATUSES)) errors.push({ row: rowNum, field: "Funding Status", message: "Invalid status" });
           if (mapped.business_sector && !validateValue(mapped.business_sector, BUSINESS_SECTORS)) errors.push({ row: rowNum, field: "Business Sector", message: "Invalid sector" });
         } else if (slug === "absa-onboarding") {
+          mapped.gender = resolveAllowedOption(mapped.gender, GENDERS);
+          mapped.region = resolveAllowedOption(mapped.region, REGIONS);
+          mapped.employment_status = resolveAllowedOption(
+            mapped.employment_status,
+            EMPLOYMENT_STATUSES
+          );
           if (mapped.gender && !validateValue(mapped.gender, GENDERS)) errors.push({ row: rowNum, field: "Gender", message: "Invalid gender" });
           if (mapped.region && !validateValue(mapped.region, REGIONS)) errors.push({ row: rowNum, field: "Region", message: "Invalid region" });
           if (mapped.employment_status && !validateValue(mapped.employment_status, EMPLOYMENT_STATUSES)) errors.push({ row: rowNum, field: "Employment Status", message: "Invalid status" });
         } else if (slug === "learnings") {
+          mapped.category = resolveAllowedOption(
+            mapped.category,
+            LEARNING_CATEGORIES
+          );
           if (mapped.category && !validateValue(mapped.category, LEARNING_CATEGORIES)) errors.push({ row: rowNum, field: "Category", message: "Invalid category" });
         }
 
