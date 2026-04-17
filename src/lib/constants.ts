@@ -6,6 +6,7 @@ import {
   SlidersHorizontal,
   Lightbulb,
   Settings,
+  Target,
   LucideIcon,
 } from "lucide-react";
 
@@ -60,6 +61,12 @@ export const NAV_ITEMS: NavItem[] = [
     module: "learnings",
   },
   {
+    label: "Performance",
+    href: "/performance",
+    icon: Target,
+    module: "performance",
+  },
+  {
     label: "Settings",
     href: "/settings",
     icon: Settings,
@@ -74,6 +81,7 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   indicators: "Indicators Management",
   learnings: "Learnings",
   settings: "Settings",
+  performance: "Performance Management",
 };
 
 // ============================================

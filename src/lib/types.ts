@@ -6,7 +6,8 @@ export type AppModule =
   | "data_entry"
   | "indicators"
   | "learnings"
-  | "settings";
+  | "settings"
+  | "performance";
 
 export interface Role {
   id: string;
@@ -153,3 +154,87 @@ export const PROGRAM_TABLE_MAP: Record<ProgramSlug, string> = {
   "absa-onboarding": "absa_onboarding_entries",
   "learnings": "learnings",
 };
+
+// ============================================
+// PERFORMANCE MANAGEMENT
+// ============================================
+
+export type ActivityStatus = "pending" | "done" | "overdue";
+export type GoalStatus = "on_track" | "at_risk" | "behind";
+
+export interface Department {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface UserDepartment {
+  id: string;
+  user_id: string;
+  department_id: string;
+  is_manager: boolean;
+}
+
+export interface PerformanceGoal {
+  id: string;
+  department_id: string;
+  title: string;
+  description: string | null;
+  year: number;
+  quarter: number;
+  due_date: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface PerformanceActivity {
+  id: string;
+  goal_id: string;
+  title: string;
+  assigned_to: string | null;
+  due_date: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface ActivitySubmission {
+  id: string;
+  activity_id: string;
+  submitted_by: string;
+  description: string;
+  submitted_at: string;
+  updated_at: string;
+}
+
+export interface ActivityAttachment {
+  id: string;
+  submission_id: string;
+  file_name: string;
+  file_size: number;
+  storage_path: string;
+  uploaded_at: string;
+}
+
+// Enriched shapes used in UI (assembled from joined queries)
+export interface ActivityWithStatus extends PerformanceActivity {
+  status: ActivityStatus;
+  submission: ActivitySubmission | null;
+  attachments: ActivityAttachment[];
+  assignee: { full_name: string; email: string };
+}
+
+export interface GoalWithActivities extends PerformanceGoal {
+  activities: ActivityWithStatus[];
+  status: GoalStatus;
+  progress_pct: number;
+}
+
+export interface DepartmentSummary extends Department {
+  goals: GoalWithActivities[];
+  progress_pct: number;
+  status: GoalStatus;
+  staff_count: number;
+  done_count: number;
+  pending_count: number;
+  overdue_count: number;
+}
