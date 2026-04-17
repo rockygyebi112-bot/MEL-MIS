@@ -43,7 +43,7 @@ create table public.performance_goals (
   year          integer not null,
   quarter       integer not null check (quarter between 1 and 4),
   due_date      date not null,
-  created_by    uuid not null references public.user_profiles(id),
+  created_by    uuid references public.user_profiles(id) on delete set null,
   created_at    timestamptz not null default now()
 );
 
@@ -54,9 +54,9 @@ create table public.performance_activities (
   id          uuid primary key default uuid_generate_v4(),
   goal_id     uuid not null references public.performance_goals(id) on delete cascade,
   title       text not null,
-  assigned_to uuid not null references public.user_profiles(id),
+  assigned_to uuid references public.user_profiles(id) on delete set null,
   due_date    date not null,
-  created_by  uuid not null references public.user_profiles(id),
+  created_by  uuid references public.user_profiles(id) on delete set null,
   created_at  timestamptz not null default now()
 );
 
@@ -69,6 +69,7 @@ create table public.activity_submissions (
   submitted_by uuid not null references public.user_profiles(id),
   description  text not null,
   submitted_at timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
   unique (activity_id)  -- one submission per activity
 );
 
@@ -79,7 +80,7 @@ create table public.activity_attachments (
   id            uuid primary key default uuid_generate_v4(),
   submission_id uuid not null references public.activity_submissions(id) on delete cascade,
   file_name     text not null,
-  file_size     integer not null,
+  file_size     bigint not null,
   storage_path  text not null,
   uploaded_at   timestamptz not null default now()
 );
@@ -117,6 +118,9 @@ insert into storage.buckets (id, name, public)
 values ('performance-attachments', 'performance-attachments', false)
 on conflict do nothing;
 
+-- NOTE: Storage object policies must be configured in Supabase dashboard
+-- before file upload/download will work for the performance-attachments bucket.
+
 -- ============================================
 -- 10. Default permissions for 'performance' module
 -- ============================================
@@ -135,3 +139,24 @@ select id, 'performance', true from public.roles where name = 'Data Entry Office
 -- Viewer: not allowed
 insert into public.role_permissions (role_id, module, allowed)
 select id, 'performance', false from public.roles where name = 'Viewer';
+
+-- ============================================
+-- 11. INDEXES
+-- ============================================
+create index idx_performance_goals_dept_year_quarter
+  on public.performance_goals(department_id, year, quarter);
+
+create index idx_performance_activities_goal
+  on public.performance_activities(goal_id);
+
+create index idx_performance_activities_assigned_to
+  on public.performance_activities(assigned_to);
+
+create index idx_activity_submissions_activity
+  on public.activity_submissions(activity_id);
+
+create index idx_activity_attachments_submission
+  on public.activity_attachments(submission_id);
+
+create index idx_user_departments_department
+  on public.user_departments(department_id);
