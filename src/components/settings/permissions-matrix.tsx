@@ -21,6 +21,7 @@ const MODULES: AppModule[] = [
   "data_entry",
   "indicators",
   "learnings",
+  "performance",
   "settings",
 ];
 
