@@ -162,13 +162,13 @@ Alerts are triggered by three conditions:
 
 | Trigger | Who is notified | Channel |
 |---------|----------------|---------|
-| Activity due date passes without a submission | Assigned staff (reminder) + their manager | In-app alert + email |
-| Department progress falls >30% below expected pace | ED | In-app alert + email |
-| Activity is overdue for 3+ days | Manager | In-app alert + email |
-
-Email is sent via **Resend** (transactional email service), triggered by **Supabase Edge Functions** running on a daily cron schedule.
+| Activity due date passes without a submission | Assigned staff (reminder) + their manager | In-app only |
+| Department progress falls >30% below expected pace | ED | In-app only |
+| Activity is overdue for 3+ days | Manager | In-app only |
 
 In-app alerts appear in the Alerts panel on the ED view and the Alerts tab on the Manager view. The bell icon in the app bar shows a red dot when there are unread alerts.
+
+Email notifications are out of scope for this phase.
 
 ---
 
