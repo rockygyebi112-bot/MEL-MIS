@@ -77,7 +77,9 @@ export function usePerformanceEd(year: number, quarter: number) {
         const rawActivities = goal.activities ?? [];
 
         const activities: ActivityWithStatus[] = rawActivities.map((act) => {
-          const submission = act.submission ?? null;
+          // Supabase may return submission as array or object depending on FK detection
+          const rawSub = act.submission;
+          const submission = Array.isArray(rawSub) ? (rawSub[0] ?? null) : (rawSub ?? null);
           return {
             ...act,
             status: computeActivityStatus(act, submission ? { id: submission.id, activity_id: submission.activity_id, submitted_by: submission.submitted_by, description: submission.description, submitted_at: submission.submitted_at, updated_at: submission.updated_at } : null),
