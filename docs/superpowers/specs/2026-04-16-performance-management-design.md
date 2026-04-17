@@ -71,7 +71,7 @@ Sub-tasks under a goal, assigned to a staff member.
 | `title` | text | Activity name |
 | `assigned_to` | uuid FK → user_profiles | |
 | `due_date` | date | |
-| `status` | enum | `pending`, `done`, `overdue` (computed or manual) |
+| `status` | — | Computed on-read: `done` if submission exists, `overdue` if `due_date < now()`, else `pending` |
 | `created_by` | uuid FK → user_profiles | |
 | `created_at` | timestamptz | |
 
@@ -166,7 +166,7 @@ Alerts are triggered by three conditions:
 | Department progress falls >30% below expected pace | ED | In-app only |
 | Activity is overdue for 3+ days | Manager | In-app only |
 
-In-app alerts appear in the Alerts panel on the ED view and the Alerts tab on the Manager view. The bell icon in the app bar shows a red dot when there are unread alerts.
+In-app alerts are computed on-read — no separate alerts table is needed. The Alerts panel (ED view) and Alerts tab (Manager view) query live activity and goal status to surface current overdue/at-risk items. The bell icon in the app bar shows a red dot when the query returns any active alerts for that user.
 
 Email notifications are out of scope for this phase.
 
@@ -210,7 +210,7 @@ Access is role-based: staff are redirected from `/performance` and `/performance
 
 ## 10. Out of Scope
 
-- Push notifications (email only for now)
+- Push notifications
 - Goal templates or recurring goals
 - Comments or threaded discussions on activities
 - External stakeholder access
