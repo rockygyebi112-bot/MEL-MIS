@@ -43,6 +43,9 @@ export function usePerformanceStaff(userId: string, weekDate: Date): StaffData {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Stabilise weekDate as a string so useCallback doesn't see a new Date object each render
+  const weekKey = weekDate.toISOString().split("T")[0];
+
   const load = useCallback(async () => {
     if (!userId) { setLoading(false); return; }
     setLoading(true);
@@ -154,7 +157,7 @@ export function usePerformanceStaff(userId: string, weekDate: Date): StaffData {
 
     setActivities(enriched);
     setLoading(false);
-  }, [userId, weekDate]);
+  }, [userId, weekKey]); // weekKey is a stable string derived from weekDate
 
   useEffect(() => { load(); }, [load]);
 

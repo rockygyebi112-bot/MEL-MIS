@@ -1,14 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/hooks/use-user";
 import { EdDashboard } from "@/components/performance/ed-dashboard";
 
+const Skeleton = () => (
+  <div className="space-y-4">
+    <div className="h-8 w-48 rounded bg-muted animate-pulse" />
+    <div className="grid grid-cols-4 gap-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
+      ))}
+    </div>
+  </div>
+);
+
 export default function PerformancePage() {
   const { user, loading } = useUser();
   const router = useRouter();
+  // True once we've confirmed the user is Admin and should see the ED view
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (loading || !user) return;
@@ -17,7 +30,10 @@ export default function PerformancePage() {
       const supabase = createClient();
 
       // Admin stays on this page (ED view)
-      if (user?.role?.name === "Admin") return;
+      if (user?.role?.name === "Admin") {
+        setIsAdmin(true);
+        return;
+      }
 
       // Check if user is a department manager
       const { data: ud } = await supabase
@@ -36,20 +52,8 @@ export default function PerformancePage() {
     checkRole();
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-8 w-48 rounded bg-muted animate-pulse" />
-        <div className="grid grid-cols-4 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (user?.role?.name !== "Admin") return null;
+  // Show skeleton until we know the role
+  if (loading || !isAdmin) return <Skeleton />;
 
   return <EdDashboard />;
 }

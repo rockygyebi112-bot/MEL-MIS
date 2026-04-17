@@ -118,8 +118,14 @@ insert into storage.buckets (id, name, public)
 values ('performance-attachments', 'performance-attachments', false)
 on conflict do nothing;
 
--- NOTE: Storage object policies must be configured in Supabase dashboard
--- before file upload/download will work for the performance-attachments bucket.
+-- Storage object policies: authenticated users can upload and read their own files
+create policy "auth_upload_performance_attachments"
+  on storage.objects for insert
+  with check (bucket_id = 'performance-attachments' and auth.role() = 'authenticated');
+
+create policy "auth_read_performance_attachments"
+  on storage.objects for select
+  using (bucket_id = 'performance-attachments' and auth.role() = 'authenticated');
 
 -- ============================================
 -- 10. Default permissions for 'performance' module

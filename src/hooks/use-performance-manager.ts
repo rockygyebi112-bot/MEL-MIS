@@ -127,24 +127,29 @@ export function usePerformanceManager(
 
     const allActivities = enrichedGoals.flatMap((g) => g.activities);
 
-    const staffProgress: StaffMemberProgress[] = (udRows ?? []).map(
-      (row: { user_id: string; user: UserProfile | UserProfile[] }) => {
-        const userData = Array.isArray(row.user) ? row.user[0] : row.user;
-        const userActivities = allActivities.filter(
-          (a) => a.assigned_to === row.user_id
-        );
-        const done = userActivities.filter((a) => a.status === "done").length;
-        const overdue = userActivities.filter((a) => a.status === "overdue").length;
-        const total = userActivities.length;
-        return {
-          user: userData as UserProfile,
-          total,
-          done,
-          overdue,
-          pct: total === 0 ? 0 : Math.round((done / total) * 100),
-        };
-      }
-    );
+    const staffProgress: StaffMemberProgress[] = (udRows ?? [])
+      .map(
+        (row: { user_id: string; user: UserProfile | UserProfile[] | null }) => {
+          // Supabase may return user as array or single object
+          const userData = Array.isArray(row.user) ? (row.user[0] ?? null) : (row.user ?? null);
+          if (!userData) return null;
+
+          const userActivities = allActivities.filter(
+            (a) => a.assigned_to === row.user_id
+          );
+          const done = userActivities.filter((a) => a.status === "done").length;
+          const overdue = userActivities.filter((a) => a.status === "overdue").length;
+          const total = userActivities.length;
+          return {
+            user: userData,
+            total,
+            done,
+            overdue,
+            pct: total === 0 ? 0 : Math.round((done / total) * 100),
+          };
+        }
+      )
+      .filter((s): s is StaffMemberProgress => s !== null);
 
     setDepartment(dept as Department);
     setGoals(enrichedGoals);
