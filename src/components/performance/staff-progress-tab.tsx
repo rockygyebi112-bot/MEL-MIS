@@ -20,18 +20,26 @@ export function StaffProgressTab({
   onReload,
 }: StaffProgressTabProps) {
   const [addOpen, setAddOpen] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   async function removeStaff(userId: string, name: string) {
-    if (!confirm(`Remove ${name} from this department?`)) return;
+    setRemovingId(userId);
     const supabase = createClient();
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("user_departments")
       .delete()
       .eq("user_id", userId)
-      .eq("department_id", departmentId);
+      .eq("department_id", departmentId)
+      .select();
+
+    setRemovingId(null);
+    setConfirmingId(null);
 
     if (error) {
       toast.error("Failed to remove: " + error.message);
+    } else if (!data || data.length === 0) {
+      toast.error("Could not remove staff member — permission denied.");
     } else {
       toast.success(`${name} removed from department`);
       onReload();
@@ -59,7 +67,7 @@ export function StaffProgressTab({
             className="flex items-center gap-4 rounded-xl border border-border/60 bg-white p-4"
           >
             <div className="size-9 rounded-full bg-[#6B2D7B] text-white flex items-center justify-center text-sm font-semibold shrink-0">
-              {s.user.full_name.charAt(0).toUpperCase()}
+              {(s.user.full_name?.charAt(0) ?? "?").toUpperCase()}
             </div>
 
             <div className="flex-1 min-w-0">
@@ -84,13 +92,35 @@ export function StaffProgressTab({
               )}
             </div>
 
-            <button
-              onClick={() => removeStaff(s.user.id, s.user.full_name)}
-              className="shrink-0 text-muted-foreground hover:text-red-500 transition-colors"
-              title="Remove from department"
-            >
-              <X className="size-4" />
-            </button>
+            {confirmingId === s.user.id ? (
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => removeStaff(s.user.id, s.user.full_name)}
+                  disabled={removingId === s.user.id}
+                  className="text-xs text-red-600 hover:text-red-700 font-medium disabled:opacity-50"
+                >
+                  {removingId === s.user.id ? "Removing…" : "Remove"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingId(null)}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                aria-label={`Remove ${s.user.full_name} from department`}
+                onClick={() => setConfirmingId(s.user.id)}
+                disabled={!!removingId}
+                className="shrink-0 text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-30"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
         ))
       )}
