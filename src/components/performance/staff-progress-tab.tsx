@@ -33,14 +33,17 @@ export function StaffProgressTab({
       .eq("department_id", departmentId)
       .select();
 
-    setRemovingId(null);
-    setConfirmingId(null);
-
     if (error) {
+      setRemovingId(null);
+      setConfirmingId(null);
       toast.error("Failed to remove: " + error.message);
     } else if (!data || data.length === 0) {
+      setRemovingId(null);
+      setConfirmingId(null);
       toast.error("Could not remove staff member — permission denied.");
     } else {
+      setRemovingId(null);
+      setConfirmingId(null);
       toast.success(`${name} removed from department`);
       onReload();
     }

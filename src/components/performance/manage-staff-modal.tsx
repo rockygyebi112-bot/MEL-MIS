@@ -47,11 +47,10 @@ export function ManageStaffModal({
       setLoadingUsers(true);
       const supabase = createClient();
 
-      // Users already in this department
+      // Users already in any department (UNIQUE constraint on user_id)
       const { data: existing, error: existingErr } = await supabase
         .from("user_departments")
-        .select("user_id")
-        .eq("department_id", departmentId);
+        .select("user_id");
 
       if (existingErr) {
         toast.error("Failed to load staff: " + existingErr.message);
@@ -107,7 +106,7 @@ export function ManageStaffModal({
 
       if (error) {
         if (error.code === "23505") {
-          toast.error("This user is already assigned to the department.");
+          toast.error("This user is already assigned to a department. Remove them from their current department first.");
         } else {
           toast.error("Failed to add staff: " + error.message);
         }
@@ -135,7 +134,7 @@ export function ManageStaffModal({
         ) : availableUsers.length === 0 ? (
           <div className="py-4 text-center space-y-3">
             <p className="text-sm text-muted-foreground">
-              All active users are already assigned to this department.
+              All active users are already assigned to a department.
             </p>
             <Button variant="outline" onClick={onClose}>Close</Button>
           </div>
