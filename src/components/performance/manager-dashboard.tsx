@@ -150,7 +150,13 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
               onReload={reload}
             />
           )}
-          {activeTab === "Staff" && <StaffProgressTab staff={staff} />}
+          {activeTab === "Staff" && (
+            <StaffProgressTab
+              staff={staff}
+              departmentId={departmentId}
+              onReload={reload}
+            />
+          )}
           {activeTab === "Alerts" && deptSummary && (
             <AlertsPanel departments={[deptSummary]} />
           )}
