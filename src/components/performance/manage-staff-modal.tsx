@@ -33,62 +33,92 @@ export function ManageStaffModal({
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      // Reset state on close so stale data doesn't flash on next open
+      setAvailableUsers([]);
+      setSelectedUserId("");
+      setIsManager(false);
+      return;
+    }
+
+    let cancelled = false;
 
     async function fetchAvailable() {
       setLoadingUsers(true);
       const supabase = createClient();
 
       // Users already in this department
-      const { data: existing } = await supabase
+      const { data: existing, error: existingErr } = await supabase
         .from("user_departments")
         .select("user_id")
         .eq("department_id", departmentId);
 
+      if (existingErr) {
+        toast.error("Failed to load staff: " + existingErr.message);
+        if (!cancelled) setLoadingUsers(false);
+        return;
+      }
+
       const existingIds = (existing ?? []).map((r: { user_id: string }) => r.user_id);
 
       // All active users
-      const { data: allUsers } = await supabase
+      const { data: allUsers, error: usersErr } = await supabase
         .from("user_profiles")
         .select("id, full_name, email, role_id, status, created_at, updated_at")
         .eq("status", "active")
         .order("full_name");
+
+      if (usersErr) {
+        toast.error("Failed to load users: " + usersErr.message);
+        if (!cancelled) setLoadingUsers(false);
+        return;
+      }
 
       // Filter out already-assigned users
       const filtered = (allUsers ?? []).filter(
         (u: UserProfile) => !existingIds.includes(u.id)
       );
 
-      setAvailableUsers(filtered as UserProfile[]);
-      setSelectedUserId("");
-      setIsManager(false);
-      setLoadingUsers(false);
+      if (!cancelled) {
+        setAvailableUsers(filtered as UserProfile[]);
+        setSelectedUserId("");
+        setIsManager(false);
+        setLoadingUsers(false);
+      }
     }
 
     fetchAvailable();
+    return () => { cancelled = true; };
   }, [open, departmentId]);
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedUserId) return;
+    if (!selectedUserId || saving) return;
 
     setSaving(true);
     const supabase = createClient();
 
-    const { error } = await supabase.from("user_departments").insert({
-      user_id: selectedUserId,
-      department_id: departmentId,
-      is_manager: isManager,
-    });
+    try {
+      const { error } = await supabase.from("user_departments").insert({
+        user_id: selectedUserId,
+        department_id: departmentId,
+        is_manager: isManager,
+      });
 
-    if (error) {
-      toast.error("Failed to add staff: " + error.message);
-    } else {
-      toast.success("Staff member added to department");
-      onAdded();
-      onClose();
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("This user is already assigned to the department.");
+        } else {
+          toast.error("Failed to add staff: " + error.message);
+        }
+      } else {
+        toast.success("Staff member added to department");
+        onAdded();
+        onClose();
+      }
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   return (
@@ -103,9 +133,12 @@ export function ManageStaffModal({
             Loading users…
           </p>
         ) : availableUsers.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            All active users are already assigned to this department.
-          </p>
+          <div className="py-4 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              All active users are already assigned to this department.
+            </p>
+            <Button variant="outline" onClick={onClose}>Close</Button>
+          </div>
         ) : (
           <form onSubmit={handleAdd} className="space-y-4 mt-2">
             <div className="space-y-1.5">
