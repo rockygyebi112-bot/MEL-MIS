@@ -18,7 +18,7 @@ export function StatusSegmentedBar({
 
   return (
     <div>
-      <div className="flex gap-[3px] h-1.5 rounded-full overflow-hidden bg-[#1A2030]">
+      <div className="flex gap-[3px] h-1.5 rounded-full overflow-hidden bg-muted">
         {onTrack > 0 && (
           <div style={{ flex: onTrack / safeTotal }} className="bg-[#22C55E]" />
         )}
@@ -30,7 +30,7 @@ export function StatusSegmentedBar({
         )}
       </div>
       {showLabels && (
-        <div className="mt-1.5 flex justify-between text-[10px] tracking-wider text-[#8891A6]">
+        <div className="mt-1.5 flex justify-between text-[10px] tracking-wider text-muted-foreground">
           <span>{onTrack} ON TRACK</span>
           <span>{atRisk} AT RISK</span>
           <span>{behind} BEHIND</span>

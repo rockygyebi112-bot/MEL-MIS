@@ -16,32 +16,32 @@ function monogram(name: string): string {
 
 const STATUS_STYLE = {
   on_track: {
-    surface: "bg-[#151B27]",
-    badgeBg: "bg-[#052E16]",
-    badgeText: "text-[#4ADE80]",
-    valueText: "text-[#4ADE80]",
-    subText: "text-[#8891A6]",
-    pillText: "text-[#4ADE80]",
+    surface: "bg-card border border-border",
+    badgeBg: "bg-green-100 dark:bg-[#052E16]",
+    badgeText: "text-green-700 dark:text-[#4ADE80]",
+    valueText: "text-green-700 dark:text-[#4ADE80]",
+    subText: "text-muted-foreground",
+    pillText: "text-green-700 dark:text-[#4ADE80]",
     pillLabel: "ON TRACK",
   },
   at_risk: {
     surface:
-      "bg-[linear-gradient(135deg,#1F1405_0%,#151B27_80%)] border border-[#F59E0B33]",
-    badgeBg: "bg-[#451A03]",
-    badgeText: "text-[#FBBF24]",
-    valueText: "text-[#FBBF24]",
-    subText: "text-[#FBBF24]",
-    pillText: "text-[#FBBF24]",
+      "bg-amber-50 border border-amber-200 dark:bg-[linear-gradient(135deg,#1F1405_0%,#151B27_80%)] dark:border-[#F59E0B33]",
+    badgeBg: "bg-amber-100 dark:bg-[#451A03]",
+    badgeText: "text-amber-700 dark:text-[#FBBF24]",
+    valueText: "text-amber-700 dark:text-[#FBBF24]",
+    subText: "text-amber-700 dark:text-[#FBBF24]",
+    pillText: "text-amber-700 dark:text-[#FBBF24]",
     pillLabel: "AT RISK",
   },
   behind: {
     surface:
-      "bg-[linear-gradient(135deg,#1F0505_0%,#151B27_80%)] border border-[#DC262633]",
-    badgeBg: "bg-[#450A0A]",
-    badgeText: "text-[#FCA5A5]",
-    valueText: "text-[#FCA5A5]",
-    subText: "text-[#FCA5A5]",
-    pillText: "text-[#FCA5A5]",
+      "bg-red-50 border border-red-200 dark:bg-[linear-gradient(135deg,#1F0505_0%,#151B27_80%)] dark:border-[#DC262633]",
+    badgeBg: "bg-red-100 dark:bg-[#450A0A]",
+    badgeText: "text-red-700 dark:text-[#FCA5A5]",
+    valueText: "text-red-700 dark:text-[#FCA5A5]",
+    subText: "text-red-700 dark:text-[#FCA5A5]",
+    pillText: "text-red-700 dark:text-[#FCA5A5]",
     pillLabel: "BEHIND",
   },
 } as const;
@@ -67,7 +67,7 @@ export function DepartmentRowCard({ dept }: DepartmentRowCardProps) {
         {monogram(dept.name)}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-bold text-white truncate">
+        <div className="text-[15px] font-bold text-foreground truncate">
           {dept.name}
         </div>
         <div className={`text-[11px] mt-0.5 ${s.subText}`}>{subLine}</div>
