@@ -20,6 +20,7 @@ import type {
 
 export function usePerformanceEd(year: number, quarter: number) {
   const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
+  const [trendDeltaPct, setTrendDeltaPct] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +65,33 @@ export function usePerformanceEd(year: number, quarter: number) {
     (staffRows ?? []).forEach((r: { department_id: string }) => {
       staffCountMap[r.department_id] = (staffCountMap[r.department_id] ?? 0) + 1;
     });
+
+    // 3.5. Fetch prior quarter goals and activities for trend delta
+    const priorQuarter = quarter === 1 ? 4 : quarter - 1;
+    const priorYear = quarter === 1 ? year - 1 : year;
+
+    const { data: priorGoals } = await supabase
+      .from("performance_goals")
+      .select(`
+        activities:performance_activities (
+          id,
+          due_date,
+          submission:activity_submissions ( id )
+        )
+      `)
+      .eq("year", priorYear)
+      .eq("quarter", priorQuarter);
+
+    const priorActivities = (priorGoals ?? []).flatMap(
+      (g: { activities?: Array<{ submission: unknown }> }) => g.activities ?? []
+    );
+    const priorDone = priorActivities.filter((a) => {
+      const sub = Array.isArray(a.submission) ? a.submission[0] : a.submission;
+      return !!sub;
+    }).length;
+    const priorPct = priorActivities.length === 0
+      ? null
+      : Math.round((priorDone / priorActivities.length) * 100);
 
     // 4. Assemble DepartmentSummary for each department
     const expectedPct = getExpectedProgress(quarter, year);
@@ -130,10 +158,20 @@ export function usePerformanceEd(year: number, quarter: number) {
     });
 
     setDepartments(summaries);
+
+    // Compute trend delta
+    const totalAct = summaries.reduce(
+      (s, d) => s + d.done_count + d.pending_count + d.overdue_count,
+      0
+    );
+    const doneAct = summaries.reduce((s, d) => s + d.done_count, 0);
+    const currentPct = totalAct === 0 ? 0 : Math.round((doneAct / totalAct) * 100);
+    setTrendDeltaPct(priorPct === null ? null : currentPct - priorPct);
+
     setLoading(false);
   }, [year, quarter]);
 
   useEffect(() => { load(); }, [load]);
 
-  return { departments, loading, error, reload: load };
+  return { departments, trendDeltaPct, loading, error, reload: load };
 }

@@ -12,13 +12,15 @@ export type ProgramFilter =
   | "enterprise-spotlight"
   | "virtual-university"
   | "hangout"
-  | "absa-onboarding";
+  | "absa-onboarding"
+  | "performance";
 
 const FILTER_OPTIONS: { value: ProgramFilter; label: string }[] = [
   { value: "enterprise-spotlight", label: "Enterprise Spotlight" },
   { value: "virtual-university", label: "Virtual University" },
   { value: "hangout", label: "Hangout" },
   { value: "absa-onboarding", label: "ABSA Onboarding" },
+  { value: "performance", label: "Performance" },
 ];
 
 interface ProgramFilterBarProps {

@@ -4,15 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/hooks/use-user";
-import { EdDashboard } from "@/components/performance/ed-dashboard";
+import { EdHome } from "@/components/performance/ed-home";
 
 const Skeleton = () => (
-  <div className="space-y-4">
-    <div className="h-8 w-48 rounded bg-muted animate-pulse" />
-    <div className="grid grid-cols-4 gap-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
-      ))}
+  <div className="-mx-4 -my-4 sm:-mx-6 sm:-my-6 min-h-screen bg-[#0B0F17] px-4 py-5 sm:px-6 sm:py-6">
+    <div className="mx-auto max-w-[560px] space-y-4">
+      <div className="h-8 w-48 rounded bg-[#151B27] animate-pulse" />
+      <div className="h-40 rounded-3xl bg-[#151B27] animate-pulse" />
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-[72px] rounded-2xl bg-[#151B27] animate-pulse" />
+        ))}
+      </div>
     </div>
   </div>
 );
@@ -55,5 +58,11 @@ export default function PerformancePage() {
   // Show skeleton until we know the role
   if (loading || !isAdmin) return <Skeleton />;
 
-  return <EdDashboard />;
+  return (
+    <div className="-mx-4 -my-4 sm:-mx-6 sm:-my-6 min-h-screen bg-[#0B0F17] px-4 py-5 sm:px-6 sm:py-6">
+      <div className="mx-auto max-w-[560px]">
+        <EdHome />
+      </div>
+    </div>
+  );
 }
