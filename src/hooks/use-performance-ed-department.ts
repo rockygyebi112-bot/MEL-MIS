@@ -77,7 +77,7 @@ export function usePerformanceEdDepartment(
         *,
         activities:performance_activities (
           *,
-          assignee:user_profiles!assigned_to ( full_name ),
+          assignee:user_profiles!assigned_to ( full_name, email ),
           submission:activity_submissions (
             *,
             attachments:activity_attachments ( * ),
@@ -102,7 +102,7 @@ export function usePerformanceEdDepartment(
       submittedBy?: { full_name?: string };
     };
     type RawAct = PerformanceActivity & {
-      assignee: { full_name: string };
+      assignee: { full_name: string; email: string };
       submission: RawSub | RawSub[] | null;
     };
 
