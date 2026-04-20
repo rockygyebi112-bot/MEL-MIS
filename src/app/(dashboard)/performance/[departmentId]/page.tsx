@@ -21,14 +21,8 @@ export default function DepartmentPerformancePage({ params }: Props) {
     );
   }
 
-  if (user.role?.name === "Admin") {
-    return (
-      <div className="mx-auto max-w-[560px] lg:max-w-5xl">
-        <EdDrilldown departmentId={departmentId} />
-      </div>
-    );
-  }
-
+  // Admins get the same full-featured manager view so they can manage any
+  // department's goals, activities, and proof-of-work submissions.
   return (
     <div className="mx-auto max-w-[560px] lg:max-w-6xl">
       <ManagerDashboard departmentId={departmentId} />

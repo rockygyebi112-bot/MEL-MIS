@@ -3,6 +3,11 @@ import { Topbar } from "@/components/layout/topbar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { SidebarProvider } from "@/lib/sidebar-context";
 
+// Dashboard pages are all auth-gated and user-specific — skip static
+// prerendering so the build doesn't try to instantiate the Supabase
+// client without runtime env vars.
+export const dynamic = "force-dynamic";
+
 export default function DashboardLayout({
   children,
 }: {
