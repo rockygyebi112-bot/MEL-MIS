@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
+  buildWeeklyTrend,
   computeActivityStatus,
   computeGoalStatus,
   getExpectedProgress,
@@ -161,9 +162,25 @@ export function usePerformanceEdDepartment(
           activities,
           progress_pct: progressPct,
           status: computeGoalStatus(progressPct, expectedPct, hasOverdue),
+          weekly_trend: [],
+          next_activity: null,
         };
       }
     );
+
+    enrichedGoals.forEach((g) => {
+      const gTrendInput = g.activities.map((a) => ({
+        due_date: a.due_date,
+        submission_at: a.submission?.submitted_at ?? null,
+      }));
+      g.weekly_trend = buildWeeklyTrend(gTrendInput, new Date(), 8);
+      const gUpcoming = g.activities
+        .filter((a) => a.status === "pending")
+        .sort((a, b) => a.due_date.localeCompare(b.due_date));
+      g.next_activity = gUpcoming[0]
+        ? { title: gUpcoming[0].title, due_date: gUpcoming[0].due_date }
+        : null;
+    });
 
     const allActivities = enrichedGoals.flatMap((g) => g.activities);
     const done = allActivities.filter((a) => a.status === "done").length;
