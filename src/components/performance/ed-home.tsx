@@ -128,19 +128,27 @@ export function EdHome() {
 
       {/* ── Right: department grid ── */}
       <div>
-        {/* Mobile: row cards */}
-        <div className="lg:hidden space-y-2.5">
-          {departments.map((dept) => (
-            <DepartmentRowCard key={dept.id} dept={dept} />
-          ))}
-        </div>
+        {departments.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
+            No departments found for this quarter.
+          </div>
+        ) : (
+          <>
+            {/* Mobile: row cards */}
+            <div className="lg:hidden space-y-2.5">
+              {departments.map((dept) => (
+                <DepartmentRowCard key={dept.id} dept={dept} />
+              ))}
+            </div>
 
-        {/* Desktop: panel cards */}
-        <div className="hidden lg:grid grid-cols-2 xl:grid-cols-3 gap-4">
-          {departments.map((dept) => (
-            <DepartmentRowCard key={dept.id} dept={dept} variant="panel" />
-          ))}
-        </div>
+            {/* Desktop: panel cards */}
+            <div className="hidden lg:grid grid-cols-2 xl:grid-cols-3 gap-4">
+              {departments.map((dept) => (
+                <DepartmentRowCard key={dept.id} dept={dept} variant="panel" />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
