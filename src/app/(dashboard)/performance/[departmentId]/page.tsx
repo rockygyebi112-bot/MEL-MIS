@@ -2,7 +2,6 @@
 
 import { use } from "react";
 import { useUser } from "@/hooks/use-user";
-import { EdDrilldown } from "@/components/performance/ed-drilldown";
 import { ManagerDashboard } from "@/components/performance/manager-dashboard";
 
 interface Props {
@@ -22,13 +21,7 @@ export default function DepartmentPerformancePage({ params }: Props) {
     );
   }
 
-  if (user.role?.name === "Admin") {
-    return (
-      <div className="mx-auto max-w-[560px]">
-        <EdDrilldown departmentId={departmentId} />
-      </div>
-    );
-  }
-
+  // Admins get the same full-featured manager view so they can manage any
+  // department's goals, activities, and proof-of-work submissions.
   return <ManagerDashboard departmentId={departmentId} />;
 }

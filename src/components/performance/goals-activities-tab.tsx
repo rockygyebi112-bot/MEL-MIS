@@ -1,87 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Plus, Paperclip } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddActivityModal } from "./add-activity-modal";
+import { ActivityCard } from "./activity-card";
 import {
   GOAL_STATUS_CLASSES,
   GOAL_STATUS_LABEL,
-  ACTIVITY_STATUS_CLASSES,
 } from "@/lib/performance-utils";
-import type { GoalWithActivities, ActivityWithStatus } from "@/lib/types";
+import type { GoalWithActivities } from "@/lib/types";
 import type { StaffMemberProgress } from "@/hooks/use-performance-manager";
 
 interface GoalsActivitiesTabProps {
   goals: GoalWithActivities[];
   staff: StaffMemberProgress[];
   currentUserId: string;
+  departmentId: string;
   onAddGoal: () => void;
   onReload: () => void;
-}
-
-function ActivityRow({ activity }: { activity: ActivityWithStatus }) {
-  const dueDateLabel = new Date(activity.due_date).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
-
-  return (
-    <div className="flex items-start gap-3 py-2.5 px-3 rounded-lg hover:bg-muted/50">
-      <div
-        className={`mt-0.5 size-2 rounded-full shrink-0 ${
-          activity.status === "done"
-            ? "bg-green-500"
-            : activity.status === "overdue"
-            ? "bg-red-500"
-            : "bg-muted-foreground/40"
-        }`}
-      />
-      <div className="flex-1 min-w-0">
-        <p
-          className={`text-sm ${
-            activity.status === "done"
-              ? "line-through text-muted-foreground"
-              : "text-foreground"
-          }`}
-        >
-          {activity.title}
-        </p>
-        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-xs text-muted-foreground">
-            {activity.assignee.full_name}
-          </span>
-          <span
-            className={`text-xs font-medium ${
-              activity.status === "overdue" ? "text-red-600" : "text-muted-foreground"
-            }`}
-          >
-            · Due {dueDateLabel}
-          </span>
-          {activity.submission && (
-            <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
-              <Paperclip className="size-2.5" />
-              Proof submitted
-            </span>
-          )}
-        </div>
-      </div>
-      <span className={`text-xs font-medium shrink-0 ${ACTIVITY_STATUS_CLASSES[activity.status]}`}>
-        {activity.status}
-      </span>
-    </div>
-  );
 }
 
 function GoalRow({
   goal,
   staff,
   currentUserId,
+  departmentId,
   onReload,
 }: {
   goal: GoalWithActivities;
   staff: StaffMemberProgress[];
   currentUserId: string;
+  departmentId: string;
   onReload: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -121,16 +71,26 @@ function GoalRow({
       </button>
 
       {expanded && (
-        <div className="border-t border-border/40 px-2 pb-2">
+        <div className="border-t border-border/40 p-3 space-y-2">
           {goal.activities.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-3">No activities yet</p>
+            <p className="text-xs text-muted-foreground text-center py-3">
+              No activities yet
+            </p>
           ) : (
-            goal.activities.map((act) => <ActivityRow key={act.id} activity={act} />)
+            goal.activities.map((act) => (
+              <ActivityCard
+                key={act.id}
+                activity={act}
+                currentUserId={currentUserId}
+                departmentId={departmentId}
+                onReload={onReload}
+              />
+            ))
           )}
           <Button
             size="sm"
             variant="outline"
-            className="w-full mt-2 h-8 text-xs"
+            className="w-full h-8 text-xs"
             onClick={() => setAddActivityOpen(true)}
           >
             <Plus className="size-3.5 mr-1" />
@@ -156,6 +116,7 @@ export function GoalsActivitiesTab({
   goals,
   staff,
   currentUserId,
+  departmentId,
   onAddGoal,
   onReload,
 }: GoalsActivitiesTabProps) {
@@ -173,15 +134,18 @@ export function GoalsActivitiesTab({
           No goals for this quarter yet. Add one to get started.
         </div>
       ) : (
-        goals.map((goal) => (
-          <GoalRow
-            key={goal.id}
-            goal={goal}
-            staff={staff}
-            currentUserId={currentUserId}
-            onReload={onReload}
-          />
-        ))
+        <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-3">
+          {goals.map((goal) => (
+            <GoalRow
+              key={goal.id}
+              goal={goal}
+              staff={staff}
+              currentUserId={currentUserId}
+              departmentId={departmentId}
+              onReload={onReload}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
