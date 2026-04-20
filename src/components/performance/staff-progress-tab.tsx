@@ -67,7 +67,7 @@ export function StaffProgressTab({
         staff.map((s) => (
           <div
             key={s.user.id}
-            className="flex items-center gap-4 rounded-xl border border-border/60 bg-white p-4"
+            className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4"
           >
             <div className="size-9 rounded-full bg-[#6B2D7B] text-white flex items-center justify-center text-sm font-semibold shrink-0">
               {(s.user.full_name?.charAt(0) ?? "?").toUpperCase()}
@@ -89,7 +89,7 @@ export function StaffProgressTab({
             </div>
 
             <div className="text-right shrink-0">
-              <p className="text-sm font-bold text-[#6B2D7B]">{s.pct}%</p>
+              <p className="text-sm font-bold text-[#5BBF3A]">{s.pct}%</p>
               {s.overdue > 0 && (
                 <p className="text-xs text-red-500">{s.overdue} overdue</p>
               )}
