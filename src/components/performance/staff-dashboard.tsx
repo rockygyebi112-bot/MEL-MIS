@@ -84,13 +84,13 @@ export function StaffDashboard() {
 
       {/* Dept goal banner */}
       {goalTitle && (
-        <div className="rounded-xl border border-[#6B2D7B]/20 bg-purple-50/50 p-4">
+        <div className="rounded-xl border border-[#6B2D7B]/30 bg-card p-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-[#6B2D7B] mb-1">
             Department Goal
           </p>
           <p className="text-sm font-medium text-foreground">{goalTitle}</p>
           <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 h-1.5 rounded-full bg-white border border-[#6B2D7B]/20 overflow-hidden">
+            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full bg-[#5BBF3A]"
                 style={{ width: `${deptProgressPct}%` }}
