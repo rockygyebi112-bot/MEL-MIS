@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User, ChevronDown, Menu } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 export function Topbar() {
   const { user, signOut } = useUser();
@@ -55,8 +56,9 @@ export function Topbar() {
       {/* Desktop left spacer */}
       <div className="hidden lg:block" />
 
-      {/* Right: role badge + user menu */}
+      {/* Right: theme toggle + role badge + user menu */}
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         {user?.role && (
           <Badge
             variant="secondary"

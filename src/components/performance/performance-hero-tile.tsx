@@ -12,17 +12,17 @@ interface PerformanceHeroTileProps {
 
 const GRADIENTS: Record<PerformanceHeroTileProps["status"], string> = {
   on_track:
-    "bg-[linear-gradient(135deg,#14532D_0%,#166534_60%,#1A2030_100%)]",
+    "bg-[linear-gradient(135deg,#22C55E_0%,#15803D_60%,#166534_100%)] dark:bg-[linear-gradient(135deg,#14532D_0%,#166534_60%,#1A2030_100%)]",
   at_risk:
-    "bg-[linear-gradient(135deg,#422006_0%,#78350F_60%,#1A2030_100%)]",
+    "bg-[linear-gradient(135deg,#F59E0B_0%,#B45309_60%,#78350F_100%)] dark:bg-[linear-gradient(135deg,#422006_0%,#78350F_60%,#1A2030_100%)]",
   behind:
-    "bg-[linear-gradient(135deg,#450A0A_0%,#7F1D1D_60%,#1A2030_100%)]",
+    "bg-[linear-gradient(135deg,#EF4444_0%,#B91C1C_60%,#7F1D1D_100%)] dark:bg-[linear-gradient(135deg,#450A0A_0%,#7F1D1D_60%,#1A2030_100%)]",
 };
 
 const ACCENT: Record<PerformanceHeroTileProps["status"], string> = {
-  on_track: "text-[#86EFAC]",
-  at_risk: "text-[#FCD34D]",
-  behind: "text-[#FCA5A5]",
+  on_track: "text-white/90 dark:text-[#86EFAC]",
+  at_risk: "text-white/90 dark:text-[#FCD34D]",
+  behind: "text-white/90 dark:text-[#FCA5A5]",
 };
 
 export function PerformanceHeroTile({

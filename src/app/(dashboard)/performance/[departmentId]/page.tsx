@@ -24,10 +24,8 @@ export default function DepartmentPerformancePage({ params }: Props) {
 
   if (user.role?.name === "Admin") {
     return (
-      <div className="-mx-4 -my-4 sm:-mx-6 sm:-my-6 min-h-screen bg-[#0B0F17] px-4 py-5 sm:px-6 sm:py-6">
-        <div className="mx-auto max-w-[560px]">
-          <EdDrilldown departmentId={departmentId} />
-        </div>
+      <div className="mx-auto max-w-[560px]">
+        <EdDrilldown departmentId={departmentId} />
       </div>
     );
   }

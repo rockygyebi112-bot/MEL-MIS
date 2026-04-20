@@ -27,7 +27,7 @@ export function EdHome() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-red-900/40 border border-red-700 p-5 text-sm text-red-100">
+      <div className="rounded-2xl bg-destructive/10 border border-destructive/40 p-5 text-sm text-destructive">
         Failed to load performance data: {error}
       </div>
     );
@@ -51,10 +51,10 @@ export function EdHome() {
     behind > 0 ? "behind" : atRisk > 0 ? "at_risk" : "on_track";
 
   return (
-    <div className="space-y-5 text-white">
+    <div className="space-y-5 text-foreground">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs text-[#8891A6]">{formatDate(now)}</div>
+          <div className="text-xs text-muted-foreground">{formatDate(now)}</div>
           <h1 className="text-2xl font-bold tracking-tight mt-0.5">
             Performance
           </h1>
@@ -69,13 +69,13 @@ export function EdHome() {
 
       {loading ? (
         <div className="space-y-4">
-          <div className="h-40 rounded-3xl bg-[#151B27] animate-pulse" />
-          <div className="h-6 rounded-full bg-[#151B27] animate-pulse" />
+          <div className="h-40 rounded-3xl bg-muted animate-pulse" />
+          <div className="h-6 rounded-full bg-muted animate-pulse" />
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className="h-[72px] rounded-2xl bg-[#151B27] animate-pulse"
+                className="h-[72px] rounded-2xl bg-muted animate-pulse"
               />
             ))}
           </div>

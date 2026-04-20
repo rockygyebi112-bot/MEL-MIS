@@ -25,13 +25,13 @@ export function QuarterChip({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-full bg-[#1A2030] px-3.5 py-2 text-[11px] font-semibold text-white"
+        className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-2 text-[11px] font-semibold text-foreground"
       >
         Q{quarter} · {year}
         <ChevronDown className="size-3" />
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 z-10 rounded-xl bg-[#151B27] p-2 shadow-xl border border-white/10 min-w-[160px]">
+        <div className="absolute right-0 mt-2 z-10 rounded-xl bg-popover p-2 shadow-xl border border-border min-w-[160px]">
           <div className="flex gap-1 p-1">
             {years.map((y) => (
               <button
@@ -39,7 +39,9 @@ export function QuarterChip({
                 type="button"
                 onClick={() => onYearChange(y)}
                 className={`flex-1 rounded-md px-2 py-1 text-[11px] ${
-                  y === year ? "bg-white/10 text-white" : "text-[#8891A6]"
+                  y === year
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
                 {y}
@@ -58,7 +60,7 @@ export function QuarterChip({
                 className={`flex-1 rounded-md px-2 py-1 text-[11px] font-semibold ${
                   q === quarter
                     ? "bg-[#5BBF3A] text-white"
-                    : "text-[#8891A6] hover:text-white"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Q{q}
