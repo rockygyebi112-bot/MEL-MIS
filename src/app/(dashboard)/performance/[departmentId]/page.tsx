@@ -2,7 +2,6 @@
 
 import { use } from "react";
 import { useUser } from "@/hooks/use-user";
-import { EdDrilldown } from "@/components/performance/ed-drilldown";
 import { ManagerDashboard } from "@/components/performance/manager-dashboard";
 
 interface Props {
