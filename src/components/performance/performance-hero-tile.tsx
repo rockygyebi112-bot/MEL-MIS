@@ -44,20 +44,20 @@ export function PerformanceHeroTile({
       : `${trendDeltaPct >= 0 ? "▲" : "▼"} ${Math.abs(trendDeltaPct)}% vs last quarter`;
 
   return (
-    <div className={`rounded-3xl p-5 text-white ${GRADIENTS[status]}`}>
+    <div className={`rounded-3xl p-5 lg:p-8 text-white ${GRADIENTS[status]}`}>
       <div className={`text-[11px] font-bold tracking-[2px] ${ACCENT[status]}`}>
         {eyebrow}
       </div>
       <div className="mt-2 flex items-end gap-3">
-        <div className="text-[64px] font-extrabold leading-none tracking-tight">
+        <div className="text-[64px] lg:text-[96px] font-extrabold leading-none tracking-tight">
           {pct}
-          <span className={`text-[28px] ${ACCENT[status]}`}>%</span>
+          <span className={`text-[28px] lg:text-[40px] ${ACCENT[status]}`}>%</span>
         </div>
         {trendText && (
           <div className={`pb-2 text-xs ${ACCENT[status]}`}>{trendText}</div>
         )}
       </div>
-      <div className="mt-3 text-[13px] text-white/80">
+      <div className="mt-3 text-[13px] lg:text-[15px] text-white/80">
         {subline ??
           `${onTrackCount} of ${totalDepts} departments on track · ${doneActivities} of ${totalActivities} activities done this quarter`}
       </div>
