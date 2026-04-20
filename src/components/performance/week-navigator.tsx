@@ -47,18 +47,18 @@ export function WeekNavigator({ weekDate, onChange }: WeekNavigatorProps) {
   })();
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-border/60 bg-white px-4 py-3">
+    <div className="flex items-center justify-between rounded-full bg-muted px-2 py-1.5">
       <button
         onClick={() => shift(-7)}
-        className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+        className="size-7 flex items-center justify-center rounded-full hover:bg-background transition-colors"
       >
         <ChevronLeft className="size-4" />
       </button>
-      <span className="text-sm font-medium">{getWeekLabel(weekDate)}</span>
+      <span className="text-xs font-semibold text-foreground px-2">{getWeekLabel(weekDate)}</span>
       <button
         onClick={() => shift(7)}
         disabled={isFuture}
-        className="size-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors disabled:opacity-30"
+        className="size-7 flex items-center justify-center rounded-full hover:bg-background transition-colors disabled:opacity-30"
       >
         <ChevronRight className="size-4" />
       </button>

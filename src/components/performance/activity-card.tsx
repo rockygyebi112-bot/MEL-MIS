@@ -29,10 +29,10 @@ export function ActivityCard({
 
   const borderClass =
     activity.status === "overdue"
-      ? "border-red-300 bg-red-50"
+      ? "border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-900"
       : activity.status === "done"
-      ? "border-green-200 bg-green-50/30"
-      : "border-border/60 bg-white";
+      ? "border-green-200 bg-green-50/30 dark:bg-green-950/20 dark:border-green-900"
+      : "border-border/60 bg-card";
 
   return (
     <div className={`rounded-xl border p-4 ${borderClass}`}>
@@ -103,7 +103,7 @@ export function ActivityCard({
               {activity.attachments.map((att) => (
                 <div
                   key={att.id}
-                  className="flex items-center gap-1.5 text-xs text-[#6B2D7B]"
+                  className="flex items-center gap-1.5 text-xs text-foreground"
                 >
                   <Paperclip className="size-3" />
                   {att.file_name}

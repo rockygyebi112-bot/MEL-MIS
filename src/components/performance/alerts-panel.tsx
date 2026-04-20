@@ -46,14 +46,14 @@ export function AlertsPanel({ departments }: AlertsPanelProps) {
 
   if (alerts.length === 0) {
     return (
-      <div className="rounded-xl border border-border/60 bg-white p-5 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-border/60 bg-card p-5 text-center text-sm text-muted-foreground">
         No active alerts — all departments are on track.
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border/60 bg-white divide-y divide-border/40">
+    <div className="rounded-xl border border-border/60 bg-card divide-y divide-border/40">
       {alerts.map((alert, i) => (
         <div key={i} className="flex items-start gap-3 p-4">
           <div

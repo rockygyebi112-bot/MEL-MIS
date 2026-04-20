@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Bell } from "lucide-react";
-import { QuarterSelector } from "./quarter-selector";
+import { QuarterChip } from "./quarter-chip";
+import { PerformanceHeroTile } from "./performance-hero-tile";
+import { StatusSegmentedBar } from "./status-segmented-bar";
 import { GoalsActivitiesTab } from "./goals-activities-tab";
 import { StaffProgressTab } from "./staff-progress-tab";
 import { AlertsPanel } from "./alerts-panel";
@@ -41,9 +43,13 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
   const totalCount = allActivities.length;
   const pct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
 
+  const goalsOnTrack = goals.filter((g) => g.status === "on_track").length;
+  const goalsAtRisk = goals.filter((g) => g.status === "at_risk").length;
+  const goalsBehind = goals.filter((g) => g.status === "behind").length;
+
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
         {error}
       </div>
     );
@@ -79,17 +85,12 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
           <ArrowLeft className="size-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold truncate">
+          <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
+            Manager
+          </p>
+          <h1 className="text-xl font-bold truncate mt-0.5">
             {loading ? "Loading…" : (department?.name ?? "Department")}
           </h1>
-          {!loading && (
-            <p className="text-xs text-muted-foreground">
-              {pct}% complete · {doneCount} done
-              {overdueCount > 0 && (
-                <span className="text-red-500"> · {overdueCount} overdue</span>
-              )}
-            </p>
-          )}
         </div>
         <div className="relative">
           <Bell className="size-5 text-muted-foreground" />
@@ -99,48 +100,64 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
         </div>
       </div>
 
-      {/* Quarter selector */}
-      <QuarterSelector
-        year={year}
-        quarter={quarter}
-        onYearChange={setYear}
-        onQuarterChange={setQuarter}
-      />
-
-      {/* Tab bar */}
-      <div className="flex border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
-              activeTab === tab
-                ? "text-[#6B2D7B]"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab}
-            {tab === "Alerts" && overdueCount > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                {overdueCount}
-              </span>
-            )}
-            {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6B2D7B]" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
+      {/* Hero tile + bar + tabs + content - single loading ternary */}
       {loading ? (
         <div className="space-y-3">
+          <div className="h-32 rounded-3xl bg-muted animate-pulse" />
+          <div className="h-4 rounded-full bg-muted animate-pulse" />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       ) : (
         <>
+          <PerformanceHeroTile
+            pct={pct}
+            onTrackCount={goalsOnTrack}
+            totalDepts={goals.length}
+            doneActivities={doneCount}
+            totalActivities={totalCount}
+            trendDeltaPct={null}
+            status={deptStatus}
+            eyebrow="DEPARTMENT HEALTH"
+            subline={`${goalsOnTrack} of ${goals.length} goals on track · ${doneCount} of ${totalCount} activities done this quarter`}
+          />
+          <StatusSegmentedBar
+            onTrack={goalsOnTrack}
+            atRisk={goalsAtRisk}
+            behind={goalsBehind}
+          />
+          <div className="flex justify-end">
+            <QuarterChip
+              year={year}
+              quarter={quarter}
+              onYearChange={setYear}
+              onQuarterChange={setQuarter}
+            />
+          </div>
+          <div className="flex border-b border-border">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+                  activeTab === tab
+                    ? "text-[#5BBF3A]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab}
+                {tab === "Alerts" && overdueCount > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+                    {overdueCount}
+                  </span>
+                )}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5BBF3A]" />
+                )}
+              </button>
+            ))}
+          </div>
           {activeTab === "Goals & Activities" && user && (
             <GoalsActivitiesTab
               goals={goals}

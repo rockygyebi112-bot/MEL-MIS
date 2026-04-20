@@ -88,7 +88,7 @@ function GoalRow({
   const [addActivityOpen, setAddActivityOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-border/60 bg-white overflow-hidden">
+    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30"
