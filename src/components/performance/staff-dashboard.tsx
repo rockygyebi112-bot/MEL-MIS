@@ -49,9 +49,9 @@ export function StaffDashboard() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
-          Staff
-        </p>
+        <div className="text-xs text-muted-foreground">
+          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+        </div>
         <h1 className="text-2xl font-bold tracking-tight mt-0.5">My Performance</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
           {user?.full_name}

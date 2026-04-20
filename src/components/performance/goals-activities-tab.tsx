@@ -141,7 +141,6 @@ export function GoalsActivitiesTab({
               goal={goal}
               staff={staff}
               currentUserId={currentUserId}
-              departmentId={departmentId}
               onReload={onReload}
             />
           ))}

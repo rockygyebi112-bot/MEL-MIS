@@ -72,3 +72,45 @@ export const ACTIVITY_STATUS_CLASSES: Record<ActivityStatus, string> = {
   done: "text-green-600",
   overdue: "text-red-600",
 };
+
+/**
+ * ISO week index (0-based) of a date within its quarter.
+ * Returns null if the date is outside the given year/quarter.
+ */
+export function weekIndexInQuarter(
+  date: Date,
+  year: number,
+  quarter: number
+): number | null {
+  const qStartMonth = (quarter - 1) * 3; // 0, 3, 6, 9
+  const qStart = new Date(year, qStartMonth, 1);
+  const qEnd = new Date(year, qStartMonth + 3, 0, 23, 59, 59);
+  if (date < qStart || date > qEnd) return null;
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  return Math.floor((date.getTime() - qStart.getTime()) / msPerWeek);
+}
+
+/**
+ * Build an 8-entry (or shorter) weekly trend of % completion.
+ * Each entry is the cumulative % of activities submitted on or before that week's end,
+ * out of total activities in scope. Returns up to `maxWeeks` most-recent weeks.
+ */
+export function buildWeeklyTrend(
+  activities: Array<{ due_date: string; submission_at: string | null }>,
+  now: Date,
+  maxWeeks = 8
+): number[] {
+  const total = activities.length;
+  if (total === 0) return [];
+
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const points: number[] = [];
+  for (let i = maxWeeks - 1; i >= 0; i--) {
+    const weekEnd = new Date(now.getTime() - i * msPerWeek);
+    const doneByThen = activities.filter(
+      (a) => a.submission_at !== null && new Date(a.submission_at) <= weekEnd
+    ).length;
+    points.push(Math.round((doneByThen / total) * 100));
+  }
+  return points;
+}

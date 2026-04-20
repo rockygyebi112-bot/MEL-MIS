@@ -71,115 +71,135 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
         done_count: doneCount,
         pending_count: pendingCount,
         overdue_count: overdueCount,
+        manager_name: null,
+        manager_avatar_url: null,
+        weekly_trend: [],
+        next_activity: null,
       }
     : null;
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.push("/performance")}
-          className="size-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="size-4" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
-            Manager
-          </p>
-          <h1 className="text-xl font-bold truncate mt-0.5">
-            {loading ? "Loading…" : (department?.name ?? "Department")}
-          </h1>
+    <div className="text-foreground space-y-5 lg:space-y-0 lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:items-start">
+      {/* ── Left sidebar ── */}
+      <div className="space-y-5 lg:sticky lg:top-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/performance")}
+            className="size-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
+              Manager
+            </p>
+            <h1 className="text-xl font-bold truncate mt-0.5">
+              {loading ? "Loading…" : (department?.name ?? "Department")}
+            </h1>
+          </div>
+          <div className="relative">
+            <Bell className="size-5 text-muted-foreground" />
+            {overdueCount > 0 && (
+              <span className="absolute -top-1 -right-1 size-2 rounded-full bg-perf-accent-behind" />
+            )}
+          </div>
         </div>
-        <div className="relative">
-          <Bell className="size-5 text-muted-foreground" />
-          {overdueCount > 0 && (
-            <span className="absolute -top-1 -right-1 size-2 rounded-full bg-red-500" />
-          )}
-        </div>
+
+        {loading ? (
+          <>
+            <div className="h-32 rounded-3xl bg-muted animate-pulse" />
+            <div className="h-4 rounded-full bg-muted animate-pulse" />
+          </>
+        ) : (
+          <>
+            <PerformanceHeroTile
+              pct={pct}
+              onTrackCount={goalsOnTrack}
+              totalDepts={goals.length}
+              doneActivities={doneCount}
+              totalActivities={totalCount}
+              trendDeltaPct={null}
+              status={deptStatus}
+              eyebrow="DEPARTMENT HEALTH"
+              subline={`${goalsOnTrack} of ${goals.length} goals on track · ${doneCount} of ${totalCount} activities done this quarter`}
+            />
+            <StatusSegmentedBar
+              onTrack={goalsOnTrack}
+              atRisk={goalsAtRisk}
+              behind={goalsBehind}
+            />
+            <div className="flex justify-end">
+              <QuarterChip
+                year={year}
+                quarter={quarter}
+                onYearChange={setYear}
+                onQuarterChange={setQuarter}
+              />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Hero tile + bar + tabs + content - single loading ternary */}
-      {loading ? (
-        <div className="space-y-3">
-          <div className="h-32 rounded-3xl bg-muted animate-pulse" />
-          <div className="h-4 rounded-full bg-muted animate-pulse" />
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <>
-          <PerformanceHeroTile
-            pct={pct}
-            onTrackCount={goalsOnTrack}
-            totalDepts={goals.length}
-            doneActivities={doneCount}
-            totalActivities={totalCount}
-            trendDeltaPct={null}
-            status={deptStatus}
-            eyebrow="DEPARTMENT HEALTH"
-            subline={`${goalsOnTrack} of ${goals.length} goals on track · ${doneCount} of ${totalCount} activities done this quarter`}
-          />
-          <StatusSegmentedBar
-            onTrack={goalsOnTrack}
-            atRisk={goalsAtRisk}
-            behind={goalsBehind}
-          />
-          <div className="flex justify-end">
-            <QuarterChip
-              year={year}
-              quarter={quarter}
-              onYearChange={setYear}
-              onQuarterChange={setQuarter}
-            />
-          </div>
-          <div className="flex border-b border-border">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
-                  activeTab === tab
-                    ? "text-[#5BBF3A]"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab}
-                {tab === "Alerts" && overdueCount > 0 && (
-                  <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                    {overdueCount}
-                  </span>
-                )}
-                {activeTab === tab && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5BBF3A]" />
-                )}
-              </button>
+      {/* ── Right: tabs + content ── */}
+      <div className="space-y-5">
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
             ))}
           </div>
-          {activeTab === "Goals & Activities" && user && (
-            <GoalsActivitiesTab
-              goals={goals}
-              staff={staff}
-              currentUserId={user.id}
-              departmentId={departmentId}
-              onAddGoal={() => setAddGoalOpen(true)}
-              onReload={reload}
-            />
-          )}
-          {activeTab === "Staff" && (
-            <StaffProgressTab
-              staff={staff}
-              departmentId={departmentId}
-              onReload={reload}
-            />
-          )}
-          {activeTab === "Alerts" && deptSummary && (
-            <AlertsPanel departments={[deptSummary]} />
-          )}
-        </>
-      )}
+        ) : (
+          <>
+            <div className="flex gap-6 border-b border-border">
+              {TABS.map((tab) => {
+                const active = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`relative pb-2.5 text-sm font-semibold transition-colors ${
+                      active
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab}
+                    {tab === "Alerts" && overdueCount > 0 && (
+                      <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-perf-accent-behind text-white text-[10px] font-bold">
+                        {overdueCount}
+                      </span>
+                    )}
+                    {active && (
+                      <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-[#5BBF3A] rounded-full" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {activeTab === "Goals & Activities" && user && (
+              <GoalsActivitiesTab
+                goals={goals}
+                staff={staff}
+                currentUserId={user.id}
+                onAddGoal={() => setAddGoalOpen(true)}
+                onReload={reload}
+              />
+            )}
+            {activeTab === "Staff" && (
+              <StaffProgressTab
+                staff={staff}
+                departmentId={departmentId}
+                onReload={reload}
+              />
+            )}
+            {activeTab === "Alerts" && deptSummary && (
+              <AlertsPanel departments={[deptSummary]} />
+            )}
+          </>
+        )}
+      </div>
 
       {user && (
         <AddGoalModal

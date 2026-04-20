@@ -227,6 +227,8 @@ export interface GoalWithActivities extends PerformanceGoal {
   activities: ActivityWithStatus[];
   status: GoalStatus;
   progress_pct: number;
+  weekly_trend: number[]; // up to 8 entries, oldest → newest, each 0–100
+  next_activity: { title: string; due_date: string } | null;
 }
 
 export interface DepartmentSummary extends Department {
@@ -237,4 +239,8 @@ export interface DepartmentSummary extends Department {
   done_count: number;
   pending_count: number;
   overdue_count: number;
+  manager_name: string | null;
+  manager_avatar_url: string | null;
+  weekly_trend: number[]; // up to 8 entries, oldest → newest, each 0–100
+  next_activity: { title: string; due_date: string } | null;
 }
