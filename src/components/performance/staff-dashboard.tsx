@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { WeekNavigator } from "./week-navigator";
 import { ActivityCard } from "./activity-card";
+import { PerformanceHeroTile } from "./performance-hero-tile";
+import { StatusSegmentedBar } from "./status-segmented-bar";
 import { usePerformanceStaff } from "@/hooks/use-performance-staff";
 import { useUser } from "@/hooks/use-user";
 
@@ -28,7 +30,7 @@ export function StaffDashboard() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
         {error}
       </div>
     );
@@ -40,35 +42,42 @@ export function StaffDashboard() {
   const myPct =
     activities.length === 0 ? 0 : Math.round((done / activities.length) * 100);
 
+  const heroStatus: "on_track" | "at_risk" | "behind" =
+    myPct >= 80 ? "on_track" : myPct >= 50 ? "at_risk" : "behind";
+
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Performance</h1>
+        <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
+          Staff
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight mt-0.5">My Performance</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          {user?.full_name} · {department?.name ?? "No department"}
+          {user?.full_name}
+          {department?.name ? ` · ${department.name}` : ""}
         </p>
       </div>
 
-      {/* Personal summary strip */}
-      <div className="grid grid-cols-4 gap-2 text-center">
-        {[
-          { label: "Done", value: done, color: "text-green-600" },
-          { label: "Pending", value: pending, color: "text-muted-foreground" },
-          { label: "Overdue", value: overdue, color: "text-red-600" },
-          { label: "My %", value: `${myPct}%`, color: "text-[#6B2D7B]" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-border/60 bg-white py-3"
-          >
-            <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">
-              {s.label}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* Hero tile */}
+      <PerformanceHeroTile
+        pct={myPct}
+        onTrackCount={done}
+        totalDepts={activities.length}
+        doneActivities={done}
+        totalActivities={activities.length}
+        trendDeltaPct={null}
+        status={heroStatus}
+        eyebrow="MY WEEK"
+        subline={`${done} of ${activities.length} activities done this week${overdue > 0 ? ` · ${overdue} overdue` : ""}`}
+      />
+
+      {/* Segmented bar */}
+      <StatusSegmentedBar
+        onTrack={done}
+        atRisk={pending}
+        behind={overdue}
+      />
 
       {/* Week navigator */}
       <WeekNavigator weekDate={weekDate} onChange={setWeekDate} />
