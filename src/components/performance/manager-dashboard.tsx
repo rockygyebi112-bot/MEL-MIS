@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Bell } from "lucide-react";
-import { QuarterSelector } from "./quarter-selector";
+import { QuarterChip } from "./quarter-chip";
+import { PerformanceHeroTile } from "./performance-hero-tile";
+import { StatusSegmentedBar } from "./status-segmented-bar";
 import { GoalsActivitiesTab } from "./goals-activities-tab";
 import { StaffProgressTab } from "./staff-progress-tab";
 import { AlertsPanel } from "./alerts-panel";
@@ -41,9 +43,13 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
   const totalCount = allActivities.length;
   const pct = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
 
+  const goalsOnTrack = goals.filter((g) => g.status === "on_track").length;
+  const goalsAtRisk = goals.filter((g) => g.status === "at_risk").length;
+  const goalsBehind = goals.filter((g) => g.status === "behind").length;
+
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
         {error}
       </div>
     );
@@ -79,17 +85,12 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
           <ArrowLeft className="size-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold truncate">
+          <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
+            Manager · {department?.name ?? "Department"}
+          </p>
+          <h1 className="text-xl font-bold truncate mt-0.5">
             {loading ? "Loading…" : (department?.name ?? "Department")}
           </h1>
-          {!loading && (
-            <p className="text-xs text-muted-foreground">
-              {pct}% complete · {doneCount} done
-              {overdueCount > 0 && (
-                <span className="text-red-500"> · {overdueCount} overdue</span>
-              )}
-            </p>
-          )}
         </div>
         <div className="relative">
           <Bell className="size-5 text-muted-foreground" />
@@ -99,13 +100,35 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
         </div>
       </div>
 
-      {/* Quarter selector */}
-      <QuarterSelector
-        year={year}
-        quarter={quarter}
-        onYearChange={setYear}
-        onQuarterChange={setQuarter}
-      />
+      {/* Hero tile + segmented bar */}
+      {!loading && (
+        <>
+          <PerformanceHeroTile
+            pct={pct}
+            onTrackCount={goalsOnTrack}
+            totalDepts={goals.length}
+            doneActivities={doneCount}
+            totalActivities={totalCount}
+            trendDeltaPct={null}
+            status={deptStatus}
+          />
+          <StatusSegmentedBar
+            onTrack={goalsOnTrack}
+            atRisk={goalsAtRisk}
+            behind={goalsBehind}
+          />
+        </>
+      )}
+
+      {/* Quarter chip row */}
+      <div className="flex justify-end">
+        <QuarterChip
+          year={year}
+          quarter={quarter}
+          onYearChange={setYear}
+          onQuarterChange={setQuarter}
+        />
+      </div>
 
       {/* Tab bar */}
       <div className="flex border-b border-border">
@@ -115,7 +138,7 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
               activeTab === tab
-                ? "text-[#6B2D7B]"
+                ? "text-[#5BBF3A]"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -126,7 +149,7 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
               </span>
             )}
             {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6B2D7B]" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5BBF3A]" />
             )}
           </button>
         ))}
