@@ -21,6 +21,7 @@ import type {
 export function usePerformanceEd(year: number, quarter: number) {
   const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
   const [trendDeltaPct, setTrendDeltaPct] = useState<number | null>(null);
+  const [orgWeeklyTrend, setOrgWeeklyTrend] = useState<unknown>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -173,5 +174,5 @@ export function usePerformanceEd(year: number, quarter: number) {
 
   useEffect(() => { load(); }, [load]);
 
-  return { departments, trendDeltaPct, loading, error, reload: load };
+  return { departments, trendDeltaPct, orgWeeklyTrend, loading, error, reload: load };
 }

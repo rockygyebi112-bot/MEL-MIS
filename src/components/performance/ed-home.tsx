@@ -20,7 +20,7 @@ export function EdHome() {
   const [year, setYear] = useState(now.getFullYear());
   const [quarter, setQuarter] = useState(Math.ceil((now.getMonth() + 1) / 3));
 
-  const { departments, trendDeltaPct, loading, error } = usePerformanceEd(
+  const { departments, trendDeltaPct, orgWeeklyTrend, loading, error } = usePerformanceEd(
     year,
     quarter
   );
@@ -90,6 +90,7 @@ export function EdHome() {
             totalActivities={totalActivities}
             trendDeltaPct={trendDeltaPct}
             status={overallStatus}
+            weeklyTrend={orgWeeklyTrend}
           />
 
           <StatusSegmentedBar

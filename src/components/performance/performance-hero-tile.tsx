@@ -8,6 +8,7 @@ interface PerformanceHeroTileProps {
   totalActivities: number;
   trendDeltaPct: number | null;
   status: "on_track" | "at_risk" | "behind";
+  weeklyTrend?: unknown;
 }
 
 const GRADIENTS: Record<PerformanceHeroTileProps["status"], string> = {
@@ -33,6 +34,7 @@ export function PerformanceHeroTile({
   totalActivities,
   trendDeltaPct,
   status,
+  weeklyTrend,
 }: PerformanceHeroTileProps) {
   const trendText =
     trendDeltaPct === null
