@@ -8,6 +8,8 @@ interface PerformanceHeroTileProps {
   totalActivities: number;
   trendDeltaPct: number | null;
   status: "on_track" | "at_risk" | "behind";
+  subline?: string;
+  eyebrow?: string;
 }
 
 const GRADIENTS: Record<PerformanceHeroTileProps["status"], string> = {
@@ -33,6 +35,8 @@ export function PerformanceHeroTile({
   totalActivities,
   trendDeltaPct,
   status,
+  subline,
+  eyebrow = "ORG HEALTH",
 }: PerformanceHeroTileProps) {
   const trendText =
     trendDeltaPct === null
@@ -42,7 +46,7 @@ export function PerformanceHeroTile({
   return (
     <div className={`rounded-3xl p-5 text-white ${GRADIENTS[status]}`}>
       <div className={`text-[11px] font-bold tracking-[2px] ${ACCENT[status]}`}>
-        ORG HEALTH
+        {eyebrow}
       </div>
       <div className="mt-2 flex items-end gap-3">
         <div className="text-[64px] font-extrabold leading-none tracking-tight">
@@ -54,8 +58,8 @@ export function PerformanceHeroTile({
         )}
       </div>
       <div className="mt-3 text-[13px] text-white/80">
-        {onTrackCount} of {totalDepts} departments on track · {doneActivities} of{" "}
-        {totalActivities} activities done this quarter
+        {subline ??
+          `${onTrackCount} of ${totalDepts} departments on track · ${doneActivities} of ${totalActivities} activities done this quarter`}
       </div>
     </div>
   );

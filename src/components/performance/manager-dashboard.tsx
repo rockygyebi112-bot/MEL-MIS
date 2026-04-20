@@ -86,7 +86,7 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-bold tracking-[2px] text-[#6B2D7B] uppercase">
-            Manager · {department?.name ?? "Department"}
+            Manager
           </p>
           <h1 className="text-xl font-bold truncate mt-0.5">
             {loading ? "Loading…" : (department?.name ?? "Department")}
@@ -100,8 +100,16 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
         </div>
       </div>
 
-      {/* Hero tile + segmented bar */}
-      {!loading && (
+      {/* Hero tile + bar + tabs + content - single loading ternary */}
+      {loading ? (
+        <div className="space-y-3">
+          <div className="h-32 rounded-3xl bg-muted animate-pulse" />
+          <div className="h-4 rounded-full bg-muted animate-pulse" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : (
         <>
           <PerformanceHeroTile
             pct={pct}
@@ -111,59 +119,45 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
             totalActivities={totalCount}
             trendDeltaPct={null}
             status={deptStatus}
+            eyebrow="DEPARTMENT HEALTH"
+            subline={`${goalsOnTrack} of ${goals.length} goals on track · ${doneCount} of ${totalCount} activities done this quarter`}
           />
           <StatusSegmentedBar
             onTrack={goalsOnTrack}
             atRisk={goalsAtRisk}
             behind={goalsBehind}
           />
-        </>
-      )}
-
-      {/* Quarter chip row */}
-      <div className="flex justify-end">
-        <QuarterChip
-          year={year}
-          quarter={quarter}
-          onYearChange={setYear}
-          onQuarterChange={setQuarter}
-        />
-      </div>
-
-      {/* Tab bar */}
-      <div className="flex border-b border-border">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
-              activeTab === tab
-                ? "text-[#5BBF3A]"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab}
-            {tab === "Alerts" && overdueCount > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                {overdueCount}
-              </span>
-            )}
-            {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5BBF3A]" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <>
+          <div className="flex justify-end">
+            <QuarterChip
+              year={year}
+              quarter={quarter}
+              onYearChange={setYear}
+              onQuarterChange={setQuarter}
+            />
+          </div>
+          <div className="flex border-b border-border">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2.5 text-sm font-medium transition-colors relative ${
+                  activeTab === tab
+                    ? "text-[#5BBF3A]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {tab}
+                {tab === "Alerts" && overdueCount > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center size-4 rounded-full bg-red-500 text-white text-[10px] font-bold">
+                    {overdueCount}
+                  </span>
+                )}
+                {activeTab === tab && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5BBF3A]" />
+                )}
+              </button>
+            ))}
+          </div>
           {activeTab === "Goals & Activities" && user && (
             <GoalsActivitiesTab
               goals={goals}
