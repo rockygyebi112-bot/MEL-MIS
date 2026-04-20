@@ -183,6 +183,7 @@ export function ManagerDashboard({ departmentId }: ManagerDashboardProps) {
                 goals={goals}
                 staff={staff}
                 currentUserId={user.id}
+                departmentId={departmentId}
                 onAddGoal={() => setAddGoalOpen(true)}
                 onReload={reload}
               />
