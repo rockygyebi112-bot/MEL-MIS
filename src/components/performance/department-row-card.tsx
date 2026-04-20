@@ -5,6 +5,7 @@ import type { DepartmentSummary } from "@/lib/types";
 
 interface DepartmentRowCardProps {
   dept: DepartmentSummary;
+  variant?: "row" | "panel";
 }
 
 function monogram(name: string): string {
@@ -46,7 +47,7 @@ const STATUS_STYLE = {
   },
 } as const;
 
-export function DepartmentRowCard({ dept }: DepartmentRowCardProps) {
+export function DepartmentRowCard({ dept, variant = "row" }: DepartmentRowCardProps) {
   const router = useRouter();
   const s = STATUS_STYLE[dept.status];
   const total = dept.done_count + dept.pending_count + dept.overdue_count;
@@ -54,6 +55,49 @@ export function DepartmentRowCard({ dept }: DepartmentRowCardProps) {
     dept.overdue_count > 0
       ? `${dept.done_count}/${total} done · ${dept.overdue_count} overdue`
       : `${dept.done_count} of ${total} activities complete`;
+
+  if (variant === "panel") {
+    return (
+      <button
+        type="button"
+        onClick={() => router.push(`/performance/${dept.id}`)}
+        className={`w-full text-left rounded-2xl p-4 flex flex-col gap-3 h-full transition-transform active:scale-[0.99] ${s.surface}`}
+      >
+        {/* Top row: monogram + status badge */}
+        <div className="flex items-center justify-between">
+          <div
+            className={`size-11 rounded-2xl flex items-center justify-center font-extrabold text-[15px] ${s.badgeBg} ${s.badgeText}`}
+          >
+            {monogram(dept.name)}
+          </div>
+          <span
+            className={`text-[9px] tracking-[1px] font-bold px-2 py-0.5 rounded-full ${s.badgeBg} ${s.pillText}`}
+          >
+            {s.pillLabel}
+          </span>
+        </div>
+
+        {/* Department name — no truncate */}
+        <div className="text-[15px] font-bold text-foreground">{dept.name}</div>
+
+        {/* Progress bar */}
+        <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full bg-[#5BBF3A]"
+            style={{ width: `${dept.progress_pct}%` }}
+          />
+        </div>
+
+        {/* Bottom row: subline + pct */}
+        <div className="flex items-center justify-between mt-auto">
+          <div className={`text-[11px] ${s.subText}`}>{subLine}</div>
+          <div className={`text-[20px] font-extrabold tracking-tight ${s.valueText}`}>
+            {dept.progress_pct}%
+          </div>
+        </div>
+      </button>
+    );
+  }
 
   return (
     <button
