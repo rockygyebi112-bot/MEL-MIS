@@ -29,9 +29,9 @@ export function ActivityCard({
 
   const borderClass =
     activity.status === "overdue"
-      ? "border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-900"
+      ? "border-perf-border-behind bg-perf-surface-behind"
       : activity.status === "done"
-      ? "border-green-200 bg-green-50/30 dark:bg-green-950/20 dark:border-green-900"
+      ? "border-perf-border-ontrack bg-perf-surface-ontrack/50"
       : "border-border/60 bg-card";
 
   return (
@@ -41,9 +41,9 @@ export function ActivityCard({
         {/* Status icon */}
         <div className="mt-0.5 shrink-0">
           {activity.status === "done" ? (
-            <CheckCircle2 className="size-5 text-green-500" />
+            <CheckCircle2 className="size-5 text-perf-accent-ontrack" />
           ) : activity.status === "overdue" ? (
-            <Clock className="size-5 text-red-500" />
+            <Clock className="size-5 text-perf-accent-behind" />
           ) : (
             <div className="size-5 rounded-full border-2 border-muted-foreground/30" />
           )}
@@ -63,7 +63,7 @@ export function ActivityCard({
           <p
             className={`text-xs mt-0.5 ${
               activity.status === "overdue"
-                ? "text-red-600 font-medium"
+                ? "text-perf-accent-behind font-medium"
                 : "text-muted-foreground"
             }`}
           >

@@ -20,7 +20,7 @@ export function EdHome() {
   const [year, setYear] = useState(now.getFullYear());
   const [quarter, setQuarter] = useState(Math.ceil((now.getMonth() + 1) / 3));
 
-  const { departments, trendDeltaPct, loading, error } = usePerformanceEd(
+  const { departments, trendDeltaPct, orgWeeklyTrend, loading, error } = usePerformanceEd(
     year,
     quarter
   );
@@ -52,7 +52,7 @@ export function EdHome() {
 
   if (loading) {
     return (
-      <div className="text-foreground space-y-4 lg:space-y-0 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+      <div className="text-foreground space-y-4 lg:space-y-0 lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:items-start">
         <div className="space-y-4">
           <div className="h-8 w-40 rounded-lg bg-muted animate-pulse" />
           <div className="h-40 rounded-3xl bg-muted animate-pulse" />
@@ -76,7 +76,7 @@ export function EdHome() {
   }
 
   return (
-    <div className="text-foreground space-y-5 lg:space-y-0 lg:grid lg:grid-cols-[320px_1fr] lg:gap-8 lg:items-start">
+    <div className="text-foreground space-y-5 lg:space-y-0 lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:items-start">
 
       {/* ── Left sidebar ── */}
       <div className="space-y-5 lg:sticky lg:top-6">
@@ -102,6 +102,7 @@ export function EdHome() {
           totalActivities={totalActivities}
           trendDeltaPct={trendDeltaPct}
           status={overallStatus}
+          weeklyTrend={orgWeeklyTrend}
         />
 
         <StatusSegmentedBar onTrack={onTrack} atRisk={atRisk} behind={behind} />
@@ -142,7 +143,7 @@ export function EdHome() {
             </div>
 
             {/* Desktop: panel cards */}
-            <div className="hidden lg:grid grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {departments.map((dept) => (
                 <DepartmentRowCard key={dept.id} dept={dept} variant="panel" />
               ))}

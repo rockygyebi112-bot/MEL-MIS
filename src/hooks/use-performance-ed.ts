@@ -6,6 +6,7 @@ import {
   computeActivityStatus,
   computeGoalStatus,
   getExpectedProgress,
+  buildWeeklyTrend,
 } from "@/lib/performance-utils";
 import type {
   Department,
@@ -21,6 +22,7 @@ import type {
 export function usePerformanceEd(year: number, quarter: number) {
   const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
   const [trendDeltaPct, setTrendDeltaPct] = useState<number | null>(null);
+  const [orgWeeklyTrend, setOrgWeeklyTrend] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,6 +67,31 @@ export function usePerformanceEd(year: number, quarter: number) {
     (staffRows ?? []).forEach((r: { department_id: string }) => {
       staffCountMap[r.department_id] = (staffCountMap[r.department_id] ?? 0) + 1;
     });
+
+    // 3.1 Managers per department
+    const { data: mgrRows } = await supabase
+      .from("user_departments")
+      .select("department_id, user:user_profiles!user_id(full_name)")
+      .eq("is_manager", true);
+
+    const managerMap: Record<
+      string,
+      { full_name: string | null; avatar_url: string | null }
+    > = {};
+    (mgrRows ?? []).forEach(
+      (r: {
+        department_id: string;
+        user: { full_name: string | null } | { full_name: string | null }[] | null;
+      }) => {
+        const userObj = Array.isArray(r.user) ? r.user[0] : r.user;
+        if (userObj) {
+          managerMap[r.department_id] = {
+            full_name: userObj.full_name,
+            avatar_url: null,
+          };
+        }
+      }
+    );
 
     // 3.5. Fetch prior quarter goals and activities for trend delta
     const priorQuarter = quarter === 1 ? 4 : quarter - 1;
@@ -135,6 +162,8 @@ export function usePerformanceEd(year: number, quarter: number) {
           activities,
           progress_pct: progressPct,
           status: computeGoalStatus(progressPct, expectedPct, hasOverdue),
+          weekly_trend: [],
+          next_activity: null,
         };
       });
 
@@ -145,6 +174,34 @@ export function usePerformanceEd(year: number, quarter: number) {
       const total = allActivities.length;
       const progressPct = total === 0 ? 0 : Math.round((done / total) * 100);
 
+      const trendInput = allActivities.map((a) => ({
+        due_date: a.due_date,
+        submission_at: a.submission?.submitted_at ?? null,
+      }));
+      const weeklyTrend = buildWeeklyTrend(trendInput, new Date(), 8);
+
+      const upcoming = allActivities
+        .filter((a) => a.status === "pending")
+        .sort((a, b) => a.due_date.localeCompare(b.due_date));
+      const nextActivity = upcoming[0]
+        ? { title: upcoming[0].title, due_date: upcoming[0].due_date }
+        : null;
+
+      // Annotate each goal with its own trend + next
+      enrichedGoals.forEach((g) => {
+        const gTrendInput = g.activities.map((a) => ({
+          due_date: a.due_date,
+          submission_at: a.submission?.submitted_at ?? null,
+        }));
+        g.weekly_trend = buildWeeklyTrend(gTrendInput, new Date(), 8);
+        const gUpcoming = g.activities
+          .filter((a) => a.status === "pending")
+          .sort((a, b) => a.due_date.localeCompare(b.due_date));
+        g.next_activity = gUpcoming[0]
+          ? { title: gUpcoming[0].title, due_date: gUpcoming[0].due_date }
+          : null;
+      });
+
       return {
         ...dept,
         goals: enrichedGoals,
@@ -154,10 +211,25 @@ export function usePerformanceEd(year: number, quarter: number) {
         done_count: done,
         pending_count: pending,
         overdue_count: overdue,
+        manager_name: managerMap[dept.id]?.full_name ?? null,
+        manager_avatar_url: managerMap[dept.id]?.avatar_url ?? null,
+        weekly_trend: weeklyTrend,
+        next_activity: nextActivity,
       };
     });
 
     setDepartments(summaries);
+
+    const orgTrendInput = summaries.flatMap((d) =>
+      d.goals.flatMap((g) =>
+        g.activities.map((a) => ({
+          due_date: a.due_date,
+          submission_at: a.submission?.submitted_at ?? null,
+        }))
+      )
+    );
+    const orgTrendPoints = buildWeeklyTrend(orgTrendInput, new Date(), 8);
+    setOrgWeeklyTrend(orgTrendPoints);
 
     // Compute trend delta
     const totalAct = summaries.reduce(
@@ -173,5 +245,5 @@ export function usePerformanceEd(year: number, quarter: number) {
 
   useEffect(() => { load(); }, [load]);
 
-  return { departments, trendDeltaPct, loading, error, reload: load };
+  return { departments, trendDeltaPct, orgWeeklyTrend, loading, error, reload: load };
 }
