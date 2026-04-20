@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/use-user";
 import { EdHome } from "@/components/performance/ed-home";
 
 const Skeleton = () => (
-  <div className="mx-auto max-w-[560px] space-y-4">
+  <div className="mx-auto max-w-[560px] lg:max-w-6xl space-y-4">
     <div className="h-8 w-48 rounded bg-muted animate-pulse" />
     <div className="h-40 rounded-3xl bg-muted animate-pulse" />
     <div className="space-y-2">
@@ -57,7 +57,7 @@ export default function PerformancePage() {
   if (loading || !isAdmin) return <Skeleton />;
 
   return (
-    <div className="mx-auto max-w-[560px]">
+    <div className="mx-auto max-w-[560px] lg:max-w-6xl">
       <EdHome />
     </div>
   );

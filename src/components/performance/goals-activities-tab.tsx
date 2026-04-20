@@ -173,15 +173,17 @@ export function GoalsActivitiesTab({
           No goals for this quarter yet. Add one to get started.
         </div>
       ) : (
-        goals.map((goal) => (
-          <GoalRow
-            key={goal.id}
-            goal={goal}
-            staff={staff}
-            currentUserId={currentUserId}
-            onReload={onReload}
-          />
-        ))
+        <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-3">
+          {goals.map((goal) => (
+            <GoalRow
+              key={goal.id}
+              goal={goal}
+              staff={staff}
+              currentUserId={currentUserId}
+              onReload={onReload}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

@@ -64,11 +64,12 @@ export function StaffProgressTab({
           No staff assigned to this department yet. Click "Add Staff" to assign someone.
         </div>
       ) : (
-        staff.map((s) => (
-          <div
-            key={s.user.id}
-            className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4"
-          >
+        <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3">
+          {staff.map((s) => (
+            <div
+              key={s.user.id}
+              className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-4"
+            >
             <div className="size-9 rounded-full bg-[#6B2D7B] text-white flex items-center justify-center text-sm font-semibold shrink-0">
               {(s.user.full_name?.charAt(0) ?? "?").toUpperCase()}
             </div>
@@ -124,8 +125,9 @@ export function StaffProgressTab({
                 <X className="size-4" />
               </button>
             )}
-          </div>
-        ))
+            </div>
+          ))}
+        </div>
       )}
 
       <ManageStaffModal

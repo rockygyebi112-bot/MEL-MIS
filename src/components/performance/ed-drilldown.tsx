@@ -144,49 +144,54 @@ export function EdDrilldown({ departmentId }: EdDrilldownProps) {
         </div>
       </div>
 
-      {view.goals.length > 0 && (
-        <div>
-          <div className="text-[10px] tracking-[2px] font-bold text-muted-foreground">
-            GOALS · Q{quarter}
-          </div>
-          <div className="mt-3 space-y-2">
-            {view.goals.map((goal) => (
-              <GoalProgressCard key={goal.id} goal={goal} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {view.overdue.length > 0 && (
-        <div>
-          <div className="text-[10px] tracking-[2px] font-bold text-red-700 dark:text-[#FCA5A5]">
-            OVERDUE · {view.overdue.length} ITEM
-            {view.overdue.length === 1 ? "" : "S"}
-          </div>
-          <div className="mt-3 space-y-2">
-            {view.overdue.map((a) => (
-              <OverdueActivityRow key={a.id} activity={a} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {view.lastSubmission && (
-        <div>
-          <div className="text-[10px] tracking-[2px] font-bold text-muted-foreground">
-            LAST SUBMISSION
-          </div>
-          <div className="mt-3 rounded-2xl bg-card border border-border p-3.5">
-            <div className="text-[13px] font-semibold text-foreground">
-              {view.lastSubmission.activityTitle}
+      <div className="lg:grid lg:grid-cols-[3fr_2fr] lg:gap-6 space-y-5 lg:space-y-0">
+        <div className="space-y-5">
+          {view.goals.length > 0 && (
+            <div>
+              <div className="text-[10px] tracking-[2px] font-bold text-muted-foreground">
+                GOALS · Q{quarter}
+              </div>
+              <div className="mt-3 space-y-2">
+                {view.goals.map((goal) => (
+                  <GoalProgressCard key={goal.id} goal={goal} />
+                ))}
+              </div>
             </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              {view.lastSubmission.submittedByName} ·{" "}
-              {timeAgo(view.lastSubmission.submittedAt)}
-            </div>
-          </div>
+          )}
         </div>
-      )}
+        <div className="space-y-5">
+          {view.overdue.length > 0 && (
+            <div>
+              <div className="text-[10px] tracking-[2px] font-bold text-red-700 dark:text-[#FCA5A5]">
+                OVERDUE · {view.overdue.length} ITEM
+                {view.overdue.length === 1 ? "" : "S"}
+              </div>
+              <div className="mt-3 space-y-2">
+                {view.overdue.map((a) => (
+                  <OverdueActivityRow key={a.id} activity={a} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {view.lastSubmission && (
+            <div>
+              <div className="text-[10px] tracking-[2px] font-bold text-muted-foreground">
+                LAST SUBMISSION
+              </div>
+              <div className="mt-3 rounded-2xl bg-card border border-border p-3.5">
+                <div className="text-[13px] font-semibold text-foreground">
+                  {view.lastSubmission.activityTitle}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  {view.lastSubmission.submittedByName} ·{" "}
+                  {timeAgo(view.lastSubmission.submittedAt)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

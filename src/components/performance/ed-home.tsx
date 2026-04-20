@@ -98,7 +98,7 @@ export function EdHome() {
             behind={behind}
           />
 
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-3 lg:grid-cols-3">
             {departments.map((dept) => (
               <DepartmentRowCard key={dept.id} dept={dept} />
             ))}
