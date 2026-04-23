@@ -1,13 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   Project,
   ProjectActivity,
+  ProjectActivityAttachment,
   ProjectMilestone,
 } from "@/lib/projects/types";
 import { ActivityRow } from "./activity-row";
 import { ActivitySidePanel } from "./activity-side-panel";
+import { MilestoneFormModal } from "./milestone-form-modal";
+import { ActivityFormModal } from "./activity-form-modal";
+import { useUser } from "@/hooks/use-user";
+import { listAttachments } from "@/lib/projects/queries";
+import { Button } from "@/components/ui/button";
 
 type Filter = "all" | "overdue" | "attention" | "mine";
 
@@ -16,7 +22,6 @@ interface Props {
   milestones: ProjectMilestone[];
   activities: ProjectActivity[];
   onChange: () => void;
-  currentUserId?: string;
 }
 
 export function ActivitiesPanel({
@@ -24,10 +29,25 @@ export function ActivitiesPanel({
   milestones,
   activities,
   onChange,
-  currentUserId,
 }: Props) {
+  const { user, isMELManager } = useUser();
+  const currentUserId = user?.id;
+
   const [filter, setFilter] = useState<Filter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [attachments, setAttachments] = useState<ProjectActivityAttachment[]>(
+    [],
+  );
+
+  useEffect(() => {
+    if (!openId) {
+      setAttachments([]);
+      return;
+    }
+    listAttachments(openId).then(setAttachments);
+  }, [openId]);
 
   const filtered = useMemo(() => {
     const today = new Date();
@@ -54,8 +74,31 @@ export function ActivitiesPanel({
     ? activities.find((a) => a.id === openId) ?? null
     : null;
 
+  const canPostUpdate =
+    !!openActivity &&
+    !!currentUserId &&
+    (isMELManager || openActivity.owner_user_id === currentUserId);
+
+  const nextOrderIndex =
+    milestones.reduce((m, x) => Math.max(m, x.order_index), -1) + 1;
+
   return (
     <div>
+      {isMELManager && (
+        <div className="flex justify-end gap-2 mb-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMilestoneModal(true)}
+          >
+            + Add Milestone
+          </Button>
+          <Button size="sm" onClick={() => setShowActivityModal(true)}>
+            + Add Activity
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-2 mb-4">
         {(["all", "overdue", "attention", "mine"] as Filter[]).map((f) => (
           <button
@@ -114,9 +157,34 @@ export function ActivitiesPanel({
         <ActivitySidePanel
           project={project}
           activity={openActivity}
+          currentUserId={currentUserId}
+          canPostUpdate={canPostUpdate}
+          attachmentCount={attachments.length}
           onClose={() => setOpenId(null)}
           onChange={onChange}
         />
+      )}
+
+      {isMELManager && (
+        <>
+          <MilestoneFormModal
+            projectId={project.id}
+            nextOrderIndex={nextOrderIndex}
+            open={showMilestoneModal}
+            onOpenChange={setShowMilestoneModal}
+            onSaved={onChange}
+          />
+          {currentUserId && (
+            <ActivityFormModal
+              projectId={project.id}
+              milestones={milestones}
+              currentUserId={currentUserId}
+              open={showActivityModal}
+              onOpenChange={setShowActivityModal}
+              onSaved={onChange}
+            />
+          )}
+        </>
       )}
     </div>
   );
