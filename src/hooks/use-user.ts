@@ -9,6 +9,7 @@ interface UseUserReturn {
   permissions: RolePermission[];
   loading: boolean;
   hasAccess: (module: AppModule) => boolean;
+  isMELManager: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -65,5 +66,8 @@ export function useUser(): UseUserReturn {
     window.location.href = "/login";
   }
 
-  return { user, permissions, loading, hasAccess, signOut };
+  const roleName = (user as { role?: { name?: string } } | null)?.role?.name;
+  const isMELManager = roleName === "Admin" || roleName === "Program Manager";
+
+  return { user, permissions, loading, hasAccess, isMELManager, signOut };
 }

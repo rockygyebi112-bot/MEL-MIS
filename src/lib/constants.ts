@@ -6,15 +6,13 @@ import {
   SlidersHorizontal,
   Lightbulb,
   Settings,
-  Target,
+  FolderKanban,
   LucideIcon,
 } from "lucide-react";
 
 export const PROGRAMS = [
-  { name: "Enterprise Spotlight", slug: "enterprise-spotlight" },
   { name: "Virtual University", slug: "virtual-university" },
   { name: "Hangout", slug: "hangout" },
-  { name: "ABSA Onboarding", slug: "absa-onboarding" },
 ] as const;
 
 export interface NavItem {
@@ -61,10 +59,10 @@ export const NAV_ITEMS: NavItem[] = [
     module: "learnings",
   },
   {
-    label: "Performance",
-    href: "/performance",
-    icon: Target,
-    module: "performance",
+    label: "Projects",
+    href: "/projects",
+    icon: FolderKanban,
+    module: "projects",
   },
   {
     label: "Settings",
@@ -81,7 +79,7 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   indicators: "Indicators Management",
   learnings: "Learnings",
   settings: "Settings",
-  performance: "Performance Management",
+  projects: "Projects",
 };
 
 // ============================================

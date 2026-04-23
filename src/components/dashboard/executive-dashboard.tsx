@@ -27,7 +27,6 @@ import {
 import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import { GranularityToggle } from "./granularity-toggle";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
-import { EdHome } from "@/components/performance/ed-home";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -395,21 +394,6 @@ export function ExecutiveDashboard() {
       <h2 className="text-lg font-bold text-gray-900">{children}</h2>
     </div>
   );
-
-  if (programFilter === "performance") {
-    return (
-      <div className="space-y-0">
-        <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-2.5 bg-background/85 backdrop-blur-md border-b border-border/50">
-          <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
-        </div>
-        <div className="pt-5 sm:pt-6">
-          <div className="mx-auto max-w-[560px]">
-            <EdHome />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return <DashboardSkeleton kpis={4} charts={4} />;

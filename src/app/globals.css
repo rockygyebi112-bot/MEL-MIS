@@ -72,17 +72,6 @@
   --color-srsf-purple-800: #4b265e;
   --color-srsf-purple-900: #3f224e;
   --color-srsf-purple-950: #250e32;
-
-  /* Performance status surfaces */
-  --color-perf-surface-ontrack: var(--perf-surface-ontrack);
-  --color-perf-surface-atrisk: var(--perf-surface-atrisk);
-  --color-perf-surface-behind: var(--perf-surface-behind);
-  --color-perf-accent-ontrack: var(--perf-accent-ontrack);
-  --color-perf-accent-atrisk: var(--perf-accent-atrisk);
-  --color-perf-accent-behind: var(--perf-accent-behind);
-  --color-perf-border-ontrack: var(--perf-border-ontrack);
-  --color-perf-border-atrisk: var(--perf-border-atrisk);
-  --color-perf-border-behind: var(--perf-border-behind);
 }
 
 :root {
@@ -118,17 +107,6 @@
   --sidebar-accent-foreground: hsl(104 53% 25%);
   --sidebar-border: hsl(260 10% 88%);
   --sidebar-ring: hsl(104 53% 49%);
-
-  /* Performance status surfaces — light */
-  --perf-surface-ontrack: hsl(104 50% 96%);
-  --perf-surface-atrisk: hsl(38 92% 96%);
-  --perf-surface-behind: hsl(0 85% 97%);
-  --perf-accent-ontrack: hsl(104 65% 32%);
-  --perf-accent-atrisk: hsl(30 80% 38%);
-  --perf-accent-behind: hsl(0 72% 44%);
-  --perf-border-ontrack: hsl(104 40% 85%);
-  --perf-border-atrisk: hsl(38 80% 82%);
-  --perf-border-behind: hsl(0 70% 88%);
 }
 
 .dark {
@@ -163,17 +141,6 @@
   --sidebar-accent-foreground: hsl(104 53% 85%);
   --sidebar-border: hsl(260 10% 22%);
   --sidebar-ring: hsl(104 53% 55%);
-
-  /* Performance status surfaces — dark */
-  --perf-surface-ontrack: hsl(140 30% 12%);
-  --perf-surface-atrisk: hsl(30 40% 12%);
-  --perf-surface-behind: hsl(0 35% 13%);
-  --perf-accent-ontrack: hsl(140 70% 70%);
-  --perf-accent-atrisk: hsl(38 90% 65%);
-  --perf-accent-behind: hsl(0 80% 78%);
-  --perf-border-ontrack: hsl(140 40% 22%);
-  --perf-border-atrisk: hsl(30 50% 25%);
-  --perf-border-behind: hsl(0 50% 28%);
 }
 
 @layer base {
