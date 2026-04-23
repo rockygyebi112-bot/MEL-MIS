@@ -7,7 +7,7 @@ export type AppModule =
   | "indicators"
   | "learnings"
   | "settings"
-  | "performance";
+  | "projects";
 
 export interface Role {
   id: string;
