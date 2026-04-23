@@ -4,15 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import type {
   Project,
   ProjectActivity,
-  ProjectActivityAttachment,
   ProjectMilestone,
 } from "@/lib/projects/types";
 import { ActivityRow } from "./activity-row";
 import { ActivitySidePanel } from "./activity-side-panel";
 import { MilestoneFormModal } from "./milestone-form-modal";
 import { ActivityFormModal } from "./activity-form-modal";
+import { AttachmentsGallery } from "./attachments-gallery";
 import { useUser } from "@/hooks/use-user";
-import { listAttachments } from "@/lib/projects/queries";
 import { Button } from "@/components/ui/button";
 
 type Filter = "all" | "overdue" | "attention" | "mine";
@@ -37,16 +36,10 @@ export function ActivitiesPanel({
   const [openId, setOpenId] = useState<string | null>(null);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
-  const [attachments, setAttachments] = useState<ProjectActivityAttachment[]>(
-    [],
-  );
+  const [attachmentCount, setAttachmentCount] = useState(0);
 
   useEffect(() => {
-    if (!openId) {
-      setAttachments([]);
-      return;
-    }
-    listAttachments(openId).then(setAttachments);
+    if (!openId) setAttachmentCount(0);
   }, [openId]);
 
   const filtered = useMemo(() => {
@@ -159,10 +152,24 @@ export function ActivitiesPanel({
           activity={openActivity}
           currentUserId={currentUserId}
           canPostUpdate={canPostUpdate}
-          attachmentCount={attachments.length}
+          attachmentCount={attachmentCount}
           onClose={() => setOpenId(null)}
           onChange={onChange}
-        />
+        >
+          {currentUserId && (
+            <AttachmentsGallery
+              projectId={project.id}
+              activityId={openActivity.id}
+              currentUserId={currentUserId}
+              canUpload={
+                isMELManager || openActivity.owner_user_id === currentUserId
+              }
+              canDelete={isMELManager}
+              onChange={onChange}
+              onCountChange={setAttachmentCount}
+            />
+          )}
+        </ActivitySidePanel>
       )}
 
       {isMELManager && (
