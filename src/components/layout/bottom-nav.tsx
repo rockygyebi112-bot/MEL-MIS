@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BarChart3,
-  Target,
+  FolderKanban,
   ClipboardEdit,
   Settings,
 } from "lucide-react";
@@ -13,7 +13,7 @@ import {
 const BOTTOM_NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Programs", href: "/programs/enterprise-spotlight", icon: BarChart3 },
-  { label: "Performance", href: "/performance", icon: Target },
+  { label: "Projects", href: "/projects", icon: FolderKanban },
   { label: "Data Entry", href: "/data-entry", icon: ClipboardEdit },
   { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
