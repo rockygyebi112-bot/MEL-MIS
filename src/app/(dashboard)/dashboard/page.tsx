@@ -1,4 +1,5 @@
 import { ExecutiveDashboard } from "@/components/dashboard/executive-dashboard";
+import { ProjectsDashboardStrip } from "@/components/projects/projects-dashboard-strip";
 
 export default function DashboardPage() {
   return (
@@ -11,6 +12,7 @@ export default function DashboardPage() {
           Cross-program overview of all SRSF initiatives
         </p>
       </div>
+      <ProjectsDashboardStrip />
       <ExecutiveDashboard />
     </div>
   );
