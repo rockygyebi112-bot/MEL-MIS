@@ -3,11 +3,12 @@
 -- ============================================
 -- 1. Drop performance management (from 004)
 -- ============================================
--- Drop storage policies and bucket for performance
+-- Drop storage policies for performance
+-- NOTE: Supabase blocks direct deletes from storage.objects / storage.buckets.
+-- Remove the old `performance-attachments` bucket manually via the Storage UI
+-- (Supabase Dashboard → Storage → delete bucket) or via the Storage API.
 drop policy if exists "auth_upload_performance_attachments" on storage.objects;
 drop policy if exists "auth_read_performance_attachments"   on storage.objects;
-delete from storage.objects where bucket_id = 'performance-attachments';
-delete from storage.buckets where id = 'performance-attachments';
 
 -- Drop performance RLS policies
 drop policy if exists "auth_read_departments"               on public.departments;
