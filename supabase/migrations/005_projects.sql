@@ -38,7 +38,9 @@ delete from public.role_permissions where module = 'performance';
 -- ============================================
 -- 2. Extend app_module enum with 'projects'
 -- ============================================
-alter type public.app_module add value if not exists 'projects';
+-- NOTE: the 'projects' enum value is added in 005a_projects_enum.sql, which
+-- MUST be run first. Postgres forbids using a new enum value in the same
+-- transaction it was added, so the ALTER TYPE lives in its own migration.
 
 -- ============================================
 -- 3. PROJECTS
