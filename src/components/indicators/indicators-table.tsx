@@ -105,7 +105,13 @@ export function IndicatorsTable({
             </TableCell>
             <TableCell className="font-medium">{ind.name}</TableCell>
             <TableCell>
-              <Badge variant="secondary">
+              <Badge
+                className={
+                  ind.data_type === "numeric"
+                    ? "bg-srsf-green-50 text-srsf-green-700 border border-srsf-green-200"
+                    : "bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200"
+                }
+              >
                 {ind.data_type === "numeric" ? "Numeric" : "Categorical"}
               </Badge>
             </TableCell>
@@ -128,7 +134,13 @@ export function IndicatorsTable({
               />
             </TableCell>
             <TableCell>
-              <Badge variant={ind.is_core ? "default" : "outline"}>
+              <Badge
+                className={
+                  ind.is_core
+                    ? "bg-srsf-green-50 text-srsf-green-700 border border-srsf-green-200"
+                    : "bg-muted text-muted-foreground border border-border"
+                }
+              >
                 {ind.is_core ? "Core" : "Custom"}
               </Badge>
             </TableCell>

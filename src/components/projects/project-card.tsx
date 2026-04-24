@@ -9,6 +9,24 @@ import {
   countNeedsAttention,
 } from "@/lib/projects/status";
 import { StatusPill } from "./status-pill";
+import { cn } from "@/lib/utils";
+
+const STATUS_BAR: Record<string, string> = {
+  "on-track": "#5BBF3A",
+  "at-risk": "#f59e0b",
+  complete: "#0ea5e9",
+  overdue: "#e53e3e",
+};
+
+function initialsOf(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 type Variant = "full" | "compact";
 
@@ -32,16 +50,27 @@ export function ProjectCard({
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="block rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors p-4 shadow-sm"
+      className="block rounded-lg border border-border bg-card hover:bg-accent/50 hover:border-border transition-colors shadow-sm overflow-hidden"
     >
+      <div
+        className="h-[3px]"
+        style={{ background: STATUS_BAR[status] ?? "#5BBF3A" }}
+      />
+      <div className="p-4">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3
-          className={
-            isCompact ? "font-medium text-sm" : "font-semibold text-base"
-          }
-        >
-          {project.name}
-        </h3>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="size-7 rounded-[7px] bg-gradient-to-br from-srsf-purple-600 to-srsf-purple-900 flex items-center justify-center text-[9px] font-extrabold text-white shrink-0">
+            {initialsOf(project.name)}
+          </div>
+          <h3
+            className={cn(
+              "truncate",
+              isCompact ? "font-medium text-sm" : "font-semibold text-base"
+            )}
+          >
+            {project.name}
+          </h3>
+        </div>
         <StatusPill status={status} />
       </div>
 
@@ -72,6 +101,7 @@ export function ProjectCard({
             {needsAttention} need attention
           </span>
         )}
+      </div>
       </div>
     </Link>
   );
