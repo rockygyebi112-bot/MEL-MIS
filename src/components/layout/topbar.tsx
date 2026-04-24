@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, ChevronDown, Menu } from "lucide-react";
+import { LogOut, User, ChevronDown, Menu, Bell } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Topbar() {
@@ -58,6 +58,14 @@ export function Topbar() {
 
       {/* Right: theme toggle + role badge + user menu */}
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          aria-label="Notifications"
+          className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <Bell className="w-4 h-4" />
+          <span className="absolute top-1.5 right-1.5 size-[6px] rounded-full bg-srsf-green-500" />
+        </button>
         <ThemeToggle />
         {user?.role && (
           <Badge

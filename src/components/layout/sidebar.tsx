@@ -5,12 +5,12 @@ import { NAV_ITEMS } from "@/lib/constants";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { useUser } from "@/hooks/use-user";
 import { useSidebar } from "@/lib/sidebar-context";
-import { PanelLeftClose, PanelLeft } from "lucide-react";
+import { PanelLeftClose, PanelLeft, LogOut } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
-  const { hasAccess, loading } = useUser();
+  const { hasAccess, loading, user, signOut } = useUser();
   const { mobileOpen, closeMobile } = useSidebar();
 
   // Desktop-only collapsed (icon-only) state
@@ -54,7 +54,7 @@ export function Sidebar() {
       {/* ── Sidebar panel ───────────────────────────────────── */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-screen bg-gradient-to-b from-srsf-purple-800 to-srsf-purple-900 flex flex-col shadow-xl",
+          "fixed left-0 top-0 z-50 h-screen bg-gradient-to-b from-[#261240] via-[#1a0d2a] to-[#110820] flex flex-col shadow-xl",
           // Mobile: slide in/out via translateX, full nav width
           "w-72 transition-transform duration-300 ease-in-out",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
@@ -131,12 +131,44 @@ export function Sidebar() {
           </nav>
         )}
 
-        {/* Bottom branding */}
+        {/* Bottom user row + branding */}
         {!desktopCollapsed && (
-          <div className="px-5 py-4 border-t border-white/10 shrink-0">
-            <p className="text-[11px] text-white/30 leading-relaxed">
-              Springboard Road Show Foundation
-            </p>
+          <div className="border-t border-white/10 shrink-0">
+            {user && (
+              <div className="flex items-center gap-2.5 px-4 py-3">
+                <div className="size-8 rounded-lg bg-gradient-to-br from-srsf-green-500 to-srsf-green-600 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+                  {user.full_name
+                    ? user.full_name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)
+                    : (user.email?.[0] ?? "?").toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-white truncate">
+                    {user.full_name || user.email}
+                  </p>
+                  <p className="text-[10px] text-white/40 truncate">
+                    {user.role?.name ?? "Member"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  title="Sign out"
+                  className="text-white/40 hover:text-white transition-colors p-1 rounded"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+            <div className="px-5 py-3 border-t border-white/5">
+              <p className="text-[11px] text-white/30 leading-relaxed">
+                Springboard Road Show Foundation
+              </p>
+            </div>
           </div>
         )}
       </aside>

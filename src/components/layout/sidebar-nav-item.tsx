@@ -54,13 +54,16 @@ export function SidebarNavItem({
           type="button"
           onClick={() => setExpanded(!expanded)}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
+            "relative w-full flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
             isActive
-              ? "bg-srsf-green-500/20 text-white"
-              : "text-white/60 hover:text-white hover:bg-white/8"
+              ? "bg-srsf-green-500/[0.14] text-white"
+              : "text-white/60 hover:text-white hover:bg-white/5"
           )}
         >
-          <Icon className="size-5 lg:size-4 shrink-0" />
+          {isActive && (
+            <span className="absolute left-0 top-[20%] bottom-[20%] w-[3px] rounded-r-full bg-srsf-green-500" />
+          )}
+          <Icon className={cn("size-5 lg:size-4 shrink-0", isActive ? "text-srsf-green-400" : "text-white/40")} />
           <span className="flex-1 text-left">{item.label}</span>
           <ChevronDown
             className={cn(
@@ -70,22 +73,25 @@ export function SidebarNavItem({
           />
         </button>
         {expanded && (
-          <div className="ml-7 mt-0.5 space-y-0.5 border-l border-white/10 pl-3">
-            {item.children.map((child) => (
-              <Link
-                key={child.href}
-                href={child.href}
-                onClick={onNavigate}
-                className={cn(
-                  "block px-2.5 py-2.5 lg:py-1.5 rounded-md text-[13px] transition-all duration-150",
-                  pathname === child.href
-                    ? "bg-srsf-green-500/20 text-white font-medium"
-                    : "text-white/50 hover:text-white hover:bg-white/8"
-                )}
-              >
-                {child.label}
-              </Link>
-            ))}
+          <div className="ml-7 mt-0.5 space-y-0.5 border-l border-white/[0.07] pl-3">
+            {item.children.map((child) => {
+              const childActive = pathname === child.href;
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "block px-2.5 py-2 lg:py-1.5 rounded-md text-[12px] transition-all duration-150",
+                    childActive
+                      ? "bg-srsf-green-500/[0.14] text-white font-medium"
+                      : "text-white/50 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  {child.label}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
@@ -97,13 +103,16 @@ export function SidebarNavItem({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
+        "relative flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
         isActive
-          ? "bg-srsf-green-500/20 text-white"
-          : "text-white/60 hover:text-white hover:bg-white/8"
+          ? "bg-srsf-green-500/[0.14] text-white"
+          : "text-white/60 hover:text-white hover:bg-white/5"
       )}
     >
-      <Icon className="size-5 lg:size-4 shrink-0" />
+      {isActive && (
+        <span className="absolute left-0 top-[20%] bottom-[20%] w-[3px] rounded-r-full bg-srsf-green-500" />
+      )}
+      <Icon className={cn("size-5 lg:size-4 shrink-0", isActive ? "text-srsf-green-400" : "text-white/40")} />
       <span>{item.label}</span>
     </Link>
   );

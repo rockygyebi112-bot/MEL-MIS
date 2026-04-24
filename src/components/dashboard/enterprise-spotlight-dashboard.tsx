@@ -17,6 +17,16 @@ import {
 } from "./chart-builders";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
 import { DashboardSkeleton } from "./dashboard-skeleton";
+import React from "react";
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-4 mt-2">
+      <span className="w-[3px] h-[18px] rounded-full bg-srsf-green-500 shrink-0" />
+      <h2 className="text-[13px] font-bold tracking-tight">{children}</h2>
+    </div>
+  );
+}
 
 export function EnterpriseSpotlightDashboard() {
   const [entries, setEntries] = useState<EnterpriseSpotlightEntry[]>([]);
@@ -125,6 +135,7 @@ export function EnterpriseSpotlightDashboard() {
         <KpiCard label="Regions Represented" value={uniqueRegions} accent="teal" />
       </div>
 
+      <SectionHeading>Geographic</SectionHeading>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart
@@ -140,6 +151,7 @@ export function EnterpriseSpotlightDashboard() {
         </div>
       </div>
 
+      <SectionHeading>Demographics</SectionHeading>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
@@ -155,6 +167,7 @@ export function EnterpriseSpotlightDashboard() {
         </div>
       </div>
 
+      <SectionHeading>Business Information</SectionHeading>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart option={barChartOption(longevityCounts, "Business Longevity")} />

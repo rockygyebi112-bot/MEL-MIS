@@ -36,10 +36,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 const PAGE_SIZE = 20;
 
 const PROGRAM_COLORS: Record<string, string> = {
-  "Enterprise Spotlight": "bg-emerald-100 text-emerald-700",
-  "Virtual University": "bg-blue-100 text-blue-700",
-  Hangout: "bg-purple-100 text-purple-700",
-  "ABSA Onboarding": "bg-amber-100 text-amber-700",
+  "Enterprise Spotlight": "bg-srsf-green-50 text-srsf-green-700 border border-srsf-green-200",
+  "Virtual University": "bg-blue-50 text-blue-700 border border-blue-200",
+  Hangout: "bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200",
+  "ABSA Onboarding": "bg-amber-50 text-amber-700 border border-amber-200",
 };
 
 export default function LearningsPage() {
@@ -294,7 +294,11 @@ export default function LearningsPage() {
                   className="rounded-xl border border-border/60 bg-card px-5 py-4 transition-colors hover:border-border hover:shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="size-8 rounded-lg border bg-muted flex items-center justify-center shrink-0">
+                        <Lightbulb className="size-3.5 text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1.5">
                         <Badge
                           variant="secondary"
@@ -318,6 +322,7 @@ export default function LearningsPage() {
                               : l.description}
                         </p>
                       )}
+                      </div>
                     </div>
                     {l.description && l.description.length > 150 && (
                       <Button

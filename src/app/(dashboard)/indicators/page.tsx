@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { IndicatorsTable } from "@/components/indicators/indicators-table";
 import { IndicatorModal } from "@/components/indicators/indicator-modal";
+import { KpiCard } from "@/components/dashboard/kpi-card";
 import type { Indicator, Program } from "@/lib/types";
 
 export default function IndicatorsPage() {
@@ -75,6 +76,20 @@ export default function IndicatorsPage() {
           <Plus className="size-4 mr-1.5" />
           Add Indicator
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <KpiCard label="Total Indicators" value={indicators.length} accent="purple" />
+        <KpiCard
+          label="Core Indicators"
+          value={indicators.filter((i) => i.is_core).length}
+          accent="green"
+        />
+        <KpiCard
+          label="On Exec Dashboard"
+          value={indicators.filter((i) => i.show_on_executive).length}
+          accent="blue"
+        />
       </div>
 
       <Tabs value={activeSlug} onValueChange={setActiveSlug}>
