@@ -6,15 +6,12 @@ import { SidebarNavItem } from "./sidebar-nav-item";
 import { useUser } from "@/hooks/use-user";
 import { useSidebar } from "@/lib/sidebar-context";
 import { PanelLeftClose, PanelLeft, LogOut } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const { hasAccess, loading, user, signOut } = useUser();
-  const { mobileOpen, closeMobile } = useSidebar();
-
-  // Desktop-only collapsed (icon-only) state
-  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const { mobileOpen, closeMobile, desktopCollapsed, toggleDesktopCollapsed } = useSidebar();
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => loading || hasAccess(item.module)
@@ -94,7 +91,7 @@ export function Sidebar() {
           {/* Desktop collapse/expand button */}
           <button
             type="button"
-            onClick={() => setDesktopCollapsed((c) => !c)}
+            onClick={toggleDesktopCollapsed}
             className="text-white/50 hover:text-white transition-colors hidden lg:block p-1 rounded"
             title={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >

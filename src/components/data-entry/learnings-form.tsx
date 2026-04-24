@@ -14,6 +14,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/data-entry/form-section";
+import { Lightbulb, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface LearningsFormProps {
@@ -116,7 +118,12 @@ export function LearningsForm({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSection
+        title="Learning Details"
+        description="Which program, when it happened, and a short title."
+        icon={Lightbulb}
+      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Program */}
         <div className="space-y-2">
           <Label htmlFor="program_id">Program *</Label>
@@ -159,25 +166,30 @@ export function LearningsForm({
           />
         </div>
       </div>
+      </FormSection>
 
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={form.description}
-          onChange={(e) => setField("description", e.target.value)}
-          placeholder="Describe the learning in detail..."
-          rows={5}
-        />
-      </div>
+      <FormSection
+        title="Description"
+        description="Describe the learning in detail."
+        icon={FileText}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={form.description}
+            onChange={(e) => setField("description", e.target.value)}
+            placeholder="Describe the learning in detail..."
+            rows={5}
+          />
+        </div>
+      </FormSection>
 
-      {/* Action buttons */}
       <div className="flex gap-3">
         <Button
           onClick={handleSubmit}
           disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600"
+          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
         >
           {saving
             ? "Saving..."

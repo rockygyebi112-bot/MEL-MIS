@@ -26,6 +26,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
+import { FormSection } from "@/components/data-entry/form-section";
+import { User, Briefcase, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 
 interface EnterpriseSpotlightFormProps {
@@ -213,269 +215,268 @@ export function EnterpriseSpotlightForm({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Applicant Name */}
-        <div className="space-y-2">
-          <Label htmlFor="applicant_name">Applicant Name *</Label>
-          <Input
-            id="applicant_name"
-            value={form.applicant_name}
-            onChange={(e) => setField("applicant_name", e.target.value)}
-            placeholder="Full name"
-          />
-        </div>
-
-        {/* Region */}
-        <div className="space-y-2">
-          <Label htmlFor="region">Region</Label>
-          <Select
-            value={form.region}
-            onValueChange={(v) => setField("region", v ?? "")}
-          >
-            <SelectTrigger id="region">
-              <SelectValue placeholder="Select region" />
-            </SelectTrigger>
-            <SelectContent>
-              {regionOptions.map((r) => (
-                <SelectItem key={r} value={r}>
-                  {r}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Gender */}
-        <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
-          <Select
-            value={form.gender}
-            onValueChange={(v) => setField("gender", v ?? "")}
-          >
-            <SelectTrigger id="gender">
-              <SelectValue placeholder="Select gender" />
-            </SelectTrigger>
-            <SelectContent>
-              {genderOptions.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {g}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Age */}
-        <div className="space-y-2">
-          <Label htmlFor="age">Age</Label>
-          <Input
-            id="age"
-            type="number"
-            min={0}
-            max={150}
-            value={form.age}
-            onChange={(e) => setField("age", e.target.value)}
-            placeholder="Age in years"
-          />
-          {form.age && (
-            <p className="text-xs text-muted-foreground">
-              Bracket: {getAgeBracket(parseInt(form.age, 10))}
-            </p>
-          )}
-        </div>
-
-        {/* Disability Status */}
-        <div className="space-y-2">
-          <Label htmlFor="disability_status">Disability Status</Label>
-          <Select
-            value={form.disability_status}
-            onValueChange={(v) => setField("disability_status", v ?? "")}
-          >
-            <SelectTrigger id="disability_status">
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent>
-              {disabilityStatusOptions.map((o) => (
-                <SelectItem key={o} value={o}>
-                  {o}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Disability Type (conditional) */}
-        {form.disability_status === "Yes" && (
+      <FormSection
+        title="Applicant Information"
+        description="Personal details of the applicant"
+        icon={User}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <Label htmlFor="disability_type">Disability Type</Label>
+            <Label htmlFor="applicant_name">Applicant Name *</Label>
+            <Input
+              id="applicant_name"
+              value={form.applicant_name}
+              onChange={(e) => setField("applicant_name", e.target.value)}
+              placeholder="Full name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="region">Region</Label>
             <Select
-              value={form.disability_type}
-              onValueChange={(v) => setField("disability_type", v ?? "")}
+              value={form.region}
+              onValueChange={(v) => setField("region", v ?? "")}
             >
-              <SelectTrigger id="disability_type">
-                <SelectValue placeholder="Select type" />
+              <SelectTrigger id="region">
+                <SelectValue placeholder="Select region" />
               </SelectTrigger>
               <SelectContent>
-                {disabilityTypeSelectOptions.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
+                {regionOptions.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {form.disability_type === "Other" && (
-              <Input
-                id="disability_type_other"
-                value={form.disability_type_other}
-                onChange={(e) =>
-                  setField("disability_type_other", e.target.value)
-                }
-                placeholder="Please specify"
-                className="mt-2"
-              />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="gender">Gender</Label>
+            <Select
+              value={form.gender}
+              onValueChange={(v) => setField("gender", v ?? "")}
+            >
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                {genderOptions.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {g}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="age">Age</Label>
+            <Input
+              id="age"
+              type="number"
+              min={0}
+              max={150}
+              value={form.age}
+              onChange={(e) => setField("age", e.target.value)}
+              placeholder="Age in years"
+            />
+            {form.age && (
+              <p className="text-xs text-muted-foreground">
+                Bracket: {getAgeBracket(parseInt(form.age, 10))}
+              </p>
             )}
           </div>
-        )}
-
-        {/* Ownership Type */}
-        <div className="space-y-2">
-          <Label htmlFor="ownership_type">Ownership Type</Label>
-          <Select
-            value={form.ownership_type}
-            onValueChange={(v) => setField("ownership_type", v ?? "")}
-          >
-            <SelectTrigger id="ownership_type">
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {ownershipOptions.map((o) => (
-                <SelectItem key={o} value={o}>
-                  {o}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Label htmlFor="disability_status">Disability Status</Label>
+            <Select
+              value={form.disability_status}
+              onValueChange={(v) => setField("disability_status", v ?? "")}
+            >
+              <SelectTrigger id="disability_status">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {disabilityStatusOptions.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {form.disability_status === "Yes" && (
+            <div className="space-y-2">
+              <Label htmlFor="disability_type">Disability Type</Label>
+              <Select
+                value={form.disability_type}
+                onValueChange={(v) => setField("disability_type", v ?? "")}
+              >
+                <SelectTrigger id="disability_type">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {disabilityTypeSelectOptions.map((d) => (
+                    <SelectItem key={d} value={d}>
+                      {d}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.disability_type === "Other" && (
+                <Input
+                  id="disability_type_other"
+                  value={form.disability_type_other}
+                  onChange={(e) =>
+                    setField("disability_type_other", e.target.value)
+                  }
+                  placeholder="Please specify"
+                  className="mt-2"
+                />
+              )}
+            </div>
+          )}
         </div>
+      </FormSection>
 
-        {/* Business Longevity */}
-        <div className="space-y-2">
-          <Label htmlFor="business_longevity">Business Longevity (years)</Label>
-          <Input
-            id="business_longevity"
-            type="number"
-            min={0}
-            value={form.business_longevity}
-            onChange={(e) => setField("business_longevity", e.target.value)}
-            placeholder="Years in operation"
-          />
+      <FormSection
+        title="Business Information"
+        description="Details about the applicant's business"
+        icon={Briefcase}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <Label htmlFor="ownership_type">Ownership Type</Label>
+            <Select
+              value={form.ownership_type}
+              onValueChange={(v) => setField("ownership_type", v ?? "")}
+            >
+              <SelectTrigger id="ownership_type">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                {ownershipOptions.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business_longevity">
+              Business Longevity (years)
+            </Label>
+            <Input
+              id="business_longevity"
+              type="number"
+              min={0}
+              value={form.business_longevity}
+              onChange={(e) => setField("business_longevity", e.target.value)}
+              placeholder="Years in operation"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business_size">Business Size</Label>
+            <Select
+              value={form.business_size}
+              onValueChange={(v) => setField("business_size", v ?? "")}
+            >
+              <SelectTrigger id="business_size">
+                <SelectValue placeholder="Select size" />
+              </SelectTrigger>
+              <SelectContent>
+                {businessSizeOptions.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="funding_status">Funding Status</Label>
+            <Select
+              value={form.funding_status}
+              onValueChange={(v) => setField("funding_status", v ?? "")}
+            >
+              <SelectTrigger id="funding_status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {fundingStatusOptions.map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {f}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business_registered">Business Registered</Label>
+            <Select
+              value={form.business_registered}
+              onValueChange={(v) => setField("business_registered", v ?? "")}
+            >
+              <SelectTrigger id="business_registered">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                {businessRegisteredOptions.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="business_sector">Business Sector</Label>
+            <Select
+              value={form.business_sector}
+              onValueChange={(v) => setField("business_sector", v ?? "")}
+            >
+              <SelectTrigger id="business_sector">
+                <SelectValue placeholder="Select sector" />
+              </SelectTrigger>
+              <SelectContent>
+                {businessSectorOptions.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+      </FormSection>
 
-        {/* Business Size */}
-        <div className="space-y-2">
-          <Label htmlFor="business_size">Business Size</Label>
-          <Select
-            value={form.business_size}
-            onValueChange={(v) => setField("business_size", v ?? "")}
-          >
-            <SelectTrigger id="business_size">
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              {businessSizeOptions.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Funding Status */}
-        <div className="space-y-2">
-          <Label htmlFor="funding_status">Funding Status</Label>
-          <Select
-            value={form.funding_status}
-            onValueChange={(v) => setField("funding_status", v ?? "")}
-          >
-            <SelectTrigger id="funding_status">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {fundingStatusOptions.map((f) => (
-                <SelectItem key={f} value={f}>
-                  {f}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Business Registered */}
-        <div className="space-y-2">
-          <Label htmlFor="business_registered">Business Registered</Label>
-          <Select
-            value={form.business_registered}
-            onValueChange={(v) => setField("business_registered", v ?? "")}
-          >
-            <SelectTrigger id="business_registered">
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent>
-              {businessRegisteredOptions.map((o) => (
-                <SelectItem key={o} value={o}>
-                  {o}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Business Sector */}
-        <div className="space-y-2">
-          <Label htmlFor="business_sector">Business Sector</Label>
-          <Select
-            value={form.business_sector}
-            onValueChange={(v) => setField("business_sector", v ?? "")}
-          >
-            <SelectTrigger id="business_sector">
-              <SelectValue placeholder="Select sector" />
-            </SelectTrigger>
-            <SelectContent>
-              {businessSectorOptions.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Custom Indicators */}
       <CustomFieldsSection
         programSlug="enterprise-spotlight"
         values={customFields}
         onChange={setCustomFields}
       />
 
-      {/* Learning */}
-      <div className="space-y-2">
-        <Label htmlFor="learning">Learnings</Label>
-        <Textarea
-          id="learning"
-          value={form.learning}
-          onChange={(e) => setField("learning", e.target.value)}
-          placeholder="Any learnings or insights from this application..."
-          rows={3}
-        />
-      </div>
+      <FormSection
+        title="Learnings & Insights"
+        description="Optional observations captured from this application"
+        icon={Lightbulb}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="learning" className="sr-only">
+            Learnings
+          </Label>
+          <Textarea
+            id="learning"
+            value={form.learning}
+            onChange={(e) => setField("learning", e.target.value)}
+            placeholder="Any learnings or insights from this application..."
+            rows={3}
+          />
+        </div>
+      </FormSection>
 
-      {/* Action buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 pt-2">
         <Button
           onClick={() => handleSubmit(false)}
           disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600"
+          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
         >
           {saving ? "Saving..." : editEntry ? "Update Entry" : "Submit Entry"}
         </Button>
