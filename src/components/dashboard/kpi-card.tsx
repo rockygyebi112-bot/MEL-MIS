@@ -43,19 +43,19 @@ export function KpiCard({ label, value, trend, accent, sublabel }: KpiCardProps)
   const valueClass = accent ? ACCENT_VALUE[accent] : "text-foreground";
   return (
     <div
-      className={`rounded-xl border border-border/60 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 ${borderClass} ${bgClass}`}
+      className={`rounded-xl border border-border/60 p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ease-out ${borderClass} ${bgClass}`}
     >
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
         {label}
       </p>
-      <p className={`text-4xl font-extrabold mt-2 tracking-tight ${valueClass}`}>
+      <p className={`text-4xl font-bold mt-2 tracking-tight ${valueClass}`}>
         {typeof value === "number" ? value.toLocaleString() : value}
       </p>
       {sublabel && (
         <p className="text-[10px] text-muted-foreground/50 mt-0.5">{sublabel}</p>
       )}
       {trend && (
-        <div className="flex items-center gap-1.5 mt-2.5">
+        <div className="flex items-center gap-1.5 mt-3">
           {trend.value >= 0 ? (
             <TrendingUp className="size-3.5 text-emerald-500" />
           ) : (

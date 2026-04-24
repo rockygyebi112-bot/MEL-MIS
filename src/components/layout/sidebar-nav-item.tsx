@@ -36,10 +36,10 @@ export function SidebarNavItem({
         onClick={onNavigate}
         title={item.label}
         className={cn(
-          "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-150",
+          "flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ease-out",
           isActive
             ? "bg-srsf-green-500/20 text-white"
-            : "text-white/60 hover:text-white hover:bg-white/8"
+            : "text-white/60 hover:text-white hover:bg-white/10 active:bg-white/15"
         )}
       >
         <Icon className="size-5 shrink-0" />
@@ -54,10 +54,10 @@ export function SidebarNavItem({
           type="button"
           onClick={() => setExpanded(!expanded)}
           className={cn(
-            "relative w-full flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
+            "relative w-full flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out",
             isActive
               ? "bg-srsf-green-500/[0.14] text-white"
-              : "text-white/60 hover:text-white hover:bg-white/5"
+              : "text-white/60 hover:text-white hover:bg-white/10 active:bg-white/15"
           )}
         >
           {isActive && (
@@ -82,10 +82,10 @@ export function SidebarNavItem({
                   href={child.href}
                   onClick={onNavigate}
                   className={cn(
-                    "block px-2.5 py-2 lg:py-1.5 rounded-md text-[12px] transition-all duration-150",
+                    "block px-2.5 py-2 lg:py-1.5 rounded-md text-[12px] transition-all duration-200 ease-out",
                     childActive
                       ? "bg-srsf-green-500/[0.14] text-white font-medium"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
+                      : "text-white/50 hover:text-white hover:bg-white/10 active:bg-white/15"
                   )}
                 >
                   {child.label}
@@ -103,10 +103,10 @@ export function SidebarNavItem({
       href={item.href}
       onClick={onNavigate}
       className={cn(
-        "relative flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-150",
+        "relative flex items-center gap-3 px-3 py-3 lg:py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out",
         isActive
           ? "bg-srsf-green-500/[0.14] text-white"
-          : "text-white/60 hover:text-white hover:bg-white/5"
+          : "text-white/60 hover:text-white hover:bg-white/10 active:bg-white/15"
       )}
     >
       {isActive && (

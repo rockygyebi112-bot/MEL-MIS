@@ -34,7 +34,7 @@ export function Topbar() {
         <button
           type="button"
           onClick={toggleMobile}
-          className="p-2 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="p-2 -ml-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80 transition-all duration-200 ease-out"
           aria-label="Open navigation"
         >
           <Menu className="w-5 h-5" />
@@ -61,10 +61,10 @@ export function Topbar() {
         <button
           type="button"
           aria-label="Notifications"
-          className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted active:bg-muted/80 transition-all duration-200 ease-out"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 size-[6px] rounded-full bg-srsf-green-500" />
+          <span className="absolute top-1.5 right-1.5 size-[6px] rounded-full bg-srsf-green-500 ring-2 ring-background" />
         </button>
         <ThemeToggle />
         {user?.role && (
@@ -76,8 +76,8 @@ export function Topbar() {
           </Badge>
         )}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full py-1 px-1.5 hover:bg-muted transition-colors outline-none">
-            <Avatar className="size-8">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full py-1 px-1.5 hover:bg-muted active:bg-muted/80 transition-all duration-200 ease-out outline-none">
+            <Avatar className="size-8 ring-2 ring-transparent hover:ring-border transition-all duration-200">
               <AvatarFallback className="bg-srsf-green-500 text-white text-xs font-semibold">
                 {initials}
               </AvatarFallback>

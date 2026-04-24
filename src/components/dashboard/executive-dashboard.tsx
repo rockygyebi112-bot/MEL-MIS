@@ -385,13 +385,13 @@ export function ExecutiveDashboard() {
 
   // ─── Render ───────────────────────────────────────────────────
 
-  // Reusable chart card wrapper class
-  const chartCard = "rounded-xl border border-border/60 bg-white p-6 shadow-sm hover:shadow-md transition-shadow duration-200";
+  // Reusable chart card wrapper class - consistent with KPI cards
+  const chartCard = "rounded-xl border border-border/60 bg-white p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ease-out";
   // Reusable section heading component
   const SectionHeading = ({ children }: { children: React.ReactNode }) => (
     <div className="flex items-center gap-3 mb-5">
-      <span className="w-1 h-6 rounded-full bg-[#5BBF3A] shrink-0" />
-      <h2 className="text-lg font-bold text-gray-900">{children}</h2>
+      <span className="w-1 h-6 rounded-full bg-srsf-green-500 shrink-0" />
+      <h2 className="text-lg font-bold text-foreground">{children}</h2>
     </div>
   );
 
@@ -519,8 +519,8 @@ export function ExecutiveDashboard() {
         <section>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <span className="w-1 h-6 rounded-full bg-[#5BBF3A] shrink-0" />
-              <h2 className="text-lg font-bold text-gray-900">Media Programs</h2>
+              <span className="w-1 h-6 rounded-full bg-srsf-green-500 shrink-0" />
+              <h2 className="text-lg font-bold text-foreground">Media Programs</h2>
             </div>
             <GranularityToggle value={granularity} onChange={setGranularity} />
           </div>
