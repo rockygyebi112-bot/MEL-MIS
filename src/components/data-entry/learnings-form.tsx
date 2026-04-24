@@ -17,6 +17,7 @@ import {
 import { FormSection } from "@/components/data-entry/form-section";
 import { Lightbulb, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { LEARNING_CATEGORIES } from "@/lib/constants";
 
 interface LearningsFormProps {
   editEntry?: LearningEntry | null;
@@ -26,6 +27,7 @@ interface LearningsFormProps {
 
 const EMPTY_FORM = {
   program_id: "",
+  category: "",
   title: "",
   description: "",
   learning_date: "",
@@ -56,6 +58,7 @@ export function LearningsForm({
     if (editEntry) {
       setForm({
         program_id: editEntry.program_id,
+        category: editEntry.category,
         title: editEntry.title,
         description: editEntry.description,
         learning_date: editEntry.learning_date ?? "",
@@ -76,6 +79,10 @@ export function LearningsForm({
       toast.error("Please select a program");
       return;
     }
+    if (!form.category) {
+      toast.error("Please select a category");
+      return;
+    }
 
     setSaving(true);
     const {
@@ -90,6 +97,7 @@ export function LearningsForm({
     const record = {
       user_id: user.id,
       program_id: form.program_id,
+      category: form.category,
       title: form.title,
       description: form.description,
       learning_date: form.learning_date || null,
@@ -138,6 +146,25 @@ export function LearningsForm({
               {programs.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category">Category *</Label>
+          <Select
+            value={form.category}
+            onValueChange={(v) => setField("category", v ?? "")}
+          >
+            <SelectTrigger id="category">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {LEARNING_CATEGORIES.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
                 </SelectItem>
               ))}
             </SelectContent>

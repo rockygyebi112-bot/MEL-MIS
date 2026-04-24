@@ -10,15 +10,25 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/use-user";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ComputedProjectStatus } from "@/lib/projects/types";
 
-const FILTERS = ["All", "On Track", "At Risk", "Complete"] as const;
+const FILTERS = [
+  "All",
+  "Not Started",
+  "In Progress",
+  "At Risk",
+  "Blocked",
+  "Done",
+] as const;
 type FilterKey = typeof FILTERS[number];
 
-const FILTER_TO_STATUS: Record<FilterKey, string | null> = {
+const FILTER_TO_STATUS: Record<FilterKey, ComputedProjectStatus | null> = {
   All: null,
-  "On Track": "on-track",
-  "At Risk": "at-risk",
-  Complete: "complete",
+  "Not Started": "not_started",
+  "In Progress": "in_progress",
+  "At Risk": "at_risk",
+  Blocked: "blocked",
+  Done: "done",
 };
 
 export default function ProjectsPage() {

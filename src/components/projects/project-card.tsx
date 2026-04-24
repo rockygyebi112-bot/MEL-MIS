@@ -12,10 +12,11 @@ import { StatusPill } from "./status-pill";
 import { cn } from "@/lib/utils";
 
 const STATUS_BAR: Record<string, string> = {
-  "on-track": "#5BBF3A",
-  "at-risk": "#f59e0b",
-  complete: "#0ea5e9",
-  overdue: "#e53e3e",
+  not_started: "#94a3b8",
+  in_progress: "#3b82f6",
+  at_risk: "#f59e0b",
+  blocked: "#e53e3e",
+  done: "#16a34a",
 };
 
 function initialsOf(name: string): string {

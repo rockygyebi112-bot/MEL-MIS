@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   Table,
@@ -33,11 +33,7 @@ export function PendingUsersTable({ onUserUpdated }: PendingUsersTableProps) {
   const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const supabase = createClient();
 
     const [usersRes, rolesRes] = await Promise.all([
@@ -52,43 +48,53 @@ export function PendingUsersTable({ onUserUpdated }: PendingUsersTableProps) {
     setUsers((usersRes.data as UserProfile[]) || []);
     setRoles((rolesRes.data as Role[]) || []);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   async function approveUser(userId: string) {
     const roleId = selectedRoles[userId];
     if (!roleId) return;
 
     const supabase = createClient();
+    const {
+      data: { user: actor },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("user_profiles")
       .update({ status: "active", role_id: roleId, updated_at: new Date().toISOString() })
       .eq("id", userId);
 
-    if (!error) {
+    if (!error && actor) {
       await supabase.from("audit_log").insert({
-        user_id: userId,
+        user_id: actor.id,
         action: "user_approved",
-        details: { role_id: roleId },
+        details: { role_id: roleId, subject_user_id: userId },
       });
-      setUsers(users.filter((u) => u.id !== userId));
+      setUsers((current) => current.filter((u) => u.id !== userId));
       onUserUpdated();
     }
   }
 
   async function rejectUser(userId: string) {
     const supabase = createClient();
+    const {
+      data: { user: actor },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("user_profiles")
       .update({ status: "rejected", updated_at: new Date().toISOString() })
       .eq("id", userId);
 
-    if (!error) {
+    if (!error && actor) {
       await supabase.from("audit_log").insert({
-        user_id: userId,
+        user_id: actor.id,
         action: "user_rejected",
-        details: {},
+        details: { subject_user_id: userId },
       });
-      setUsers(users.filter((u) => u.id !== userId));
+      setUsers((current) => current.filter((u) => u.id !== userId));
     }
   }
 

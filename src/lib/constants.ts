@@ -15,6 +15,13 @@ export const PROGRAMS = [
   { name: "Hangout", slug: "hangout" },
 ] as const;
 
+export const INDICATOR_PROGRAMS = [
+  { name: "Enterprise Spotlight", slug: "enterprise-spotlight" },
+  { name: "Virtual University", slug: "virtual-university" },
+  { name: "Hangout", slug: "hangout" },
+  { name: "ABSA Onboarding", slug: "absa-onboarding" },
+] as const;
+
 export interface NavItem {
   label: string;
   href: string;

@@ -64,6 +64,7 @@ export function ActivityFormModal({
       const { data } = await supabase
         .from("user_profiles")
         .select("id, full_name, email")
+        .eq("status", "active")
         .order("full_name", { ascending: true });
       setUsers((data ?? []) as UserOption[]);
     })();
@@ -147,6 +148,11 @@ export function ActivityFormModal({
                   </option>
                 ))}
               </select>
+              {users.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No active users are available to assign.
+                </p>
+              )}
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="act-owner">Owner</Label>

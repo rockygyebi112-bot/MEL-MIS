@@ -37,6 +37,15 @@ function totalMediaViews(entry: MediaProgramEntry): number {
   return total;
 }
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-5">
+      <span className="w-1 h-6 rounded-full bg-srsf-green-500 shrink-0" />
+      <h2 className="text-lg font-bold text-foreground">{children}</h2>
+    </div>
+  );
+}
+
 // ─── Component ──────────────────────────────────────────────────
 
 export function ExecutiveDashboard() {
@@ -47,7 +56,7 @@ export function ExecutiveDashboard() {
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [programFilter, setProgramFilter] = useState<ProgramFilter>("enterprise-spotlight");
+  const [programFilter, setProgramFilter] = useState<ProgramFilter>("all");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const periodLabel = granularity === "week" ? "Weekly" : granularity === "quarter" ? "Quarterly" : "Monthly";
   const supabase = createClient();
@@ -116,10 +125,11 @@ export function ExecutiveDashboard() {
 
   // ─── Show/hide based on program filter ────────────────────────
 
-  const showES = programFilter === "enterprise-spotlight";
-  const showVU = programFilter === "virtual-university";
-  const showHangout = programFilter === "hangout";
-  const showABSA = programFilter === "absa-onboarding";
+  const showAll = programFilter === "all";
+  const showES = showAll || programFilter === "enterprise-spotlight";
+  const showVU = showAll || programFilter === "virtual-university";
+  const showHangout = showAll || programFilter === "hangout";
+  const showABSA = showAll || programFilter === "absa-onboarding";
   const showMedia = showVU || showHangout;
 
   // ─── Demographics: Gender (cross-program) ─────────────────────
@@ -387,14 +397,6 @@ export function ExecutiveDashboard() {
 
   // Reusable chart card wrapper class - consistent with KPI cards
   const chartCard = "rounded-xl border border-border/60 bg-white p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ease-out";
-  // Reusable section heading component
-  const SectionHeading = ({ children }: { children: React.ReactNode }) => (
-    <div className="flex items-center gap-3 mb-5">
-      <span className="w-1 h-6 rounded-full bg-srsf-green-500 shrink-0" />
-      <h2 className="text-lg font-bold text-foreground">{children}</h2>
-    </div>
-  );
-
   if (loading) {
     return <DashboardSkeleton kpis={4} charts={4} />;
   }

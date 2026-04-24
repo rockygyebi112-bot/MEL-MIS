@@ -50,13 +50,11 @@ function LoginForm() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("user_profiles")
         .select("status, role_id")
         .eq("id", user.id)
         .single();
-
-      console.log("LOGIN DEBUG:", { userId: user.id, profile, profileError });
 
       if (!profile) {
         router.push("/dashboard");

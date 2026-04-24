@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PROGRAMS } from "@/lib/constants";
+import { INDICATOR_PROGRAMS } from "@/lib/constants";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -13,7 +13,7 @@ import type { Indicator, Program } from "@/lib/types";
 
 export default function IndicatorsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [activeSlug, setActiveSlug] = useState(PROGRAMS[0].slug);
+  const [activeSlug, setActiveSlug] = useState(INDICATOR_PROGRAMS[0].slug);
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -94,14 +94,14 @@ export default function IndicatorsPage() {
 
       <Tabs value={activeSlug} onValueChange={setActiveSlug}>
         <TabsList>
-          {PROGRAMS.map((p) => (
+          {INDICATOR_PROGRAMS.map((p) => (
             <TabsTrigger key={p.slug} value={p.slug}>
               {p.name}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {PROGRAMS.map((p) => (
+        {INDICATOR_PROGRAMS.map((p) => (
           <TabsContent key={p.slug} value={p.slug}>
             <div className="rounded-xl border border-border/60 bg-card shadow-sm overflow-hidden">
               <IndicatorsTable
