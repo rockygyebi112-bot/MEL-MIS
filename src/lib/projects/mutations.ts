@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { normalizePercentComplete } from "./status";
 import type {
   ActivityPriority,
   ActivityStatus,
@@ -107,17 +108,26 @@ export async function postActivityUpdate(input: {
   new_status?: ActivityStatus;
   new_percent?: number;
   current_status: ActivityStatus;
+  current_percent: number;
 }): Promise<void> {
   const supabase = createClient();
   const nowIso = new Date().toISOString();
+  const nextStatus = input.new_status ?? input.current_status;
+  const nextPercent = normalizePercentComplete(
+    nextStatus,
+    typeof input.new_percent === "number"
+      ? input.new_percent
+      : input.current_percent,
+  );
 
   const activityPatch: Partial<ProjectActivity> = {
     last_update_text: input.note,
     last_update_at: nowIso,
   };
   if (input.new_status) activityPatch.status = input.new_status;
-  if (typeof input.new_percent === "number")
-    activityPatch.percent_complete = input.new_percent;
+  if (input.new_status || nextPercent !== input.current_percent) {
+    activityPatch.percent_complete = nextPercent;
+  }
 
   const { error: actErr } = await supabase
     .from("project_activities")
@@ -132,7 +142,7 @@ export async function postActivityUpdate(input: {
       user_id: input.user_id,
       note: input.note,
       status_before: input.current_status,
-      status_after: input.new_status ?? input.current_status,
+      status_after: nextStatus,
     });
   if (logErr) throw logErr;
 }

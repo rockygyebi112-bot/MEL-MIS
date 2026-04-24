@@ -9,6 +9,7 @@ import type {
 } from "@/lib/projects/types";
 import { listUpdates } from "@/lib/projects/queries";
 import { postActivityUpdate } from "@/lib/projects/mutations";
+import { normalizePercentComplete } from "@/lib/projects/status";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -51,6 +52,12 @@ export function ActivitySidePanel({
     listUpdates(activity.id).then(setUpdates);
   }, [activity.id]);
 
+  useEffect(() => {
+    setNewStatus(activity.status);
+    setNewPercent(activity.percent_complete);
+    setError(null);
+  }, [activity.id, activity.percent_complete, activity.status]);
+
   const blockDone = newStatus === "done" && attachmentCount === 0;
 
   async function submit(e: React.FormEvent) {
@@ -67,6 +74,7 @@ export function ActivitySidePanel({
         new_percent:
           newPercent !== activity.percent_complete ? newPercent : undefined,
         current_status: activity.status,
+        current_percent: activity.percent_complete,
       });
       setNote("");
       onChange();
@@ -132,9 +140,13 @@ export function ActivitySidePanel({
                 <select
                   id="upd-status"
                   value={newStatus}
-                  onChange={(e) =>
-                    setNewStatus(e.target.value as ActivityStatus)
-                  }
+                  onChange={(e) => {
+                    const nextStatus = e.target.value as ActivityStatus;
+                    setNewStatus(nextStatus);
+                    setNewPercent((current) =>
+                      normalizePercentComplete(nextStatus, current),
+                    );
+                  }}
                   className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                 >
                   {STATUS_OPTIONS.map((s) => (

@@ -19,8 +19,9 @@ import {
 import { StatusPill } from "@/components/projects/status-pill";
 import { ProgramDashboard } from "@/components/programs/program-dashboard";
 import { ActivitiesPanel } from "@/components/projects/activities-panel";
+import { ProjectOverviewDashboard } from "@/components/projects/project-overview-dashboard";
 
-type Tab = "activities" | "program-data";
+type Tab = "overview" | "activities" | "program-data";
 
 export default function ProjectDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -28,30 +29,48 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [milestones, setMilestones] = useState<ProjectMilestone[]>([]);
   const [activities, setActivities] = useState<ProjectActivity[]>([]);
-  const [tab, setTab] = useState<Tab>("activities");
+  const [tab, setTab] = useState<Tab>("overview");
   const [loading, setLoading] = useState(true);
   const [notFoundFlag, setNotFoundFlag] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const refresh = useCallback(async () => {
-    const p = await getProjectBySlug(slug);
-    if (!p) {
-      setNotFoundFlag(true);
-      setLoading(false);
-      return;
-    }
-    setProject(p);
-    const [ms, acts] = await Promise.all([
-      listMilestones(p.id),
-      listActivities(p.id),
-    ]);
-    setMilestones(ms);
-    setActivities(acts);
-    setLoading(false);
-  }, [slug]);
+  const refresh = useCallback(() => {
+    setLoading(true);
+    setRefreshKey((current) => current + 1);
+  }, []);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let active = true;
+
+    async function loadProject() {
+      const p = await getProjectBySlug(slug);
+      if (!active) return;
+
+      if (!p) {
+        setNotFoundFlag(true);
+        setLoading(false);
+        return;
+      }
+
+      const [ms, acts] = await Promise.all([
+        listMilestones(p.id),
+        listActivities(p.id),
+      ]);
+      if (!active) return;
+
+      setProject(p);
+      setMilestones(ms);
+      setActivities(acts);
+      setNotFoundFlag(false);
+      setLoading(false);
+    }
+
+    void loadProject();
+
+    return () => {
+      active = false;
+    };
+  }, [refreshKey, slug]);
 
   if (notFoundFlag) notFound();
   if (loading || !project)
@@ -90,6 +109,18 @@ export default function ProjectDetailPage() {
       <nav className="border-b border-border mb-4 flex gap-4" role="tablist">
         <button
           role="tab"
+          aria-selected={tab === "overview"}
+          onClick={() => setTab("overview")}
+          className={`pb-2 text-sm font-medium border-b-2 ${
+            tab === "overview"
+              ? "border-primary"
+              : "border-transparent text-muted-foreground"
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          role="tab"
           aria-selected={tab === "activities"}
           onClick={() => setTab("activities")}
           className={`pb-2 text-sm font-medium border-b-2 ${
@@ -116,7 +147,13 @@ export default function ProjectDetailPage() {
         )}
       </nav>
 
-      {tab === "activities" ? (
+      {tab === "overview" ? (
+        <ProjectOverviewDashboard
+          project={project}
+          milestones={milestones}
+          activities={activities}
+        />
+      ) : tab === "activities" ? (
         <ActivitiesPanel
           project={project}
           milestones={milestones}

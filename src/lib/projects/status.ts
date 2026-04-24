@@ -1,4 +1,5 @@
 import type {
+  ActivityStatus,
   ComputedProjectStatus,
   Project,
   ProjectActivity,
@@ -33,8 +34,23 @@ export function computeProjectStatus(
 
 export function computeProgressPercent(activities: ProjectActivity[]): number {
   if (activities.length === 0) return 0;
-  const done = activities.filter((a) => a.status === "done").length;
-  return Math.round((done / activities.length) * 100);
+  const total = activities.reduce(
+    (sum, activity) =>
+      sum +
+      normalizePercentComplete(activity.status, activity.percent_complete),
+    0,
+  );
+  return Math.round(total / activities.length);
+}
+
+export function normalizePercentComplete(
+  status: ActivityStatus,
+  percentComplete: number,
+): number {
+  if (status === "done") return 100;
+  if (status === "not_started") return 0;
+  if (!Number.isFinite(percentComplete)) return 0;
+  return Math.min(100, Math.max(0, percentComplete));
 }
 
 export function countOverdue(
