@@ -184,7 +184,7 @@ export default function DataEntryPage() {
               </div>
 
               {/* Form */}
-              <div className="rounded-xl border border-border/60 bg-card p-6 shadow-sm">{renderForm()}</div>
+              {renderForm()}
 
               {/* Recent entries */}
               <div>

@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
+import { FormSection } from "@/components/data-entry/form-section";
+import { Film, BarChart3, Users, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 
 interface MediaProgramFormProps {
@@ -219,144 +221,162 @@ export function MediaProgramForm({
 
   return (
     <div className="space-y-6">
-      {/* Episode Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="episode_title">Episode Title *</Label>
-          <Input
-            id="episode_title"
-            value={episodeTitle}
-            onChange={(e) => setEpisodeTitle(e.target.value)}
-            placeholder="Episode title"
-          />
+      <FormSection
+        title="Episode Information"
+        description="Basic details about the episode and where it aired."
+        icon={Film}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <Label htmlFor="episode_title">Episode Title *</Label>
+            <Input
+              id="episode_title"
+              value={episodeTitle}
+              onChange={(e) => setEpisodeTitle(e.target.value)}
+              placeholder="Episode title"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="date_aired">Date Aired</Label>
+            <Input
+              id="date_aired"
+              type="date"
+              value={dateAired}
+              onChange={(e) => setDateAired(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="date_aired">Date Aired</Label>
-          <Input
-            id="date_aired"
-            type="date"
-            value={dateAired}
-            onChange={(e) => setDateAired(e.target.value)}
-          />
-        </div>
-      </div>
 
-      {/* Platform Selection */}
-      <div className="space-y-3">
-        <Label>Platforms</Label>
-        <div className="flex gap-4">
-          {PLATFORMS.map((platform) => (
-            <label
-              key={platform}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                checked={selectedPlatforms.includes(platform)}
-                onCheckedChange={() => togglePlatform(platform)}
-              />
-              <span className="text-sm">{platform}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Per-Platform Metrics */}
-      {selectedPlatforms.map((platform) => (
-        <div
-          key={platform}
-          className="rounded-xl border border-border/60 p-4 space-y-3"
-        >
-          <h4 className="font-medium">{platform} Metrics</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {(["views", "shares", "saves", "likes"] as const).map((field) => (
-              <div key={field} className="space-y-1">
-                <Label className="text-xs capitalize">{field}</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={platformMetrics[platform]?.[field] ?? ""}
-                  onChange={(e) => setMetric(platform, field, e.target.value)}
-                  placeholder="0"
+        <div className="space-y-3 mt-5">
+          <Label>Platforms</Label>
+          <div className="flex gap-4">
+            {PLATFORMS.map((platform) => (
+              <label
+                key={platform}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedPlatforms.includes(platform)}
+                  onCheckedChange={() => togglePlatform(platform)}
                 />
-              </div>
+                <span className="text-sm">{platform}</span>
+              </label>
             ))}
           </div>
         </div>
-      ))}
+      </FormSection>
 
-      {/* Audience Demographics — Gender */}
-      <div className="rounded-xl border border-border/60 p-4 space-y-3">
-        <h4 className="font-medium">Audience Demographics — Gender</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {genderOptions.map((g) => (
-            <div key={g} className="space-y-1">
-              <Label className="text-xs">{g}</Label>
-              <Input
-                type="number"
-                min={0}
-                value={genderCounts[g] ?? ""}
-                onChange={(e) =>
-                  setGenderCounts((prev) => ({
-                    ...prev,
-                    [g]: e.target.value,
-                  }))
-                }
-                placeholder="0"
-              />
+      {selectedPlatforms.length > 0 && (
+        <FormSection
+          title="Platform Metrics"
+          description="Engagement numbers for each selected platform."
+          icon={BarChart3}
+        >
+          <div className="space-y-5">
+            {selectedPlatforms.map((platform) => (
+              <div key={platform} className="space-y-3">
+                <h4 className="text-[13px] font-semibold">{platform}</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {(["views", "shares", "saves", "likes"] as const).map((field) => (
+                    <div key={field} className="space-y-1">
+                      <Label className="text-xs capitalize">{field}</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={platformMetrics[platform]?.[field] ?? ""}
+                        onChange={(e) => setMetric(platform, field, e.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </FormSection>
+      )}
+
+      <FormSection
+        title="Audience Demographics"
+        description="Breakdown of viewers by gender and age bracket."
+        icon={Users}
+      >
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <h4 className="text-[13px] font-semibold">Gender</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {genderOptions.map((g) => (
+                <div key={g} className="space-y-1">
+                  <Label className="text-xs">{g}</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={genderCounts[g] ?? ""}
+                    onChange={(e) =>
+                      setGenderCounts((prev) => ({
+                        ...prev,
+                        [g]: e.target.value,
+                      }))
+                    }
+                    placeholder="0"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Audience Demographics — Age Bracket */}
-      <div className="rounded-xl border border-border/60 p-4 space-y-3">
-        <h4 className="font-medium">Audience Demographics — Age Bracket</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {ageBracketOptions.map((ab) => (
-            <div key={ab} className="space-y-1">
-              <Label className="text-xs">{ab}</Label>
-              <Input
-                type="number"
-                min={0}
-                value={ageBracketCounts[ab] ?? ""}
-                onChange={(e) =>
-                  setAgeBracketCounts((prev) => ({
-                    ...prev,
-                    [ab]: e.target.value,
-                  }))
-                }
-                placeholder="0"
-              />
+          </div>
+          <div className="space-y-3">
+            <h4 className="text-[13px] font-semibold">Age Bracket</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {ageBracketOptions.map((ab) => (
+                <div key={ab} className="space-y-1">
+                  <Label className="text-xs">{ab}</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={ageBracketCounts[ab] ?? ""}
+                    onChange={(e) =>
+                      setAgeBracketCounts((prev) => ({
+                        ...prev,
+                        [ab]: e.target.value,
+                      }))
+                    }
+                    placeholder="0"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      </FormSection>
 
-      {/* Custom Indicators */}
       <CustomFieldsSection
         programSlug={programSlug}
         values={customFields}
         onChange={setCustomFields}
       />
 
-      {/* Learning */}
-      <div className="space-y-2">
-        <Label htmlFor="learning">Learnings</Label>
-        <Textarea
-          id="learning"
-          value={learning}
-          onChange={(e) => setLearning(e.target.value)}
-          placeholder={`Any learnings or insights from this ${programLabel} episode...`}
-          rows={3}
-        />
-      </div>
+      <FormSection
+        title="Learnings & Insights"
+        description={`Key takeaways from this ${programLabel} episode.`}
+        icon={Lightbulb}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="learning">Learnings</Label>
+          <Textarea
+            id="learning"
+            value={learning}
+            onChange={(e) => setLearning(e.target.value)}
+            placeholder={`Any learnings or insights from this ${programLabel} episode...`}
+            rows={3}
+          />
+        </div>
+      </FormSection>
 
-      {/* Action buttons */}
       <div className="flex gap-3">
         <Button
           onClick={() => handleSubmit(false)}
           disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600"
+          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
         >
           {saving ? "Saving..." : editEntry ? "Update Entry" : "Submit Entry"}
         </Button>
