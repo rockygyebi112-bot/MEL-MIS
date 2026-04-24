@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/use-user";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/page-header";
 
 const FILTERS = ["All", "On Track", "At Risk", "Complete"] as const;
 type FilterKey = typeof FILTERS[number];
@@ -54,38 +55,39 @@ export default function ProjectsPage() {
   }, [projects, activities, filter]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Projects</h1>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1.5 flex-wrap">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors",
-                filter === f
-                  ? "border-srsf-green-500 bg-srsf-green-500/10 text-srsf-green-600"
-                  : "border-border text-muted-foreground hover:text-foreground",
-              )}
+    <div className="space-y-6">
+      <PageHeader
+        title="Projects"
+        description="Track initiatives, milestones, and status across programs."
+        action={
+          isMELManager ? (
+            <Button
+              onClick={() => setShowNew(true)}
+              className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
             >
-              {f}
-            </button>
-          ))}
-        </div>
-        {isMELManager && (
-          <Button
-            onClick={() => setShowNew(true)}
-            className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
+              <Plus className="size-3.5 mr-1.5" />
+              New Project
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <div className="flex gap-1.5 flex-wrap">
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            className={cn(
+              "px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors",
+              filter === f
+                ? "border-srsf-green-500 bg-srsf-green-500/10 text-srsf-green-600"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
           >
-            <Plus className="size-3.5 mr-1.5" />
-            New Project
-          </Button>
-        )}
+            {f}
+          </button>
+        ))}
       </div>
 
       {loading ? (

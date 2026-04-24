@@ -7,6 +7,7 @@ import { PendingUsersTable } from "@/components/settings/pending-users-table";
 import { ActiveUsersTable } from "@/components/settings/active-users-table";
 import { InviteUserModal } from "@/components/settings/invite-user-modal";
 import { PermissionsMatrix } from "@/components/settings/permissions-matrix";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default function SettingsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -17,10 +18,11 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <InviteUserModal onInvited={handleRefresh} />
-      </div>
+      <PageHeader
+        title="Settings"
+        description="Manage users, roles, and permissions."
+        action={<InviteUserModal onInvited={handleRefresh} />}
+      />
 
       <Tabs defaultValue="users">
         <TabsList>

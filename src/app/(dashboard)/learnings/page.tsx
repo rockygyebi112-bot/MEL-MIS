@@ -32,6 +32,7 @@ import {
 import type { LearningEntry, Program } from "@/lib/types";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/layout/page-header";
 
 const PAGE_SIZE = 20;
 
@@ -143,32 +144,29 @@ export default function LearningsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Learnings</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Insights and learnings captured across all programs.
-          </p>
-        </div>
-        <ExportButton
-          data={filtered.map((l) => ({
-            program: l.program?.name ?? "",
-            title: l.title,
-            description: l.description,
-            date: l.learning_date ?? "",
-            created: l.created_at,
-          }))}
-          filename="learnings-export"
-          columns={[
-            { key: "program", label: "Program" },
-            { key: "title", label: "Title" },
-            { key: "description", label: "Description" },
-            { key: "date", label: "Learning Date" },
-            { key: "created", label: "Created" },
-          ]}
-        />
-      </div>
+      <PageHeader
+        title="Learnings"
+        description="Insights and learnings captured across all programs."
+        action={
+          <ExportButton
+            data={filtered.map((l) => ({
+              program: l.program?.name ?? "",
+              title: l.title,
+              description: l.description,
+              date: l.learning_date ?? "",
+              created: l.created_at,
+            }))}
+            filename="learnings-export"
+            columns={[
+              { key: "program", label: "Program" },
+              { key: "title", label: "Title" },
+              { key: "description", label: "Description" },
+              { key: "date", label: "Learning Date" },
+              { key: "created", label: "Created" },
+            ]}
+          />
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">

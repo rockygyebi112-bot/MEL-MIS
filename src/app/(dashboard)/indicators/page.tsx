@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 import { IndicatorsTable } from "@/components/indicators/indicators-table";
 import { IndicatorModal } from "@/components/indicators/indicator-modal";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { PageHeader } from "@/components/layout/page-header";
 import type { Indicator, Program } from "@/lib/types";
 
 export default function IndicatorsPage() {
@@ -61,22 +62,20 @@ export default function IndicatorsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Indicators Management</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure core and custom indicators per program.
-          </p>
-        </div>
-        <Button
-          onClick={handleAdd}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600"
-          disabled={!activeProgram}
-        >
-          <Plus className="size-4 mr-1.5" />
-          Add Indicator
-        </Button>
-      </div>
+      <PageHeader
+        title="Indicators Management"
+        description="Configure core and custom indicators per program."
+        action={
+          <Button
+            onClick={handleAdd}
+            className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
+            disabled={!activeProgram}
+          >
+            <Plus className="size-4 mr-1.5" />
+            Add Indicator
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <KpiCard label="Total Indicators" value={indicators.length} accent="purple" />

@@ -1,0 +1,24 @@
+interface PageHeaderProps {
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}
+
+export function PageHeader({ title, description, action }: PageHeaderProps) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex items-stretch gap-3 min-w-0">
+        <span className="w-[3px] rounded-full bg-srsf-green-500 shrink-0" />
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  );
+}

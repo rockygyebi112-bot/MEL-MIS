@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check } from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/layout/page-header";
 
 const STEPS = ["Select Programme", "Personal Info", "Business Info", "Review & Submit"];
 
@@ -142,13 +143,10 @@ export default function DataEntryPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Data Entry</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Enter data for any program. All submissions feed into dashboards
-          automatically.
-        </p>
-      </div>
+      <PageHeader
+        title="Data Entry"
+        description="Enter data for any program. All submissions feed into dashboards automatically."
+      />
 
       <Tabs defaultValue="single">
         <TabsList>
