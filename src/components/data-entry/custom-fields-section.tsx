@@ -11,7 +11,9 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/data-entry/form-section";
 import type { Indicator } from "@/lib/types";
+import { SlidersHorizontal } from "lucide-react";
 
 interface CustomFieldsSectionProps {
   programSlug: string;
@@ -60,8 +62,11 @@ export function CustomFieldsSection({
   }
 
   return (
-    <div className="rounded-xl border border-border/60 p-4 space-y-3">
-      <h4 className="font-medium">Additional Indicators</h4>
+    <FormSection
+      title="Additional Indicators"
+      description="Optional custom fields configured for this program."
+      icon={SlidersHorizontal}
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {indicators.map((ind) => (
           <div key={ind.id} className="space-y-2">
@@ -93,6 +98,6 @@ export function CustomFieldsSection({
           </div>
         ))}
       </div>
-    </div>
+    </FormSection>
   );
 }

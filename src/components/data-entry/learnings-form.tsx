@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LearningEntry, Program } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +13,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { FormActions } from "@/components/data-entry/form-actions";
 import { FormSection } from "@/components/data-entry/form-section";
 import { Lightbulb, FileText } from "lucide-react";
 import { toast } from "sonner";
@@ -212,24 +212,12 @@ export function LearningsForm({
         </div>
       </FormSection>
 
-      <div className="flex gap-3">
-        <Button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
-        >
-          {saving
-            ? "Saving..."
-            : editEntry
-              ? "Update Learning"
-              : "Submit Learning"}
-        </Button>
-        {onCancel && (
-          <Button variant="ghost" onClick={onCancel} disabled={saving}>
-            Cancel
-          </Button>
-        )}
-      </div>
+      <FormActions
+        saving={saving}
+        submitLabel={editEntry ? "Update Learning" : "Submit Learning"}
+        onSubmit={handleSubmit}
+        onCancel={onCancel}
+      />
     </div>
   );
 }

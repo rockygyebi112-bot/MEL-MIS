@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
+import { FormActions } from "@/components/data-entry/form-actions";
 import { FormSection } from "@/components/data-entry/form-section";
 import { Film, BarChart3, Users, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface MediaProgramFormProps {
   tableName: "virtual_university_entries" | "hangout_entries";
@@ -37,6 +38,15 @@ const EMPTY_METRICS: PlatformMetrics = {
   saves: "",
   likes: "",
 };
+
+const METRIC_FIELDS = ["views", "shares", "saves", "likes"] as const;
+
+function sumCountMap(counts: Record<string, string>): number {
+  return Object.values(counts).reduce(
+    (sum, value) => sum + (parseInt(value, 10) || 0),
+    0
+  );
+}
 
 export function MediaProgramForm({
   tableName,
@@ -67,6 +77,16 @@ export function MediaProgramForm({
 
   const genderOptions = coreOptions.gender ?? [...GENDERS];
   const ageBracketOptions = coreOptions.age_bracket ?? [...AGE_BRACKETS];
+  const selectedPlatformTotals = selectedPlatforms.reduce(
+    (sum, platform) =>
+      sum +
+      Object.values(platformMetrics[platform] ?? EMPTY_METRICS).reduce(
+        (innerSum, value) => innerSum + (parseInt(value, 10) || 0),
+        0
+      ),
+    0
+  );
+  const audienceTotal = sumCountMap(genderCounts) + sumCountMap(ageBracketCounts);
 
   useEffect(() => {
     if (editEntry) {
@@ -204,7 +224,6 @@ export function MediaProgramForm({
           ? "Entry updated"
           : "Entry submitted"
     );
-    // Reset form
     setEpisodeTitle("");
     setDateAired("");
     setSelectedPlatforms([]);
@@ -221,12 +240,46 @@ export function MediaProgramForm({
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Platforms
+          </p>
+          <p className="mt-2 text-2xl font-semibold">{selectedPlatforms.length}</p>
+          <p className="text-sm text-muted-foreground">
+            Choose only the channels you are reporting on.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Metrics Entered
+          </p>
+          <p className="mt-2 text-2xl font-semibold">
+            {selectedPlatformTotals.toLocaleString()}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Combined engagement values entered so far.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card px-4 py-3 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Audience Count
+          </p>
+          <p className="mt-2 text-2xl font-semibold">
+            {audienceTotal.toLocaleString()}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Total audience figures captured across the demographics blocks.
+          </p>
+        </div>
+      </div>
+
       <FormSection
         title="Episode Information"
-        description="Basic details about the episode and where it aired."
+        description="Start with the core details, then pick the platforms you have numbers for."
         icon={Film}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="episode_title">Episode Title *</Label>
             <Input
@@ -247,37 +300,65 @@ export function MediaProgramForm({
           </div>
         </div>
 
-        <div className="space-y-3 mt-5">
+        <div className="mt-5 space-y-3">
           <Label>Platforms</Label>
-          <div className="flex gap-4">
+          <div className="grid gap-3 sm:grid-cols-2">
             {PLATFORMS.map((platform) => (
-              <label
+              <button
                 key={platform}
-                className="flex items-center gap-2 cursor-pointer"
+                type="button"
+                onClick={() => togglePlatform(platform)}
+                className={cn(
+                  "flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors",
+                  selectedPlatforms.includes(platform)
+                    ? "border-srsf-green-500 bg-srsf-green-50 text-srsf-green-900"
+                    : "border-border/70 bg-background hover:border-srsf-green-300 hover:bg-muted/40"
+                )}
               >
-                <Checkbox
-                  checked={selectedPlatforms.includes(platform)}
-                  onCheckedChange={() => togglePlatform(platform)}
-                />
-                <span className="text-sm">{platform}</span>
-              </label>
+                <span className="text-sm font-medium">{platform}</span>
+                <span className="text-xs text-muted-foreground">
+                  {selectedPlatforms.includes(platform) ? "Selected" : "Tap to add"}
+                </span>
+              </button>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Leave a platform unselected if you do not have its numbers yet.
+          </p>
         </div>
       </FormSection>
 
       {selectedPlatforms.length > 0 && (
         <FormSection
           title="Platform Metrics"
-          description="Engagement numbers for each selected platform."
+          description="Enter only the counts you have. Empty fields are treated as zero."
           icon={BarChart3}
         >
-          <div className="space-y-5">
+          <div className="grid gap-4 xl:grid-cols-2">
             {selectedPlatforms.map((platform) => (
-              <div key={platform} className="space-y-3">
-                <h4 className="text-[13px] font-semibold">{platform}</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {(["views", "shares", "saves", "likes"] as const).map((field) => (
+              <div
+                key={platform}
+                className="rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm"
+              >
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-semibold">{platform}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Keep this card focused on one channel at a time.
+                    </p>
+                  </div>
+                  <div className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                    Total{" "}
+                    {Object.values(platformMetrics[platform] ?? EMPTY_METRICS)
+                      .reduce(
+                        (sum, value) => sum + (parseInt(value, 10) || 0),
+                        0
+                      )
+                      .toLocaleString()}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {METRIC_FIELDS.map((field) => (
                     <div key={field} className="space-y-1">
                       <Label className="text-xs capitalize">{field}</Label>
                       <Input
@@ -298,13 +379,23 @@ export function MediaProgramForm({
 
       <FormSection
         title="Audience Demographics"
-        description="Breakdown of viewers by gender and age bracket."
+        description="Capture the audience mix if it is available from your reporting tools."
         icon={Users}
       >
-        <div className="space-y-5">
-          <div className="space-y-3">
-            <h4 className="text-[13px] font-semibold">Gender</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid gap-4 xl:grid-cols-2">
+          <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-semibold">Gender</h4>
+                <p className="text-xs text-muted-foreground">
+                  Enter counts only for the groups your report includes.
+                </p>
+              </div>
+              <div className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                Total {sumCountMap(genderCounts).toLocaleString()}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               {genderOptions.map((g) => (
                 <div key={g} className="space-y-1">
                   <Label className="text-xs">{g}</Label>
@@ -324,9 +415,19 @@ export function MediaProgramForm({
               ))}
             </div>
           </div>
-          <div className="space-y-3">
-            <h4 className="text-[13px] font-semibold">Age Bracket</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-semibold">Age Bracket</h4>
+                <p className="text-xs text-muted-foreground">
+                  Add only the age ranges you can confirm.
+                </p>
+              </div>
+              <div className="rounded-full bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                Total {sumCountMap(ageBracketCounts).toLocaleString()}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               {ageBracketOptions.map((ab) => (
                 <div key={ab} className="space-y-1">
                   <Label className="text-xs">{ab}</Label>
@@ -372,27 +473,13 @@ export function MediaProgramForm({
         </div>
       </FormSection>
 
-      <div className="flex gap-3">
-        <Button
-          onClick={() => handleSubmit(false)}
-          disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
-        >
-          {saving ? "Saving..." : editEntry ? "Update Entry" : "Submit Entry"}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => handleSubmit(true)}
-          disabled={saving}
-        >
-          Save as Draft
-        </Button>
-        {onCancel && (
-          <Button variant="ghost" onClick={onCancel} disabled={saving}>
-            Cancel
-          </Button>
-        )}
-      </div>
+      <FormActions
+        saving={saving}
+        submitLabel={editEntry ? "Update Entry" : "Submit Entry"}
+        onSubmit={() => handleSubmit(false)}
+        onSaveDraft={() => handleSubmit(true)}
+        onCancel={onCancel}
+      />
     </div>
   );
 }

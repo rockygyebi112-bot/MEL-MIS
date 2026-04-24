@@ -14,8 +14,8 @@ export function FormSection({
   children,
 }: FormSectionProps) {
   return (
-    <section className="rounded-xl border border-border/60 bg-card shadow-sm overflow-hidden">
-      <div className="flex items-start gap-3 px-6 py-4 border-b border-border/50 bg-muted/30">
+    <section className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
+      <div className="flex items-start gap-3 border-b border-border/50 bg-muted/30 px-5 py-4 sm:px-6">
         <span className="w-[3px] self-stretch rounded-full bg-srsf-green-500 shrink-0" />
         {Icon && (
           <div className="size-8 rounded-lg bg-srsf-green-500/10 text-srsf-green-600 flex items-center justify-center shrink-0">
@@ -31,7 +31,7 @@ export function FormSection({
           )}
         </div>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-5 sm:p-6">{children}</div>
     </section>
   );
 }
