@@ -56,16 +56,19 @@ export function ActiveUsersTable({ refreshKey }: ActiveUsersTableProps) {
 
   async function updateRole(userId: string, roleId: string) {
     const supabase = createClient();
+    const {
+      data: { user: actor },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("user_profiles")
       .update({ role_id: roleId, updated_at: new Date().toISOString() })
       .eq("id", userId);
 
-    if (!error) {
+    if (!error && actor) {
       await supabase.from("audit_log").insert({
-        user_id: userId,
+        user_id: actor.id,
         action: "role_changed",
-        details: { new_role_id: roleId },
+        details: { new_role_id: roleId, subject_user_id: userId },
       });
       loadData();
     }
@@ -74,16 +77,19 @@ export function ActiveUsersTable({ refreshKey }: ActiveUsersTableProps) {
   async function toggleStatus(userId: string, currentStatus: string) {
     const newStatus = currentStatus === "active" ? "inactive" : "active";
     const supabase = createClient();
+    const {
+      data: { user: actor },
+    } = await supabase.auth.getUser();
     const { error } = await supabase
       .from("user_profiles")
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq("id", userId);
 
-    if (!error) {
+    if (!error && actor) {
       await supabase.from("audit_log").insert({
-        user_id: userId,
+        user_id: actor.id,
         action: newStatus === "active" ? "user_reactivated" : "user_deactivated",
-        details: {},
+        details: { subject_user_id: userId },
       });
       loadData();
     }

@@ -32,6 +32,7 @@ import {
 import type { LearningEntry, Program } from "@/lib/types";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LEARNING_CATEGORIES } from "@/lib/constants";
 
 const PAGE_SIZE = 20;
 
@@ -49,6 +50,7 @@ export default function LearningsPage() {
 
   // Filters
   const [programFilter, setProgramFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -83,6 +85,9 @@ export default function LearningsPage() {
     if (programFilter !== "all") {
       result = result.filter((l) => l.program_id === programFilter);
     }
+    if (categoryFilter !== "all") {
+      result = result.filter((l) => l.category === categoryFilter);
+    }
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -98,12 +103,12 @@ export default function LearningsPage() {
       result = result.filter((l) => l.created_at <= `${to}T23:59:59`);
     }
     return result;
-  }, [learnings, programFilter, search, from, to]);
+  }, [learnings, programFilter, categoryFilter, search, from, to]);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [programFilter, search, from, to]);
+  }, [programFilter, categoryFilter, search, from, to]);
 
   // Analytics
   const totalLearnings = filtered.length;
@@ -131,6 +136,15 @@ export default function LearningsPage() {
     return counts;
   }, [filtered]);
 
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const l of filtered) {
+      const category = l.category || "Uncategorized";
+      counts[category] = (counts[category] || 0) + 1;
+    }
+    return counts;
+  }, [filtered]);
+
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -154,6 +168,7 @@ export default function LearningsPage() {
         <ExportButton
           data={filtered.map((l) => ({
             program: l.program?.name ?? "",
+            category: l.category,
             title: l.title,
             description: l.description,
             date: l.learning_date ?? "",
@@ -162,6 +177,7 @@ export default function LearningsPage() {
           filename="learnings-export"
           columns={[
             { key: "program", label: "Program" },
+            { key: "category", label: "Category" },
             { key: "title", label: "Title" },
             { key: "description", label: "Description" },
             { key: "date", label: "Learning Date" },
@@ -184,6 +200,22 @@ export default function LearningsPage() {
             {programs.map((p) => (
               <SelectItem key={p.id} value={p.id}>
                 {p.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={categoryFilter}
+          onValueChange={(v) => setCategoryFilter(v ?? "all")}
+        >
+          <SelectTrigger className="w-40 h-8 text-xs">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {LEARNING_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
               </SelectItem>
             ))}
           </SelectContent>
@@ -231,6 +263,9 @@ export default function LearningsPage() {
           <EChart
             option={barChartOption(programCounts, "Learnings by Program")}
           />
+        </div>
+        <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm lg:col-span-2">
+          <EChart option={barChartOption(categoryCounts, "Theme Distribution")} />
         </div>
       </div>
 
@@ -306,6 +341,9 @@ export default function LearningsPage() {
                         >
                           {programName}
                         </Badge>
+                        {l.category && (
+                          <Badge variant="outline">{l.category}</Badge>
+                        )}
                         <span className="text-xs text-muted-foreground">
                           {l.learning_date
                             ? new Date(l.learning_date).toLocaleDateString()

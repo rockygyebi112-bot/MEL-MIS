@@ -116,6 +116,7 @@ const TEMPLATE_COLUMNS: Record<UploadSlug, { key: string; label: string; require
     { key: "learning", label: "Learning" },
   ],
   learnings: [
+    { key: "program", label: "Program", required: true },
     { key: "title", label: "Title", required: true },
     { key: "category", label: "Category" },
     { key: "description", label: "Description" },
@@ -278,10 +279,19 @@ export function BulkUpload() {
           if (mapped.region && !validateValue(mapped.region, REGIONS)) errors.push({ row: rowNum, field: "Region", message: "Invalid region" });
           if (mapped.employment_status && !validateValue(mapped.employment_status, EMPLOYMENT_STATUSES)) errors.push({ row: rowNum, field: "Employment Status", message: "Invalid status" });
         } else if (slug === "learnings") {
+          const candidateProgram = normalizeOptionValue(mapped.program).toLowerCase();
+          const validProgram = programs.some(
+            (program) =>
+              normalizeOptionValue(program.name).toLowerCase() === candidateProgram ||
+              program.slug === candidateProgram
+          );
           mapped.category = resolveAllowedOption(
             mapped.category,
             LEARNING_CATEGORIES
           );
+          if (mapped.program && !validProgram) {
+            errors.push({ row: rowNum, field: "Program", message: "Invalid program" });
+          }
           if (mapped.category && !validateValue(mapped.category, LEARNING_CATEGORIES)) errors.push({ row: rowNum, field: "Category", message: "Invalid category" });
         }
 
@@ -356,7 +366,12 @@ export function BulkUpload() {
       };
     } else {
       // learnings
-      const program = programs.find((p) => p.slug === "enterprise-spotlight");
+      const rawProgram = normalizeOptionValue(row.program).toLowerCase();
+      const program = programs.find(
+        (p) =>
+          normalizeOptionValue(p.name).toLowerCase() === rawProgram ||
+          p.slug === rawProgram
+      );
       return {
         user_id: userId,
         program_id: program?.id ?? "",

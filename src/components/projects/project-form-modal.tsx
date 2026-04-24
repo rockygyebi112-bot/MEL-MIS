@@ -63,6 +63,7 @@ export function ProjectFormModal({
       const { data } = await supabase
         .from("user_profiles")
         .select("id, full_name, email, role:roles(name)")
+        .eq("status", "active")
         .order("full_name", { ascending: true });
       const rows = (data ?? []) as unknown as Array<
         UserOption & { role?: { name?: string } | null }
@@ -164,6 +165,11 @@ export function ProjectFormModal({
                   </option>
                 ))}
               </select>
+              {users.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No active MEL managers are available to assign yet.
+                </p>
+              )}
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="proj-program">Linked Program</Label>

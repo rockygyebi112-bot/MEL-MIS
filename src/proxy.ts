@@ -3,15 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const publicPaths = ["/login", "/signup", "/pending", "/auth/callback", "/api"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
   }
 
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: request.headers },
   });
 
@@ -37,28 +36,24 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Not authenticated — redirect to login
   if (!user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Check user profile status
   const { data: profile } = await supabase
     .from("user_profiles")
     .select("status, role_id")
     .eq("id", user.id)
     .single();
 
-  // Pending or rejected — redirect to pending page
   if (!profile || profile.status === "pending" || profile.status === "rejected") {
     const url = request.nextUrl.clone();
     url.pathname = "/pending";
     return NextResponse.redirect(url);
   }
 
-  // Inactive — sign out and redirect to login
   if (profile.status === "inactive") {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -66,7 +61,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // No role assigned yet — redirect to pending
   if (!profile.role_id) {
     const url = request.nextUrl.clone();
     url.pathname = "/pending";
