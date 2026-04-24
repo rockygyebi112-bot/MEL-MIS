@@ -95,7 +95,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setDesktopCollapsed((c) => !c)}
-            className="text-white/50 hover:text-white transition-colors hidden lg:block p-1 rounded"
+            className="text-white/50 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-200 hidden lg:block p-2 rounded-lg"
             title={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {desktopCollapsed ? (
@@ -158,9 +158,9 @@ export function Sidebar() {
                   type="button"
                   onClick={signOut}
                   title="Sign out"
-                  className="text-white/40 hover:text-white transition-colors p-1 rounded"
+                  className="text-white/40 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-200 p-2 rounded-lg"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             )}
