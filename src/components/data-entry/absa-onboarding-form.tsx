@@ -23,6 +23,8 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
+import { FormSection } from "@/components/data-entry/form-section";
+import { User, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 
 interface AbsaOnboardingFormProps {
@@ -159,7 +161,12 @@ export function AbsaOnboardingForm({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSection
+        title="Participant Information"
+        description="Demographic and personal details about the participant."
+        icon={User}
+      >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Participant Name */}
         <div className="space-y-2">
           <Label htmlFor="participant_name">Participant Name *</Label>
@@ -303,6 +310,7 @@ export function AbsaOnboardingForm({
           </div>
         )}
       </div>
+      </FormSection>
 
       {/* Custom Indicators */}
       <CustomFieldsSection
@@ -311,24 +319,29 @@ export function AbsaOnboardingForm({
         onChange={setCustomFields}
       />
 
-      {/* Learning */}
-      <div className="space-y-2">
-        <Label htmlFor="learning">Learnings</Label>
-        <Textarea
-          id="learning"
-          value={form.learning}
-          onChange={(e) => setField("learning", e.target.value)}
-          placeholder="Any learnings or insights from this onboarding..."
-          rows={3}
-        />
-      </div>
+      <FormSection
+        title="Learnings & Insights"
+        description="Key takeaways from this onboarding session."
+        icon={Lightbulb}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="learning">Learnings</Label>
+          <Textarea
+            id="learning"
+            value={form.learning}
+            onChange={(e) => setField("learning", e.target.value)}
+            placeholder="Any learnings or insights from this onboarding..."
+            rows={3}
+          />
+        </div>
+      </FormSection>
 
       {/* Action buttons */}
       <div className="flex gap-3">
         <Button
           onClick={() => handleSubmit(false)}
           disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600"
+          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
         >
           {saving ? "Saving..." : editEntry ? "Update Entry" : "Submit Entry"}
         </Button>
