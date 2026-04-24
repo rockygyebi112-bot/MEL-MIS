@@ -11,7 +11,6 @@ import {
   DISABILITY_TYPES,
 } from "@/lib/constants";
 import { useCoreIndicatorOptions } from "@/lib/hooks/use-core-indicator-options";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +22,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { CustomFieldsSection } from "@/components/data-entry/custom-fields-section";
+import { FormActions } from "@/components/data-entry/form-actions";
 import { FormSection } from "@/components/data-entry/form-section";
 import { User, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
@@ -337,27 +337,13 @@ export function AbsaOnboardingForm({
       </FormSection>
 
       {/* Action buttons */}
-      <div className="flex gap-3">
-        <Button
-          onClick={() => handleSubmit(false)}
-          disabled={saving}
-          className="bg-srsf-green-500 hover:bg-srsf-green-600 text-white"
-        >
-          {saving ? "Saving..." : editEntry ? "Update Entry" : "Submit Entry"}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => handleSubmit(true)}
-          disabled={saving}
-        >
-          Save as Draft
-        </Button>
-        {onCancel && (
-          <Button variant="ghost" onClick={onCancel} disabled={saving}>
-            Cancel
-          </Button>
-        )}
-      </div>
+      <FormActions
+        saving={saving}
+        submitLabel={editEntry ? "Update Entry" : "Submit Entry"}
+        onSubmit={() => handleSubmit(false)}
+        onSaveDraft={() => handleSubmit(true)}
+        onCancel={onCancel}
+      />
     </div>
   );
 }
