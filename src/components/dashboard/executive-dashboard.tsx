@@ -27,6 +27,7 @@ import {
 import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import { GranularityToggle } from "./granularity-toggle";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
+import { EmbeddedProjectOverview } from "./embedded-project-overview";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -489,6 +490,14 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         </section>
       )}
 
+      {/* Enterprise Spotlight — project activity progress */}
+      {showES && (
+        <section>
+          <SectionHeading>Project Progress</SectionHeading>
+          <EmbeddedProjectOverview slug="enterprise-spotlight" />
+        </section>
+      )}
+
       {/* Enterprise Spotlight Specifics */}
       {showES && (
         <section>
@@ -572,13 +581,19 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         </section>
       )}
 
-      {/* Nkabom Collaborative placeholder */}
+      {/* Nkabom Collaborative — surface project activity progress */}
       {showNkabom && (
         <section>
           <SectionHeading>Nkabom Collaborative</SectionHeading>
-          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-            No participant-level M&amp;E entries yet for Nkabom Collaborative. Project activities are tracked in the Delivery Dashboard above.
-          </div>
+          <EmbeddedProjectOverview slug="nkabom-collaborative" />
+        </section>
+      )}
+
+      {/* ABSA Onboarding — project activity progress */}
+      {showABSA && (
+        <section>
+          <SectionHeading>Project Progress</SectionHeading>
+          <EmbeddedProjectOverview slug="absa-onboarding" />
         </section>
       )}
 
