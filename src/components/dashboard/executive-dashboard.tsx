@@ -56,7 +56,7 @@ export function ExecutiveDashboard() {
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [programFilter, setProgramFilter] = useState<ProgramFilter>("all");
+  const [programFilter, setProgramFilter] = useState<ProgramFilter>("virtual-university");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const periodLabel = granularity === "week" ? "Weekly" : granularity === "quarter" ? "Quarterly" : "Monthly";
   const supabase = createClient();
@@ -125,11 +125,11 @@ export function ExecutiveDashboard() {
 
   // ─── Show/hide based on program filter ────────────────────────
 
-  const showAll = programFilter === "all";
-  const showES = showAll || programFilter === "enterprise-spotlight";
-  const showVU = showAll || programFilter === "virtual-university";
-  const showHangout = showAll || programFilter === "hangout";
-  const showABSA = showAll || programFilter === "absa-onboarding";
+  const showES = programFilter === "enterprise-spotlight";
+  const showVU = programFilter === "virtual-university";
+  const showHangout = programFilter === "hangout";
+  const showABSA = programFilter === "absa-onboarding";
+  const showNkabom = programFilter === "nkabom-collaborative";
   const showMedia = showVU || showHangout;
 
   // ─── Demographics: Gender (cross-program) ─────────────────────
@@ -569,6 +569,16 @@ export function ExecutiveDashboard() {
               />
             </div>
           )}
+        </section>
+      )}
+
+      {/* Nkabom Collaborative placeholder */}
+      {showNkabom && (
+        <section>
+          <SectionHeading>Nkabom Collaborative</SectionHeading>
+          <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
+            Dashboard coming soon — no data entries yet for Nkabom Collaborative.
+          </div>
         </section>
       )}
 
