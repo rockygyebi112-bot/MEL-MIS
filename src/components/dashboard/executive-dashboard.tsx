@@ -490,6 +490,14 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         </section>
       )}
 
+      {/* Enterprise Spotlight — project activity progress */}
+      {showES && (
+        <section>
+          <SectionHeading>Project Progress</SectionHeading>
+          <EmbeddedProjectOverview slug="enterprise-spotlight" />
+        </section>
+      )}
+
       {/* Enterprise Spotlight Specifics */}
       {showES && (
         <section>
@@ -578,6 +586,14 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         <section>
           <SectionHeading>Nkabom Collaborative</SectionHeading>
           <EmbeddedProjectOverview slug="nkabom-collaborative" />
+        </section>
+      )}
+
+      {/* ABSA Onboarding — project activity progress */}
+      {showABSA && (
+        <section>
+          <SectionHeading>Project Progress</SectionHeading>
+          <EmbeddedProjectOverview slug="absa-onboarding" />
         </section>
       )}
 
