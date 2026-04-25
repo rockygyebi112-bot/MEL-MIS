@@ -11,7 +11,7 @@ import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
 import { ExportButton } from "./export-button";
-import { ProgramFilterBar, ProgramFilter } from "./program-filter-bar";
+import type { ProgramFilter } from "./program-filter-bar";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import {
   countByField,
@@ -48,7 +48,11 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 // ─── Component ──────────────────────────────────────────────────
 
-export function ExecutiveDashboard() {
+interface Props {
+  programFilter: ProgramFilter;
+}
+
+export function ExecutiveDashboard({ programFilter }: Props) {
   const [esEntries, setEsEntries] = useState<EnterpriseSpotlightEntry[]>([]);
   const [vuEntries, setVuEntries] = useState<MediaProgramEntry[]>([]);
   const [hangoutEntries, setHangoutEntries] = useState<MediaProgramEntry[]>([]);
@@ -56,7 +60,6 @@ export function ExecutiveDashboard() {
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [programFilter, setProgramFilter] = useState<ProgramFilter>("virtual-university");
   const [granularity, setGranularity] = useState<Granularity>("month");
   const periodLabel = granularity === "week" ? "Weekly" : granularity === "quarter" ? "Quarterly" : "Monthly";
   const supabase = createClient();
@@ -403,36 +406,31 @@ export function ExecutiveDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Filter Bar (sticky below topbar) */}
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-2.5 bg-background/85 backdrop-blur-md border-b border-border/50 space-y-2 sm:space-y-0 sm:flex sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
-        {/* Row 1: program filter (full width on mobile) */}
-        <ProgramFilterBar active={programFilter} onChange={setProgramFilter} />
-        {/* Row 2: date + export (right-aligned, wraps below on mobile) */}
-        <div className="flex items-end gap-3 sm:ml-auto">
-          <DateRangeFilter
-            from={from}
-            to={to}
-            onFromChange={setFrom}
-            onToChange={setTo}
-            onClear={() => {
-              setFrom("");
-              setTo("");
-            }}
-          />
-          <ExportButton
-            data={exportData}
-            filename="executive-dashboard-export"
-            columns={[
-              { key: "program", label: "Program" },
-              { key: "name", label: "Name" },
-              { key: "region", label: "Region" },
-              { key: "gender", label: "Gender" },
-              { key: "age_bracket", label: "Age Bracket" },
-              { key: "date", label: "Date" },
-              { key: "views", label: "Views" },
-            ]}
-          />
-        </div>
+      {/* Date range + Export (program filter is now lifted to the page level) */}
+      <div className="flex flex-wrap items-end justify-end gap-3">
+        <DateRangeFilter
+          from={from}
+          to={to}
+          onFromChange={setFrom}
+          onToChange={setTo}
+          onClear={() => {
+            setFrom("");
+            setTo("");
+          }}
+        />
+        <ExportButton
+          data={exportData}
+          filename="executive-dashboard-export"
+          columns={[
+            { key: "program", label: "Program" },
+            { key: "name", label: "Name" },
+            { key: "region", label: "Region" },
+            { key: "gender", label: "Gender" },
+            { key: "age_bracket", label: "Age Bracket" },
+            { key: "date", label: "Date" },
+            { key: "views", label: "Views" },
+          ]}
+        />
       </div>
 
       {/* KPI Summary Row */}

@@ -15,16 +15,14 @@ import type {
   Timeframe,
   WorkloadRow,
 } from "@/lib/portfolio/types";
-import { createClient } from "@/lib/supabase/client";
 import { PortfolioSection } from "./portfolio-section";
 import { HealthKpis } from "./health-kpis";
 import { AttentionTable } from "./attention-table";
 import { DeliveryTrend } from "./delivery-trend";
 import { WorkloadChart } from "./workload-chart";
 
-interface ProgramOption {
-  slug: string;
-  name: string;
+interface Props {
+  programSlug: string;
 }
 
 const TIMEFRAMES: { value: Timeframe; label: string }[] = [
@@ -37,17 +35,14 @@ function isTimeframe(value: string | null): value is Timeframe {
   return value === "30d" || value === "quarter" || value === "ytd";
 }
 
-export function PortfolioDashboard() {
+export function DeliveryDashboard({ programSlug }: Props) {
   const router = useRouter();
   const params = useSearchParams();
 
-  const programSlug = params.get("program");
   const timeframeParam = params.get("timeframe");
   const timeframe: Timeframe = isTimeframe(timeframeParam)
     ? timeframeParam
     : "30d";
-
-  const [programs, setPrograms] = useState<ProgramOption[]>([]);
 
   const [health, setHealth] = useState<PortfolioHealth | null>(null);
   const [healthErr, setHealthErr] = useState<string | null>(null);
@@ -60,20 +55,6 @@ export function PortfolioDashboard() {
 
   const [workload, setWorkload] = useState<WorkloadRow[] | null>(null);
   const [workloadErr, setWorkloadErr] = useState<string | null>(null);
-
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  // Load programs once for the filter dropdown.
-  useEffect(() => {
-    void (async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("programs")
-        .select("slug,name")
-        .order("name");
-      setPrograms((data ?? []) as ProgramOption[]);
-    })();
-  }, []);
 
   const loadHealth = useCallback(() => {
     setHealthErr(null);
@@ -108,75 +89,43 @@ export function PortfolioDashboard() {
     loadAttention();
     loadTrend();
     loadWorkload();
-    setLastUpdated(new Date());
   }, [loadHealth, loadAttention, loadTrend, loadWorkload]);
 
-  const setParam = useCallback(
-    (key: string, value: string | null) => {
+  const setTimeframeParam = useCallback(
+    (value: Timeframe) => {
       const next = new URLSearchParams(params.toString());
-      if (value === null || value === "") next.delete(key);
-      else next.set(key, value);
+      next.set("timeframe", value);
       router.replace(`/dashboard?${next.toString()}`);
     },
     [params, router],
   );
 
-  const lastUpdatedLabel = useMemo(
-    () =>
-      lastUpdated
-        ? lastUpdated.toLocaleTimeString(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "",
-    [lastUpdated],
+  const trendHeader = useMemo(
+    () => (
+      <div className="inline-flex rounded border border-border overflow-hidden">
+        {TIMEFRAMES.map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setTimeframeParam(t.value)}
+            className={`px-3 py-1 text-xs font-semibold ${
+              timeframe === t.value
+                ? "bg-srsf-green-500/10 text-srsf-green-600"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+    ),
+    [timeframe, setTimeframeParam],
   );
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <label className="text-sm font-medium">
-          Program
-          <select
-            className="ml-2 rounded border border-border bg-background px-2 py-1 text-sm"
-            value={programSlug ?? ""}
-            onChange={(e) =>
-              setParam("program", e.target.value ? e.target.value : null)
-            }
-          >
-            <option value="">All programs</option>
-            {programs.map((p) => (
-              <option key={p.slug} value={p.slug}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="inline-flex rounded border border-border overflow-hidden">
-          {TIMEFRAMES.map((t) => (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => setParam("timeframe", t.value)}
-              className={`px-3 py-1 text-xs font-semibold ${
-                timeframe === t.value
-                  ? "bg-srsf-green-500/10 text-srsf-green-600"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <span className="ml-auto text-xs text-muted-foreground">
-          {lastUpdatedLabel ? `Updated ${lastUpdatedLabel}` : ""}
-        </span>
-      </div>
-
       <PortfolioSection
-        title="Portfolio Health"
+        title="Delivery Health"
         loading={health === null && !healthErr}
         error={healthErr}
         onRetry={loadHealth}
@@ -198,6 +147,7 @@ export function PortfolioDashboard() {
         loading={trend === null && !trendErr}
         error={trendErr}
         onRetry={loadTrend}
+        headerRight={trendHeader}
       >
         {trend && <DeliveryTrend points={trend} />}
       </PortfolioSection>
