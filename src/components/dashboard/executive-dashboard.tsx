@@ -452,27 +452,29 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         )}
       </div>
 
-      {/* Demographics Section */}
-      <section>
-        <SectionHeading>Demographics</SectionHeading>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className={chartCard}>
-            <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
-          </div>
-          <div className={chartCard}>
-            <EChart
-              option={groupedBarChartOption(ageBracketByProgram, "Age Bracket by Program")}
-            />
-          </div>
-          {(showES || showABSA) && (
+      {/* Demographics Section — only programs/projects with participant-level M&E data */}
+      {(showES || showVU || showHangout || showABSA) && (
+        <section>
+          <SectionHeading>Demographics</SectionHeading>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className={chartCard}>
+              <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
+            </div>
             <div className={chartCard}>
               <EChart
-                option={donutChartOption(disabilityCounts, "Disability Status")}
+                option={groupedBarChartOption(ageBracketByProgram, "Age Bracket by Program")}
               />
             </div>
-          )}
-        </div>
-      </section>
+            {(showES || showABSA) && (
+              <div className={chartCard}>
+                <EChart
+                  option={donutChartOption(disabilityCounts, "Disability Status")}
+                />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Geographic Section */}
       {(showES || showABSA) && (
@@ -575,7 +577,7 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         <section>
           <SectionHeading>Nkabom Collaborative</SectionHeading>
           <div className="rounded-xl border border-dashed border-border bg-card p-10 text-center text-sm text-muted-foreground">
-            Dashboard coming soon — no data entries yet for Nkabom Collaborative.
+            No participant-level M&amp;E entries yet for Nkabom Collaborative. Project activities are tracked in the Delivery Dashboard above.
           </div>
         </section>
       )}
