@@ -3,7 +3,7 @@
 import type { ProjectActivity } from "@/lib/projects/types";
 import { PriorityFlag } from "./priority-flag";
 import { cn } from "@/lib/utils";
-import { Circle, CheckCircle2, Loader2, AlertCircle, ChevronRight } from "lucide-react";
+import { Circle, CheckCircle2, Loader2, AlertCircle, ChevronRight, ChevronDown } from "lucide-react";
 
 const STATUS_CONFIG: Record<ProjectActivity["status"], { 
   label: string;
@@ -50,6 +50,10 @@ interface Props {
   showTreeLine?: boolean;
   /** Is last child in list (affects tree line rendering) */
   isLastChild?: boolean;
+  /** For main activities with children: is expanded? */
+  isExpanded?: boolean;
+  /** Toggle expand/collapse (only for main activities with children) */
+  onToggleExpand?: () => void;
 }
 
 export function ActivityRow({
@@ -60,6 +64,8 @@ export function ActivityRow({
   indent = false,
   showTreeLine = false,
   isLastChild = false,
+  isExpanded = true,
+  onToggleExpand,
 }: Props) {
   const overdue =
     activity.due_date &&
@@ -71,32 +77,57 @@ export function ActivityRow({
   const hasChildren = childCount > 0;
   const isSubActivity = indent;
   const isMainActivity = !indent;
+  const canExpand = isMainActivity && hasChildren && onToggleExpand;
 
   return (
     <div className={cn("flex", isSubActivity && "relative")}>
       {/* Tree connector line for sub-activities */}
       {showTreeLine && isSubActivity && (
-        <div className="absolute left-[19px] top-0 bottom-0 w-px bg-slate-300">
+        <div className="absolute left-[27px] top-0 bottom-0 w-px bg-slate-200">
           {/* Horizontal branch line */}
-          <div className="absolute top-5 left-0 w-4 h-px bg-slate-300" />
+          <div className="absolute top-5 left-0 w-6 h-px bg-slate-200" />
           {/* Stop vertical line early for last child */}
           {isLastChild && (
-            <div className="absolute top-0 left-0 w-px h-5 bg-slate-50" />
+            <div className="absolute top-5 left-0 w-px h-[calc(100%-20px)] bg-white" />
           )}
         </div>
       )}
 
-      <button
-        onClick={() => onOpen(activity.id)}
+      <div
         className={cn(
-          "flex-1 text-left flex items-center gap-3 py-3 transition-colors",
+          "flex-1 flex items-center gap-2 py-3 transition-colors",
           isMainActivity 
             ? "px-3 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm"
-            : "pl-12 pr-3",
+            : "pl-14 pr-3",
           isSubActivity && "text-sm",
           status.bgClass
         )}
       >
+        {/* Expand/Collapse Toggle (for main activities with children) */}
+        {canExpand ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand?.();
+            }}
+            className="p-1 text-slate-400 hover:text-slate-600 rounded hover:bg-slate-200/50 transition-colors"
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </button>
+        ) : isMainActivity ? (
+          /* Spacer for alignment when no children */
+          <span className="w-6" />
+        ) : null}
+
+        {/* Activity Row Button */}
+        <button
+          onClick={() => onOpen(activity.id)}
+          className="flex-1 flex items-center gap-3 text-left"
+        >
         {/* Status Icon/Button */}
         <span 
           className={cn(
@@ -179,6 +210,7 @@ export function ActivityRow({
           </div>
         </div>
       </button>
+      </div>
     </div>
   );
 }

@@ -45,6 +45,9 @@ export function ActivitiesPanel({
   
   // Collapsible milestones state
   const [collapsedMilestones, setCollapsedMilestones] = useState<Set<string>>(new Set());
+  
+  // Collapsible activities state (for main activities with sub-activities)
+  const [collapsedActivities, setCollapsedActivities] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!openId) setAttachmentCount(0);
@@ -114,10 +117,24 @@ export function ActivitiesPanel({
     });
   };
 
+  const toggleActivity = (activityId: string) => {
+    setCollapsedActivities((prev) => {
+      const next = new Set(prev);
+      if (next.has(activityId)) {
+        next.delete(activityId);
+      } else {
+        next.add(activityId);
+      }
+      return next;
+    });
+  };
+
   const renderActivity = (a: ProjectActivity, idx: number, arr: ProjectActivity[]) => {
     const kids = childrenByParent.get(a.id) ?? [];
     const visibleKids = kids.filter((c) => matchesFilter(c, today));
     const isLastInList = idx === arr.length - 1;
+    const hasChildren = kids.length > 0;
+    const isExpanded = !collapsedActivities.has(a.id);
     
     return (
       <div key={a.id}>
@@ -126,9 +143,11 @@ export function ActivitiesPanel({
           onOpen={setOpenId}
           displayPercent={computeActivityPercent(a, activities)}
           childCount={kids.length}
+          isExpanded={isExpanded}
+          onToggleExpand={hasChildren ? () => toggleActivity(a.id) : undefined}
         />
-        {/* Sub-activities with tree connector lines */}
-        {visibleKids.map((c, childIdx) => (
+        {/* Sub-activities with tree connector lines - only show if expanded */}
+        {isExpanded && visibleKids.map((c, childIdx) => (
           <ActivityRow
             key={c.id}
             activity={c}
