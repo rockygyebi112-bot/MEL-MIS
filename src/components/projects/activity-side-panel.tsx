@@ -229,11 +229,7 @@ export function ActivitySidePanel({
                   </Button>
                 )}
               </div>
-              {childActivities.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  No sub-activities yet. Add one to break this work down.
-                </p>
-              ) : (
+              {childActivities.length > 0 && (
                 <ul className="rounded border border-border divide-y divide-border text-sm">
                   {childActivities.map((c) => {
                     const cPct = computeActivityPercent(c, allActivities);
