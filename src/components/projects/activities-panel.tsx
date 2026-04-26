@@ -15,7 +15,8 @@ import { AttachmentsGallery } from "./attachments-gallery";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { deleteActivity, deleteMilestone } from "@/lib/projects/mutations";
-import { Trash2 } from "lucide-react";
+import { Trash2, Target, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Filter = "all" | "overdue" | "attention" | "mine";
 
@@ -41,6 +42,9 @@ export function ActivitiesPanel({
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [subParentId, setSubParentId] = useState<string | null>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
+  
+  // Collapsible milestones state
+  const [collapsedMilestones, setCollapsedMilestones] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!openId) setAttachmentCount(0);
@@ -98,9 +102,23 @@ export function ActivitiesPanel({
   const nextOrderIndex =
     milestones.reduce((m, x) => Math.max(m, x.order_index), -1) + 1;
 
-  const renderRow = (a: ProjectActivity) => {
+  const toggleMilestone = (milestoneId: string) => {
+    setCollapsedMilestones((prev) => {
+      const next = new Set(prev);
+      if (next.has(milestoneId)) {
+        next.delete(milestoneId);
+      } else {
+        next.add(milestoneId);
+      }
+      return next;
+    });
+  };
+
+  const renderActivity = (a: ProjectActivity, idx: number, arr: ProjectActivity[]) => {
     const kids = childrenByParent.get(a.id) ?? [];
     const visibleKids = kids.filter((c) => matchesFilter(c, today));
+    const isLastInList = idx === arr.length - 1;
+    
     return (
       <div key={a.id}>
         <ActivityRow
@@ -109,13 +127,16 @@ export function ActivitiesPanel({
           displayPercent={computeActivityPercent(a, activities)}
           childCount={kids.length}
         />
-        {visibleKids.map((c) => (
+        {/* Sub-activities with tree connector lines */}
+        {visibleKids.map((c, childIdx) => (
           <ActivityRow
             key={c.id}
             activity={c}
             onOpen={setOpenId}
             displayPercent={computeActivityPercent(c, activities)}
             indent
+            showTreeLine
+            isLastChild={childIdx === visibleKids.length - 1}
           />
         ))}
       </div>
@@ -169,58 +190,151 @@ export function ActivitiesPanel({
 
       {milestones.map((m) => {
         const rows = byMilestone.get(m.id) ?? [];
+        const isCollapsed = collapsedMilestones.has(m.id);
+        const activityCount = rows.length;
+        const completedCount = rows.filter(r => r.status === "done").length;
+        const progress = activityCount > 0 ? Math.round((completedCount / activityCount) * 100) : 0;
+        
         // Hide milestones with no rows ONLY when a non-"all" filter is active,
         // so admins can still delete empty milestones in the default view.
         if (rows.length === 0 && filter !== "all") return null;
+        
         return (
-          <section key={m.id} className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold">{m.name}</h3>
-              {isMELManager && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (
-                      !confirm(
-                        `Delete milestone "${m.name}"? Activities under it will become Ungrouped.`,
+          <section key={m.id} className="mb-4">
+            {/* Asana-style Milestone Card */}
+            <div className="bg-gradient-to-r from-slate-50 to-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+              {/* Milestone Header - Clickable to collapse/expand */}
+              <button
+                onClick={() => toggleMilestone(m.id)}
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+              >
+                {/* Collapse/Expand Icon */}
+                <span className="text-slate-400">
+                  {isCollapsed ? (
+                    <ChevronRight className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </span>
+                
+                {/* Target Icon for Milestone */}
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600">
+                  <Target className="w-4 h-4" />
+                </span>
+                
+                {/* Milestone Title & Info */}
+                <div className="flex-1 min-w-0 text-left">
+                  <h3 className="text-sm font-semibold text-slate-900 truncate">
+                    {m.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {completedCount} of {activityCount} complete • {progress}% progress
+                  </p>
+                </div>
+                
+                {/* Progress Bar */}
+                {activityCount > 0 && (
+                  <div className="w-24 hidden sm:block">
+                    <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all",
+                          progress === 100 ? "bg-green-500" : "bg-indigo-500"
+                        )}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Add Activity Button (for managers) */}
+                {isMELManager && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSubParentId(null);
+                      setShowActivityModal(true);
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                    title="Add activity to milestone"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                )}
+                
+                {/* Delete Button (for managers) */}
+                {isMELManager && (
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (
+                        !confirm(
+                          `Delete milestone "${m.name}"? Activities under it will become Ungrouped.`,
+                        )
                       )
-                    )
-                      return;
-                    try {
-                      await deleteMilestone(m.id);
-                      onChange();
-                    } catch (err) {
-                      alert(
-                        err instanceof Error ? err.message : String(err),
-                      );
-                    }
-                  }}
-                  className="text-xs text-muted-foreground hover:text-red-600 inline-flex items-center gap-1"
-                  aria-label={`Delete milestone ${m.name}`}
-                  title="Delete milestone"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                        return;
+                      try {
+                        await deleteMilestone(m.id);
+                        onChange();
+                      } catch (err) {
+                        alert(
+                          err instanceof Error ? err.message : String(err),
+                        );
+                      }
+                    }}
+                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    aria-label={`Delete milestone ${m.name}`}
+                    title="Delete milestone"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </button>
+              
+              {/* Collapsible Content */}
+              {!isCollapsed && (
+                <div className="border-t border-slate-100">
+                  {rows.length === 0 ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm text-slate-500">
+                        No activities in this milestone yet.
+                      </p>
+                      {isMELManager && (
+                        <button
+                          onClick={() => {
+                            setSubParentId(null);
+                            setShowActivityModal(true);
+                          }}
+                          className="mt-2 text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        >
+                          Add your first activity
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-slate-100">
+                      {rows.map(renderActivity)}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            {rows.length === 0 ? (
-              <div className="rounded border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
-                No activities under this milestone yet.
-              </div>
-            ) : (
-              <div className="rounded border border-border divide-y divide-border">
-                {rows.map(renderRow)}
-              </div>
-            )}
           </section>
         );
       })}
 
       {(byMilestone.get(null)?.length ?? 0) > 0 && (
-        <section className="mb-6">
-          <h3 className="text-sm font-semibold mb-2">Ungrouped</h3>
-          <div className="rounded border border-border divide-y divide-border">
-            {(byMilestone.get(null) ?? []).map(renderRow)}
+        <section className="mb-4">
+          {/* Ungrouped Section - styled differently from milestones */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-200">
+              <h3 className="text-sm font-semibold text-slate-700">Ungrouped Activities</h3>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {(byMilestone.get(null) ?? []).map(renderActivity)}
+            </div>
           </div>
         </section>
       )}
