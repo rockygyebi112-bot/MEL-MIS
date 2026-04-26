@@ -25,6 +25,7 @@ function useSessionState<T>(key: string, defaultValue: T): [T, React.Dispatch<Re
   return [state, setState];
 }
 import { createClient } from "@/lib/supabase/client";
+import { getTableForProgram } from "@/lib/db/tables";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,9 +48,10 @@ import {
 import { toast } from "sonner";
 import { Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle2 } from "lucide-react";
 import { PROGRAMS, REGIONS, GENDERS, DISABILITY_TYPES, OWNERSHIP_TYPES, BUSINESS_SIZES, FUNDING_STATUSES, BUSINESS_SECTORS, EMPLOYMENT_STATUSES, LEARNING_CATEGORIES } from "@/lib/constants";
-import type { Program } from "@/lib/types";
+import { getAgeBracket } from "@/lib/utils";
+import type { Program, ProgramSlug } from "@/lib/types";
 
-type UploadSlug = "enterprise-spotlight" | "virtual-university" | "hangout" | "absa-onboarding" | "learnings";
+type UploadSlug = ProgramSlug;
 
 interface RowError {
   row: number;
@@ -124,24 +126,6 @@ const TEMPLATE_COLUMNS: Record<UploadSlug, { key: string; label: string; require
   ],
 };
 
-const TABLE_MAP: Record<UploadSlug, string> = {
-  "enterprise-spotlight": "enterprise_spotlight_entries",
-  "virtual-university": "virtual_university_entries",
-  hangout: "hangout_entries",
-  "absa-onboarding": "absa_onboarding_entries",
-  learnings: "learnings",
-};
-
-function getAgeBracket(age: number): string {
-  if (age < 18) return "Under 18";
-  if (age <= 24) return "18-24";
-  if (age <= 34) return "25-34";
-  if (age <= 44) return "35-44";
-  if (age <= 54) return "45-54";
-  if (age <= 64) return "55-64";
-  return "65+";
-}
-
 function normalizeOptionValue(value: unknown): string {
   return String(value ?? "")
     .replace(/\s+/g, " ")
@@ -178,9 +162,12 @@ export function BulkUpload() {
   const supabase = createClient();
 
   useEffect(() => {
-    supabase.from("programs").select("*").order("name").then(({ data }) => {
+    async function loadPrograms() {
+      const { data } = await supabase.from("programs").select("*").order("name");
       setPrograms((data as Program[]) ?? []);
-    });
+    }
+
+    void loadPrograms();
   }, [supabase]);
 
   function downloadTemplate() {
@@ -398,7 +385,7 @@ export function BulkUpload() {
     }
 
     const records = validRows.map((r) => buildRecord(r.data, user.id));
-    const table = TABLE_MAP[slug];
+    const table = getTableForProgram(slug);
 
     // Insert in batches of 50
     let imported = 0;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   Project,
   ProjectActivity,
@@ -15,6 +15,7 @@ import { AttachmentsGallery } from "./attachments-gallery";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
 import { deleteActivity, deleteMilestone } from "@/lib/projects/mutations";
+import { createClient } from "@/lib/supabase/client";
 import { Trash2, Target, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,12 @@ export function ActivitiesPanel({
   activities,
   onChange,
 }: Props) {
+  interface OwnerProfile {
+    id: string;
+    full_name: string | null;
+    email: string | null;
+  }
+
   const { user, isMELManager } = useUser();
   const currentUserId = user?.id;
 
@@ -40,8 +47,12 @@ export function ActivitiesPanel({
   const [openId, setOpenId] = useState<string | null>(null);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<ProjectActivity | null>(
+    null,
+  );
   const [subParentId, setSubParentId] = useState<string | null>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
+  const [ownerNameMap, setOwnerNameMap] = useState<Record<string, string>>({});
   const [collapsedMilestones, setCollapsedMilestones] = useState<Set<string>>(
     new Set(),
   );
@@ -60,6 +71,34 @@ export function ActivitiesPanel({
     }
     return map;
   }, [activities]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadOwners() {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("id, full_name, email")
+        .order("full_name", { ascending: true });
+
+      if (!active || error) return;
+
+      const next = Object.fromEntries(
+        ((data ?? []) as OwnerProfile[]).map((profile) => [
+          profile.id as string,
+          profile.full_name || profile.email || "Assigned user",
+        ]),
+      );
+      setOwnerNameMap(next);
+    }
+
+    void loadOwners();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const matchesFilter = (a: ProjectActivity, today: Date): boolean => {
     const self = (() => {
@@ -144,6 +183,7 @@ export function ActivitiesPanel({
         <ActivityRow
           activity={a}
           onOpen={setOpenId}
+          ownerNameMap={ownerNameMap}
           displayPercent={computeActivityPercent(a, activities)}
           childCount={kids.length}
           isExpanded={isExpanded}
@@ -155,6 +195,7 @@ export function ActivitiesPanel({
               key={c.id}
               activity={c}
               onOpen={setOpenId}
+              ownerNameMap={ownerNameMap}
               displayPercent={computeActivityPercent(c, activities)}
               indent
               isLastChild={childIdx === visibleKids.length - 1 && idx === arr.length - 1}
@@ -179,6 +220,7 @@ export function ActivitiesPanel({
             size="sm"
             className="bg-srsf-green-600 hover:bg-srsf-green-700 text-white"
             onClick={() => {
+              setEditingActivity(null);
               setSubParentId(null);
               setShowActivityModal(true);
             }}
@@ -270,6 +312,7 @@ export function ActivitiesPanel({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setEditingActivity(null);
                           setSubParentId(null);
                           setShowActivityModal(true);
                         }}
@@ -351,6 +394,7 @@ export function ActivitiesPanel({
           milestones={milestones}
           activity={openActivity}
           allActivities={activities}
+          ownerNameMap={ownerNameMap}
           currentUserId={currentUserId}
           canPostUpdate={canPostUpdate}
           attachmentCount={attachmentCount}
@@ -362,7 +406,18 @@ export function ActivitiesPanel({
           onAddSubactivity={
             isMELManager
               ? (parentId) => {
+                  setEditingActivity(null);
                   setSubParentId(parentId);
+                  setShowActivityModal(true);
+                }
+              : undefined
+          }
+          onOpenActivity={setOpenId}
+          onEditActivity={
+            isMELManager
+              ? (item) => {
+                  setEditingActivity(item);
+                  setSubParentId(item.parent_activity_id);
                   setShowActivityModal(true);
                 }
               : undefined
@@ -423,8 +478,12 @@ export function ActivitiesPanel({
               open={showActivityModal}
               onOpenChange={(o) => {
                 setShowActivityModal(o);
-                if (!o) setSubParentId(null);
+                if (!o) {
+                  setSubParentId(null);
+                  setEditingActivity(null);
+                }
               }}
+              initial={editingActivity ?? undefined}
               fixedParentId={subParentId ?? undefined}
               onSaved={onChange}
             />

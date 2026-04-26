@@ -47,6 +47,12 @@ import {
   listProjects,
 } from "@/lib/projects/queries";
 
+interface OwnerProfile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+}
+
 // ─── Helpers ────────────────────────────────────────────────────
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -128,7 +134,7 @@ export function ExecutiveDashboard({ programFilter }: Props) {
         .select("id, full_name, email");
 
       const ownerNames = Object.fromEntries(
-        (owners ?? []).map((owner) => [
+        ((owners ?? []) as OwnerProfile[]).map((owner) => [
           owner.id,
           owner.full_name || owner.email || "Unassigned",
         ]),

@@ -23,11 +23,12 @@ export default function IndicatorsPage() {
 
   // Load programs once
   useEffect(() => {
-    supabase
-      .from("programs")
-      .select("*")
-      .order("name")
-      .then(({ data }) => setPrograms(data ?? []));
+    async function loadPrograms() {
+      const { data } = await supabase.from("programs").select("*").order("name");
+      setPrograms((data as Program[]) ?? []);
+    }
+
+    void loadPrograms();
   }, [supabase]);
 
   const activeProgram = programs.find((p) => p.slug === activeSlug);
