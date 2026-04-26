@@ -22,7 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-white lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background lg:hidden">
       <div className="flex">
         {BOTTOM_NAV_ITEMS.map((item) => {
           const isActive =
@@ -36,12 +36,12 @@ export function BottomNav() {
               href={item.href}
               className={`relative flex flex-1 flex-col items-center justify-center py-2 gap-0.5 min-h-[56px] transition-colors ${
                 isActive
-                  ? "text-[#6B2D7B]"
+                  ? "text-srsf-green-600 dark:text-srsf-green-400"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {isActive && (
-                <span className="absolute top-0 left-0 right-0 h-0.5 bg-[#6B2D7B]" />
+                <span className="absolute top-0 left-0 right-0 h-0.5 bg-srsf-green-600 dark:bg-srsf-green-400" />
               )}
               <item.icon className="size-5" />
               <span className="text-[10px] font-medium">{item.label}</span>

@@ -1,58 +1,48 @@
 "use client";
 
-import type { ProjectActivity } from "@/lib/projects/types";
-import { PriorityFlag } from "./priority-flag";
+import type {
+  ActivityPriority,
+  ProjectActivity,
+} from "@/lib/projects/types";
 import { cn } from "@/lib/utils";
-import { Circle, CheckCircle2, Loader2, AlertCircle, ChevronRight, ChevronDown } from "lucide-react";
 
-const STATUS_CONFIG: Record<ProjectActivity["status"], { 
-  label: string;
-  icon: React.ReactNode;
-  class: string;
-  bgClass: string;
-}> = {
+const STATUS_CONFIG: Record<
+  ProjectActivity["status"],
+  { dot: string; icon: string | null }
+> = {
   not_started: {
-    label: "To do",
-    icon: <Circle className="w-4 h-4" />,
-    class: "text-slate-500 border-slate-300",
-    bgClass: "bg-slate-50 hover:bg-slate-100",
+    dot: "border-slate-300 text-slate-400 dark:border-slate-600",
+    icon: null,
   },
   in_progress: {
-    label: "In progress",
-    icon: <Loader2 className="w-4 h-4 animate-spin" />,
-    class: "text-blue-600 border-blue-400",
-    bgClass: "bg-blue-50 hover:bg-blue-100",
+    dot: "border-blue-300 bg-blue-50 text-blue-600 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    icon: "\u25D1",
   },
   done: {
-    label: "Complete",
-    icon: <CheckCircle2 className="w-4 h-4" />,
-    class: "text-green-600 border-green-400",
-    bgClass: "bg-green-50 hover:bg-green-100",
+    dot: "border-green-300 bg-green-50 text-green-600 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400",
+    icon: "\u2713",
   },
   blocked: {
-    label: "Blocked",
-    icon: <AlertCircle className="w-4 h-4" />,
-    class: "text-red-600 border-red-400",
-    bgClass: "bg-red-50 hover:bg-red-100",
+    dot: "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-900/30 dark:text-red-400",
+    icon: "\u2715",
   },
+};
+
+const PRIORITY_FLAG: Record<ActivityPriority, string> = {
+  high: "bg-red-500",
+  medium: "bg-amber-400",
+  low: "bg-slate-300 dark:bg-slate-600",
 };
 
 interface Props {
   activity: ProjectActivity;
   onOpen: (id: string) => void;
-  /** Display percent (auto-rolled-up for parents). Falls back to activity.percent_complete. */
   displayPercent?: number;
-  /** When > 0, shows a "N sub" badge and indicates this row is a parent. */
   childCount?: number;
-  /** Visual indent for sub-activities. */
   indent?: boolean;
-  /** Show tree connector line (for sub-activities) */
   showTreeLine?: boolean;
-  /** Is last child in list (affects tree line rendering) */
   isLastChild?: boolean;
-  /** For main activities with children: is expanded? */
   isExpanded?: boolean;
-  /** Toggle expand/collapse (only for main activities with children) */
   onToggleExpand?: () => void;
 }
 
@@ -62,8 +52,6 @@ export function ActivityRow({
   displayPercent,
   childCount = 0,
   indent = false,
-  showTreeLine = false,
-  isLastChild = false,
   isExpanded = true,
   onToggleExpand,
 }: Props) {
@@ -73,143 +61,115 @@ export function ActivityRow({
     new Date(activity.due_date) < new Date();
 
   const pct = displayPercent ?? activity.percent_complete;
-  const status = STATUS_CONFIG[activity.status];
   const hasChildren = childCount > 0;
   const isSubActivity = indent;
   const isMainActivity = !indent;
   const canExpand = isMainActivity && hasChildren && onToggleExpand;
 
   return (
-    <div className={cn("flex", isSubActivity && "relative")}>
-      {/* Tree connector line for sub-activities */}
-      {showTreeLine && isSubActivity && (
-        <div className="absolute left-[27px] top-0 bottom-0 w-px bg-slate-200">
-          {/* Horizontal branch line */}
-          <div className="absolute top-5 left-0 w-6 h-px bg-slate-200" />
-          {/* Stop vertical line early for last child */}
-          {isLastChild && (
-            <div className="absolute top-5 left-0 w-px h-[calc(100%-20px)] bg-white" />
-          )}
-        </div>
+    <div
+      className={cn(
+        "flex items-center gap-2 transition-colors",
+        isMainActivity
+          ? "px-3 py-2.5 hover:bg-muted/50"
+          : "pl-[var(--activity-sub-indent)] pr-3 py-2 bg-muted/30 hover:bg-muted/50",
+        activity.status === "blocked" && "bg-red-50/60 dark:bg-red-900/10",
       )}
+    >
+      {canExpand ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand?.();
+          }}
+          className="text-[9px] text-muted-foreground w-3 shrink-0 hover:text-foreground"
+        >
+          {isExpanded ? "\u25BC" : "\u25B6"}
+        </button>
+      ) : isMainActivity ? (
+        <span className="w-3 shrink-0" />
+      ) : null}
 
-      <div
+      <button
+        onClick={() => onOpen(activity.id)}
         className={cn(
-          "flex-1 flex items-center gap-2 py-3 transition-colors",
-          isMainActivity 
-            ? "px-3 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm"
-            : "pl-14 pr-3",
-          isSubActivity && "text-sm",
-          status.bgClass
+          "flex items-center justify-center rounded-full border-[1.5px] shrink-0 transition-colors",
+          isMainActivity ? "w-[18px] h-[18px] text-[9px]" : "w-[14px] h-[14px] text-[7px]",
+          STATUS_CONFIG[activity.status].dot,
         )}
       >
-        {/* Expand/Collapse Toggle (for main activities with children) */}
-        {canExpand ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpand?.();
-            }}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded hover:bg-slate-200/50 transition-colors"
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </button>
-        ) : isMainActivity ? (
-          /* Spacer for alignment when no children */
-          <span className="w-6" />
-        ) : null}
+        {STATUS_CONFIG[activity.status].icon}
+      </button>
 
-        {/* Activity Row Button */}
-        <button
-          onClick={() => onOpen(activity.id)}
-          className="flex-1 flex items-center gap-3 text-left"
-        >
-        {/* Status Icon/Button */}
-        <span 
+      <button
+        onClick={() => onOpen(activity.id)}
+        className="flex-1 flex items-center gap-2 text-left min-w-0"
+      >
+        <span
           className={cn(
-            "flex items-center justify-center rounded-full border-2 transition-colors",
-            isMainActivity ? "w-6 h-6" : "w-5 h-5",
-            status.class,
-            activity.status === "not_started" && "hover:bg-slate-200"
+            "truncate",
+            isMainActivity ? "text-xs font-medium" : "text-[11px]",
+            activity.status === "done" && "line-through text-muted-foreground",
           )}
         >
-          <span className={isMainActivity ? "scale-100" : "scale-90"}>
-            {status.icon}
-          </span>
+          {activity.title}
         </span>
 
-        {/* Priority & Title */}
-        <div className="flex-1 min-w-0 flex items-center gap-2">
-          <span className={cn(
-            "truncate font-medium",
-            isMainActivity ? "text-sm" : "text-xs",
-            activity.status === "done" && "text-slate-500 line-through"
-          )}>
-            {activity.title}
+        {hasChildren && (
+          <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-medium">
+            {childCount}
           </span>
-          
-          {/* Sub-activity count badge (only for parents) */}
-          {hasChildren && (
-            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">
-              <ChevronRight className="w-3 h-3" />
-              {childCount}
-            </span>
-          )}
-        </div>
-
-        {/* Right side: Priority, Due Date, Progress */}
-        <div className="flex items-center gap-3 shrink-0">
-          <PriorityFlag priority={activity.priority} />
-          
-          {activity.due_date && (
-            <span
-              className={cn(
-                "text-xs tabular-nums",
-                overdue ? "text-red-600 font-medium" : "text-slate-500",
-                isSubActivity && "hidden sm:block"
-              )}
-            >
-              {new Date(activity.due_date).toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              })}
-            </span>
-          )}
-          
-          {/* Progress indicator */}
-          <div className={cn(
-            "flex items-center gap-1.5",
-            isSubActivity && "hidden md:flex"
-          )}>
-            <div className={cn(
-              "rounded-full bg-slate-200 overflow-hidden",
-              isMainActivity ? "w-16 h-1.5" : "w-12 h-1"
-            )}>
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  pct === 100 
-                    ? "bg-green-500" 
-                    : pct >= 50 
-                      ? "bg-blue-500" 
-                      : "bg-slate-400"
-                )}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <span className={cn(
-              "text-xs tabular-nums text-slate-500",
-              isSubActivity && "text-[10px]"
-            )}>
-              {pct}%
-            </span>
-          </div>
-        </div>
+        )}
       </button>
+
+      <div className="flex items-center gap-2.5 shrink-0">
+        <div
+          className={cn("rounded-sm shrink-0", PRIORITY_FLAG[activity.priority])}
+          style={{
+            width: "var(--priority-flag-w)",
+            height: "var(--priority-flag-h)",
+          }}
+        />
+
+        {activity.due_date && (
+          <span
+            className={cn(
+              "text-[10px] tabular-nums",
+              overdue
+                ? "text-red-600 font-medium dark:text-red-400"
+                : "text-muted-foreground",
+              isSubActivity && "hidden sm:block",
+            )}
+          >
+            {new Date(activity.due_date).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        )}
+
+        <div
+          className={cn("flex items-center gap-1", isSubActivity && "hidden md:flex")}
+        >
+          <div
+            className={cn(
+              "rounded-full bg-muted overflow-hidden",
+              isMainActivity ? "w-[40px] h-[3px]" : "w-[30px] h-[2px]",
+            )}
+          >
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${pct}%`,
+                background:
+                  pct === 100 ? "#16a34a" : pct >= 50 ? "#3B6D11" : "#94a3b8",
+              }}
+            />
+          </div>
+          <span className="text-[10px] text-muted-foreground tabular-nums w-5 text-right">
+            {pct}%
+          </span>
+        </div>
       </div>
     </div>
   );

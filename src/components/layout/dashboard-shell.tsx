@@ -18,7 +18,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <Topbar />
-        <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10 max-w-[1440px] mx-auto pb-20 lg:pb-10">
+        <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10 max-w-[1440px] mx-auto pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
           {children}
         </main>
       </div>
