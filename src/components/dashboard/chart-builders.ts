@@ -167,58 +167,92 @@ export function groupByGranularity<T extends Record<string, any>>(
 
 // ─── Chart option builders ───────────────────────────────────────
 
-/** Horizontal bar chart from counts (sorted descending) */
-export function barChartOption(
+// ─── Unified Bar Chart Builder ─────────────────────────────────
+
+export interface BarChartConfig {
+  orientation: "horizontal" | "vertical";
+  yAxisWidth?: number;
+  xAxisWidth?: number;
+}
+
+/** Internal builder for bar charts - unified implementation */
+function buildBarChartOption(
   counts: Record<string, number>,
-  title: string
+  title: string,
+  config: BarChartConfig
 ): EChartsOption {
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const categories = sorted.map(([k]) => k);
   const values = sorted.map(([, v]) => v);
   const total = values.reduce((s, v) => s + v, 0);
-  return {
-    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
-    toolbox: TOOLBOX,
-    tooltip: {
-      trigger: "axis",
-      formatter: (params: unknown) => {
-        const arr = params as Array<{ name: string; value: number; marker: string }>;
-        const p = arr[0];
-        const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
-        return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
+
+  const labelFormatter = (params: unknown) => {
+    const p = params as { value: number };
+    const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+    return `${p.value.toLocaleString()} (${pct}%)`;
+  };
+
+  const tooltipFormatter = (params: unknown) => {
+    const arr = params as Array<{ name: string; value: number; marker: string }>;
+    const p = arr[0];
+    const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
+    return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
+  };
+
+  if (config.orientation === "horizontal") {
+    return {
+      title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+      toolbox: TOOLBOX,
+      tooltip: { trigger: "axis", formatter: tooltipFormatter },
+      xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
+      yAxis: {
+        type: "category",
+        data: categories,
+        inverse: true,
+        axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: config.yAxisWidth ?? 130 },
       },
-    },
-    xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
-    yAxis: {
-      type: "category",
-      data: categories,
-      inverse: true,
-      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 130 },
-    },
-    series: [
-      {
+      series: [{
         type: "bar",
         data: values,
         itemStyle: { color: CHART_COLORS[0], borderRadius: [0, 3, 3, 0] },
         barMinHeight: 4,
         barCategoryGap: "35%",
-        label: {
-          show: true,
-          position: "right",
-          fontSize: 10,
-          color: "#374151",
-          fontFamily: "Inter, system-ui, sans-serif",
-          formatter: (params: unknown) => {
-            const p = params as { value: number };
-            const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
-            return `${p.value.toLocaleString()} (${pct}%)`;
-          },
-        },
-      },
-    ],
-    grid: { left: 8, right: 110, top: 50, bottom: 30, containLabel: true },
+        label: { show: true, position: "right", fontSize: 10, color: "#374151", fontFamily: "Inter, system-ui, sans-serif", formatter: labelFormatter },
+      }],
+      grid: { left: 8, right: 110, top: 50, bottom: 30, containLabel: true },
+      color: CHART_COLORS,
+    };
+  }
+
+  // Vertical orientation
+  return {
+    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
+    toolbox: TOOLBOX,
+    tooltip: { trigger: "axis", formatter: tooltipFormatter },
+    xAxis: {
+      type: "category",
+      data: categories,
+      axisLabel: { ...AXIS_LABEL_STYLE, rotate: categories.length > 10 ? 45 : 0, hideOverlap: true },
+    },
+    yAxis: { type: "value" },
+    series: [{
+      type: "bar",
+      data: values,
+      itemStyle: { color: CHART_COLORS[0], borderRadius: [3, 3, 0, 0] },
+      barMinHeight: 4,
+      label: { show: true, position: "top", fontSize: 10, color: "#374151", fontFamily: "Inter, system-ui, sans-serif", formatter: labelFormatter },
+    }],
+    grid: { left: 50, right: 30, top: 50, bottom: categories.length > 10 ? 80 : 50, containLabel: true },
     color: CHART_COLORS,
   };
+}
+
+/** Horizontal bar chart from counts (sorted descending) */
+export function barChartOption(
+  counts: Record<string, number>,
+  title: string
+): EChartsOption {
+  return buildBarChartOption(counts, title, { orientation: "horizontal" });
 }
 
 /** Horizontal bar chart from counts (good for long category names) */
@@ -226,54 +260,15 @@ export function horizontalBarChartOption(
   counts: Record<string, number>,
   title: string
 ): EChartsOption {
-  // Sort descending by value
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const categories = sorted.map(([k]) => k);
-  const values = sorted.map(([, v]) => v);
-  const total = values.reduce((s, v) => s + v, 0);
-  return {
-    title: { text: title, left: "center", top: TITLE_TOP, textStyle: TITLE_STYLE },
-    toolbox: TOOLBOX,
-    tooltip: {
-      trigger: "axis",
-      formatter: (params: unknown) => {
-        const arr = params as Array<{ name: string; value: number; marker: string }>;
-        const p = arr[0];
-        const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
-        return `${p.marker}${p.name}<br/><strong>${p.value.toLocaleString()}</strong> (${pct}%)`;
-      },
-    },
-    xAxis: { type: "value", axisLabel: { ...AXIS_LABEL_STYLE, hideOverlap: true } },
-    yAxis: {
-      type: "category",
-      data: categories,
-      inverse: true,
-      axisLabel: { ...AXIS_LABEL_STYLE, overflow: "truncate", width: 130 },
-    },
-    series: [
-      {
-        type: "bar",
-        data: values,
-        itemStyle: { color: CHART_COLORS[0], borderRadius: [0, 3, 3, 0] },
-        barMinHeight: 4,
-        barCategoryGap: "35%",
-        label: {
-          show: true,
-          position: "right",
-          fontSize: 10,
-          color: "#374151",
-          fontFamily: "Inter, system-ui, sans-serif",
-          formatter: (params: unknown) => {
-            const p = params as { value: number };
-            const pct = total > 0 ? ((p.value / total) * 100).toFixed(1) : "0";
-            return `${p.value.toLocaleString()} (${pct}%)`;
-          },
-        },
-      },
-    ],
-    grid: { left: 8, right: 110, top: 50, bottom: 30, containLabel: true },
-    color: CHART_COLORS,
-  };
+  return buildBarChartOption(counts, title, { orientation: "horizontal" });
+}
+
+/** Vertical bar chart from counts */
+export function verticalBarChartOption(
+  counts: Record<string, number>,
+  title: string
+): EChartsOption {
+  return buildBarChartOption(counts, title, { orientation: "vertical" });
 }
 
 /** Donut chart from counts */
