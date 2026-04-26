@@ -22,18 +22,35 @@ const STATUS_CLASS: Record<ProjectActivity["status"], string> = {
 interface Props {
   activity: ProjectActivity;
   onOpen: (id: string) => void;
+  /** Display percent (auto-rolled-up for parents). Falls back to activity.percent_complete. */
+  displayPercent?: number;
+  /** When > 0, shows a "N sub" badge and indicates this row is a parent. */
+  childCount?: number;
+  /** Visual indent for sub-activities. */
+  indent?: boolean;
 }
 
-export function ActivityRow({ activity, onOpen }: Props) {
+export function ActivityRow({
+  activity,
+  onOpen,
+  displayPercent,
+  childCount = 0,
+  indent = false,
+}: Props) {
   const overdue =
     activity.due_date &&
     activity.status !== "done" &&
     new Date(activity.due_date) < new Date();
 
+  const pct = displayPercent ?? activity.percent_complete;
+
   return (
     <button
       onClick={() => onOpen(activity.id)}
-      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-accent/60"
+      className={cn(
+        "w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-accent/60",
+        indent && "pl-9 bg-muted/20",
+      )}
     >
       <span
         className={cn(
@@ -44,7 +61,14 @@ export function ActivityRow({ activity, onOpen }: Props) {
         {STATUS_LABEL[activity.status]}
       </span>
       <PriorityFlag priority={activity.priority} />
-      <span className="flex-1 truncate text-sm">{activity.title}</span>
+      <span className="flex-1 truncate text-sm">
+        {activity.title}
+        {childCount > 0 && (
+          <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
+            {childCount} sub
+          </span>
+        )}
+      </span>
       {activity.due_date && (
         <span
           className={cn(
@@ -55,8 +79,8 @@ export function ActivityRow({ activity, onOpen }: Props) {
           {new Date(activity.due_date).toLocaleDateString()}
         </span>
       )}
-      <span className="text-xs text-muted-foreground w-10 text-right">
-        {activity.percent_complete}%
+      <span className="text-xs text-muted-foreground w-10 text-right tabular-nums">
+        {pct}%
       </span>
     </button>
   );

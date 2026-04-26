@@ -29,24 +29,33 @@ interface UserOption {
 interface Props {
   projectId: string;
   milestones: ProjectMilestone[];
+  /** Existing top-level activities; sub-activities will reference one of these. */
+  parentCandidates?: ProjectActivity[];
   currentUserId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: Partial<ProjectActivity>;
+  /** When set, the form is locked into "create sub-activity" mode for this parent. */
+  fixedParentId?: string;
   onSaved: () => void;
 }
 
 export function ActivityFormModal({
   projectId,
   milestones,
+  parentCandidates = [],
   currentUserId,
   open,
   onOpenChange,
   initial,
+  fixedParentId,
   onSaved,
 }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [parentId, setParentId] = useState(
+    fixedParentId ?? initial?.parent_activity_id ?? "",
+  );
   const [milestoneId, setMilestoneId] = useState(initial?.milestone_id ?? "");
   const [ownerId, setOwnerId] = useState(initial?.owner_user_id ?? "");
   const [dueDate, setDueDate] = useState(initial?.due_date ?? "");
@@ -56,6 +65,13 @@ export function ActivityFormModal({
   const [users, setUsers] = useState<UserOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // When a parent is selected, inherit its milestone (and lock the field).
+  useEffect(() => {
+    if (!parentId) return;
+    const parent = parentCandidates.find((p) => p.id === parentId);
+    if (parent) setMilestoneId(parent.milestone_id ?? "");
+  }, [parentId, parentCandidates]);
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +96,7 @@ export function ActivityFormModal({
           title,
           description: description || null,
           milestone_id: milestoneId || null,
+          parent_activity_id: parentId || null,
           owner_user_id: ownerId || null,
           due_date: dueDate || null,
           priority,
@@ -90,6 +107,7 @@ export function ActivityFormModal({
           title,
           description: description || null,
           milestone_id: milestoneId || null,
+          parent_activity_id: parentId || null,
           owner_user_id: ownerId || null,
           due_date: dueDate || null,
           priority,
@@ -111,7 +129,11 @@ export function ActivityFormModal({
         <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>
-              {initial?.id ? "Edit Activity" : "New Activity"}
+              {initial?.id
+                ? "Edit Activity"
+                : fixedParentId
+                  ? "New Sub-activity"
+                  : "New Activity"}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-3 py-4">
@@ -133,13 +155,36 @@ export function ActivityFormModal({
                 rows={3}
               />
             </div>
+            {!fixedParentId && parentCandidates.length > 0 && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="act-parent">Parent activity (optional)</Label>
+                <select
+                  id="act-parent"
+                  value={parentId ?? ""}
+                  onChange={(e) => setParentId(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">None — top-level activity</option>
+                  {parentCandidates.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  Selecting a parent makes this a sub-activity. Its milestone is
+                  inherited from the parent.
+                </p>
+              </div>
+            )}
             <div className="grid gap-1.5">
               <Label htmlFor="act-ms">Milestone</Label>
               <select
                 id="act-ms"
                 value={milestoneId ?? ""}
                 onChange={(e) => setMilestoneId(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                disabled={!!parentId}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60"
               >
                 <option value="">None</option>
                 {milestones.map((m) => (
@@ -148,6 +193,11 @@ export function ActivityFormModal({
                   </option>
                 ))}
               </select>
+              {parentId && (
+                <p className="text-xs text-muted-foreground">
+                  Inherited from parent activity.
+                </p>
+              )}
               {users.length === 0 && (
                 <p className="text-xs text-muted-foreground">
                   No active users are available to assign.

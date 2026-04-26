@@ -10,14 +10,60 @@ function isOverdue(activity: ProjectActivity, today: Date): boolean {
   return new Date(activity.due_date) < today;
 }
 
+export function getChildren(
+  activity: ProjectActivity,
+  all: ProjectActivity[],
+): ProjectActivity[] {
+  return all.filter((a) => a.parent_activity_id === activity.id);
+}
+
+export function isParent(
+  activity: ProjectActivity,
+  all: ProjectActivity[],
+): boolean {
+  return all.some((a) => a.parent_activity_id === activity.id);
+}
+
+export function getLeafActivities(
+  all: ProjectActivity[],
+): ProjectActivity[] {
+  const parentIds = new Set(
+    all
+      .map((a) => a.parent_activity_id)
+      .filter((id): id is string => id !== null),
+  );
+  return all.filter((a) => !parentIds.has(a.id));
+}
+
+/**
+ * Display-time percent for an activity. Parents auto-roll up from children;
+ * leaves use status-derived rules (done=100, not_started=0) or the stored
+ * percent_complete for in_progress / blocked.
+ */
+export function computeActivityPercent(
+  activity: ProjectActivity,
+  all: ProjectActivity[],
+): number {
+  const children = getChildren(activity, all);
+  if (children.length > 0) {
+    const total = children.reduce(
+      (sum, c) => sum + computeActivityPercent(c, all),
+      0,
+    );
+    return Math.round(total / children.length);
+  }
+  return normalizePercentComplete(activity.status, activity.percent_complete);
+}
+
 export function computeProjectStatus(
   project: Pick<Project, "status_override">,
   activities: ProjectActivity[],
   now: Date = new Date(),
 ): ComputedProjectStatus {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const leaves = getLeafActivities(activities);
 
-  if (activities.length > 0 && activities.every((a) => a.status === "done")) {
+  if (leaves.length > 0 && leaves.every((a) => a.status === "done")) {
     return "done";
   }
   if (project.status_override === "blocked") return "blocked";
@@ -28,19 +74,24 @@ export function computeProjectStatus(
   );
   if (hasOverdue || hasHighBlocked) return "at_risk";
 
-  if (activities.some((a) => a.status !== "not_started")) return "in_progress";
+  if (leaves.some((a) => a.status !== "not_started")) return "in_progress";
   return "not_started";
 }
 
+/**
+ * Project-level progress: average across leaf activities only, so a parent's
+ * computed roll-up does not double-count its children.
+ */
 export function computeProgressPercent(activities: ProjectActivity[]): number {
-  if (activities.length === 0) return 0;
-  const total = activities.reduce(
+  const leaves = getLeafActivities(activities);
+  if (leaves.length === 0) return 0;
+  const total = leaves.reduce(
     (sum, activity) =>
       sum +
       normalizePercentComplete(activity.status, activity.percent_complete),
     0,
   );
-  return Math.round(total / activities.length);
+  return Math.round(total / leaves.length);
 }
 
 export function normalizePercentComplete(
