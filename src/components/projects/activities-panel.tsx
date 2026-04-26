@@ -6,6 +6,7 @@ import type {
   ProjectActivity,
   ProjectMilestone,
 } from "@/lib/projects/types";
+import { computeActivityPercent } from "@/lib/projects/status";
 import { ActivityRow } from "./activity-row";
 import { ActivitySidePanel } from "./activity-side-panel";
 import { MilestoneFormModal } from "./milestone-form-modal";
@@ -36,29 +37,49 @@ export function ActivitiesPanel({
   const [openId, setOpenId] = useState<string | null>(null);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [subParentId, setSubParentId] = useState<string | null>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
 
   useEffect(() => {
     if (!openId) setAttachmentCount(0);
   }, [openId]);
 
-  const filtered = useMemo(() => {
-    const today = new Date();
-    return activities.filter((a) => {
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string, ProjectActivity[]>();
+    for (const a of activities) {
+      if (a.parent_activity_id) {
+        const arr = map.get(a.parent_activity_id) ?? [];
+        arr.push(a);
+        map.set(a.parent_activity_id, arr);
+      }
+    }
+    return map;
+  }, [activities]);
+
+  // A row matches the filter if itself or any descendant matches.
+  const matchesFilter = (a: ProjectActivity, today: Date): boolean => {
+    const self = (() => {
       if (filter === "overdue")
-        return (
+        return !!(
           a.due_date && a.status !== "done" && new Date(a.due_date) < today
         );
       if (filter === "attention")
         return a.status === "blocked" || a.priority === "high";
       if (filter === "mine")
-        return currentUserId && a.owner_user_id === currentUserId;
+        return !!currentUserId && a.owner_user_id === currentUserId;
       return true;
-    });
-  }, [filter, activities, currentUserId]);
+    })();
+    if (self) return true;
+    const kids = childrenByParent.get(a.id) ?? [];
+    return kids.some((c) => matchesFilter(c, today));
+  };
+
+  const today = new Date();
+  const topLevel = activities.filter((a) => !a.parent_activity_id);
+  const filteredTopLevel = topLevel.filter((a) => matchesFilter(a, today));
 
   const byMilestone = new Map<string | null, ProjectActivity[]>();
-  for (const a of filtered) {
+  for (const a of filteredTopLevel) {
     const key = a.milestone_id ?? null;
     byMilestone.set(key, [...(byMilestone.get(key) ?? []), a]);
   }
@@ -75,6 +96,30 @@ export function ActivitiesPanel({
   const nextOrderIndex =
     milestones.reduce((m, x) => Math.max(m, x.order_index), -1) + 1;
 
+  const renderRow = (a: ProjectActivity) => {
+    const kids = childrenByParent.get(a.id) ?? [];
+    const visibleKids = kids.filter((c) => matchesFilter(c, today));
+    return (
+      <div key={a.id}>
+        <ActivityRow
+          activity={a}
+          onOpen={setOpenId}
+          displayPercent={computeActivityPercent(a, activities)}
+          childCount={kids.length}
+        />
+        {visibleKids.map((c) => (
+          <ActivityRow
+            key={c.id}
+            activity={c}
+            onOpen={setOpenId}
+            displayPercent={computeActivityPercent(c, activities)}
+            indent
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div>
       {isMELManager && (
@@ -86,7 +131,13 @@ export function ActivitiesPanel({
           >
             + Add Milestone
           </Button>
-          <Button size="sm" onClick={() => setShowActivityModal(true)}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSubParentId(null);
+              setShowActivityModal(true);
+            }}
+          >
             + Add Activity
           </Button>
         </div>
@@ -121,9 +172,7 @@ export function ActivitiesPanel({
           <section key={m.id} className="mb-6">
             <h3 className="text-sm font-semibold mb-2">{m.name}</h3>
             <div className="rounded border border-border divide-y divide-border">
-              {rows.map((a) => (
-                <ActivityRow key={a.id} activity={a} onOpen={setOpenId} />
-              ))}
+              {rows.map(renderRow)}
             </div>
           </section>
         );
@@ -133,14 +182,12 @@ export function ActivitiesPanel({
         <section className="mb-6">
           <h3 className="text-sm font-semibold mb-2">Ungrouped</h3>
           <div className="rounded border border-border divide-y divide-border">
-            {(byMilestone.get(null) ?? []).map((a) => (
-              <ActivityRow key={a.id} activity={a} onOpen={setOpenId} />
-            ))}
+            {(byMilestone.get(null) ?? []).map(renderRow)}
           </div>
         </section>
       )}
 
-      {filtered.length === 0 && (
+      {filteredTopLevel.length === 0 && (
         <div className="text-sm text-muted-foreground">
           No activities match this filter.
         </div>
@@ -150,11 +197,20 @@ export function ActivitiesPanel({
         <ActivitySidePanel
           project={project}
           activity={openActivity}
+          allActivities={activities}
           currentUserId={currentUserId}
           canPostUpdate={canPostUpdate}
           attachmentCount={attachmentCount}
           onClose={() => setOpenId(null)}
           onChange={onChange}
+          onAddSubactivity={
+            isMELManager
+              ? (parentId) => {
+                  setSubParentId(parentId);
+                  setShowActivityModal(true);
+                }
+              : undefined
+          }
         >
           {currentUserId && (
             <AttachmentsGallery
@@ -185,9 +241,14 @@ export function ActivitiesPanel({
             <ActivityFormModal
               projectId={project.id}
               milestones={milestones}
+              parentCandidates={topLevel}
               currentUserId={currentUserId}
               open={showActivityModal}
-              onOpenChange={setShowActivityModal}
+              onOpenChange={(o) => {
+                setShowActivityModal(o);
+                if (!o) setSubParentId(null);
+              }}
+              fixedParentId={subParentId ?? undefined}
               onSaved={onChange}
             />
           )}

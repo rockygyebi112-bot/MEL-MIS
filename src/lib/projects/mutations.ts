@@ -64,6 +64,7 @@ export async function createMilestone(input: {
 export async function createActivity(input: {
   project_id: string;
   milestone_id?: string | null;
+  parent_activity_id?: string | null;
   title: string;
   description?: string | null;
   owner_user_id?: string | null;
