@@ -7,6 +7,7 @@ interface KpiCardProps {
   value: string | number;
   trend?: { value: number; label: string };
   accent?: AccentColor;
+  colorAccent?: string;
   sublabel?: string;
 }
 
@@ -37,14 +38,27 @@ const ACCENT_VALUE: Record<AccentColor, string> = {
   pink: "text-pink-700",
 };
 
-export function KpiCard({ label, value, trend, accent, sublabel }: KpiCardProps) {
+export function KpiCard({
+  label,
+  value,
+  trend,
+  accent,
+  colorAccent,
+  sublabel,
+}: KpiCardProps) {
   const borderClass = accent ? ACCENT_BORDER[accent] : "border-t-4 border-t-gray-200";
   const bgClass = accent ? ACCENT_BG[accent] : "bg-white";
   const valueClass = accent ? ACCENT_VALUE[accent] : "text-foreground";
   return (
     <div
-      className={`rounded-xl border border-border/60 p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ease-out ${borderClass} ${bgClass}`}
+      className={`relative rounded-lg border border-border bg-card px-4 py-3 overflow-hidden shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ease-out ${borderClass} ${bgClass}`}
     >
+      {colorAccent && (
+        <div
+          className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg"
+          style={{ background: colorAccent }}
+        />
+      )}
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
         {label}
       </p>

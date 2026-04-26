@@ -73,16 +73,15 @@ export default function ProjectDetailPage() {
   }, [refreshKey, slug]);
 
   if (notFoundFlag) notFound();
-  if (loading || !project)
-    return (
-      <div className="p-6 text-sm text-muted-foreground">Loading…</div>
-    );
+  if (loading || !project) {
+    return <div className="p-4 sm:p-6 text-sm text-muted-foreground">Loading...</div>;
+  }
 
   const status = computeProjectStatus(project, activities);
   const progress = computeProgressPercent(activities);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <header className="mb-6">
         <div className="flex items-start justify-between gap-4 mb-2">
           <div>
@@ -106,12 +105,15 @@ export default function ProjectDetailPage() {
         </div>
       </header>
 
-      <nav className="border-b border-border mb-4 flex gap-4" role="tablist">
+      <nav
+        className="flex gap-1 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-border mb-4 pb-0"
+        role="tablist"
+      >
         <button
           role="tab"
           aria-selected={tab === "overview"}
           onClick={() => setTab("overview")}
-          className={`pb-2 text-sm font-medium border-b-2 ${
+          className={`pb-2 text-sm font-medium border-b-2 whitespace-nowrap ${
             tab === "overview"
               ? "border-primary"
               : "border-transparent text-muted-foreground"
@@ -123,7 +125,7 @@ export default function ProjectDetailPage() {
           role="tab"
           aria-selected={tab === "activities"}
           onClick={() => setTab("activities")}
-          className={`pb-2 text-sm font-medium border-b-2 ${
+          className={`pb-2 text-sm font-medium border-b-2 whitespace-nowrap ${
             tab === "activities"
               ? "border-primary"
               : "border-transparent text-muted-foreground"
@@ -136,7 +138,7 @@ export default function ProjectDetailPage() {
             role="tab"
             aria-selected={tab === "program-data"}
             onClick={() => setTab("program-data")}
-            className={`pb-2 text-sm font-medium border-b-2 ${
+            className={`pb-2 text-sm font-medium border-b-2 whitespace-nowrap ${
               tab === "program-data"
                 ? "border-primary"
                 : "border-transparent text-muted-foreground"

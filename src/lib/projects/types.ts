@@ -27,6 +27,8 @@ export interface ProjectMilestone {
   id: string;
   project_id: string;
   name: string;
+  description: string | null;
+  target_date: string | null;
   order_index: number;
   created_at: string;
 }

@@ -7,6 +7,17 @@ import {
   MediaProgramEntry,
   AbsaOnboardingEntry,
 } from "@/lib/types";
+import { TABLES, type TableName } from "@/lib/db/tables";
+import {
+  aggregateAgeBracketByProgram,
+  aggregateDisabilityCounts,
+  aggregateEpisodeCountsByPeriod,
+  aggregateGenderCounts,
+  aggregateMediaViewsByPeriod,
+  aggregatePlatformViews,
+  aggregateRegionCounts,
+  totalMediaViews,
+} from "@/lib/dashboard/aggregations";
 import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
 import { DateRangeFilter } from "./date-range-filter";
@@ -15,7 +26,6 @@ import type { ProgramFilter } from "./program-filter-bar";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 import {
   countByField,
-  groupByGranularity,
   type Granularity,
   barChartOption,
   horizontalBarChartOption,
@@ -27,16 +37,17 @@ import {
 import { usePreviousPeriodCounts } from "@/hooks/use-previous-period-counts";
 import { GranularityToggle } from "./granularity-toggle";
 import { CustomIndicatorCharts } from "./custom-indicator-charts";
-import { EmbeddedProjectOverview } from "./embedded-project-overview";
+import {
+  ExecutiveMilestoneView,
+  type ProjectBundle,
+} from "./executive-milestone-view";
+import {
+  listActivities,
+  listMilestones,
+  listProjects,
+} from "@/lib/projects/queries";
 
 // ─── Helpers ────────────────────────────────────────────────────
-
-function totalMediaViews(entry: MediaProgramEntry): number {
-  let total = 0;
-  if (entry.metrics.facebook) total += entry.metrics.facebook.views;
-  if (entry.metrics.youtube) total += entry.metrics.youtube.views;
-  return total;
-}
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
@@ -58,6 +69,7 @@ export function ExecutiveDashboard({ programFilter }: Props) {
   const [vuEntries, setVuEntries] = useState<MediaProgramEntry[]>([]);
   const [hangoutEntries, setHangoutEntries] = useState<MediaProgramEntry[]>([]);
   const [absaEntries, setAbsaEntries] = useState<AbsaOnboardingEntry[]>([]);
+  const [projectBundles, setProjectBundles] = useState<ProjectBundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -69,33 +81,31 @@ export function ExecutiveDashboard({ programFilter }: Props) {
     async function loadAll() {
       setLoading(true);
 
-      const buildQuery = (table: string) => {
-        let q = supabase
-          .from(table)
-          .select("*")
-          .eq("is_draft", false)
-          .order("created_at", { ascending: false });
-        if (from) q = q.gte("created_at", from);
-        if (to) q = q.lte("created_at", `${to}T23:59:59`);
-        return q;
-      };
+      const buildQuery = (table: TableName) => {
+        const isMediaTable =
+          table === TABLES.virtualUniversity || table === TABLES.hangout;
+        const dateField = isMediaTable ? "date_aired" : "created_at";
+        const upperBound = to
+          ? isMediaTable
+            ? to
+            : `${to}T23:59:59`
+          : undefined;
 
-      const buildMediaQuery = (table: string) => {
         let q = supabase
           .from(table)
           .select("*")
           .eq("is_draft", false)
-          .order("date_aired", { ascending: false });
-        if (from) q = q.gte("date_aired", from);
-        if (to) q = q.lte("date_aired", to);
+          .order(dateField, { ascending: false });
+        if (from) q = q.gte(dateField, from);
+        if (upperBound) q = q.lte(dateField, upperBound);
         return q;
       };
 
       const [esRes, vuRes, hangoutRes, absaRes] = await Promise.all([
-        buildQuery("enterprise_spotlight_entries"),
-        buildMediaQuery("virtual_university_entries"),
-        buildMediaQuery("hangout_entries"),
-        buildQuery("absa_onboarding_entries"),
+        buildQuery(TABLES.enterpriseSpotlight),
+        buildQuery(TABLES.virtualUniversity),
+        buildQuery(TABLES.hangout),
+        buildQuery(TABLES.absaOnboarding),
       ]);
 
       setEsEntries((esRes.data as EnterpriseSpotlightEntry[]) ?? []);
@@ -106,6 +116,50 @@ export function ExecutiveDashboard({ programFilter }: Props) {
     }
     loadAll();
   }, [supabase, from, to]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadProjectBundles() {
+      const client = createClient();
+      const projects = await listProjects();
+      const { data: owners } = await client
+        .from("user_profiles")
+        .select("id, full_name, email");
+
+      const ownerNames = Object.fromEntries(
+        (owners ?? []).map((owner) => [
+          owner.id,
+          owner.full_name || owner.email || "Unassigned",
+        ]),
+      );
+
+      const bundles = await Promise.all(
+        projects.map(async (project) => {
+          const [milestones, activities] = await Promise.all([
+            listMilestones(project.id),
+            listActivities(project.id),
+          ]);
+          return {
+            project,
+            milestones,
+            activities,
+            ownerNames,
+          };
+        }),
+      );
+
+      if (active) {
+        setProjectBundles(bundles);
+      }
+    }
+
+    void loadProjectBundles();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // ─── KPI values ───────────────────────────────────────────────
 
@@ -118,10 +172,10 @@ export function ExecutiveDashboard({ programFilter }: Props) {
 
   const trendInputs = useMemo(
     () => [
-      { key: "es", table: "enterprise_spotlight_entries", from, to },
-      { key: "vu", table: "virtual_university_entries", from, to },
-      { key: "hangout", table: "hangout_entries", from, to },
-      { key: "absa", table: "absa_onboarding_entries", from, to },
+      { key: "es", table: TABLES.enterpriseSpotlight, from, to },
+      { key: "vu", table: TABLES.virtualUniversity, from, to },
+      { key: "hangout", table: TABLES.hangout, from, to },
+      { key: "absa", table: TABLES.absaOnboarding, from, to },
     ],
     [from, to]
   );
@@ -133,116 +187,55 @@ export function ExecutiveDashboard({ programFilter }: Props) {
   const showVU = programFilter === "virtual-university";
   const showHangout = programFilter === "hangout";
   const showABSA = programFilter === "absa-onboarding";
-  const showNkabom = programFilter === "nkabom-collaborative";
   const showMedia = showVU || showHangout;
 
   // ─── Demographics: Gender (cross-program) ─────────────────────
 
-  const genderCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-
-    if (showES) {
-      for (const e of esEntries) {
-        if (e.gender) counts[e.gender] = (counts[e.gender] || 0) + 1;
-      }
-    }
-    if (showVU) {
-      for (const e of vuEntries) {
-        for (const [k, v] of Object.entries(e.demographics?.gender ?? {})) {
-          counts[k] = (counts[k] || 0) + v;
-        }
-      }
-    }
-    if (showHangout) {
-      for (const e of hangoutEntries) {
-        for (const [k, v] of Object.entries(e.demographics?.gender ?? {})) {
-          counts[k] = (counts[k] || 0) + v;
-        }
-      }
-    }
-    if (showABSA) {
-      for (const e of absaEntries) {
-        if (e.gender) counts[e.gender] = (counts[e.gender] || 0) + 1;
-      }
-    }
-
-    return counts;
-  }, [esEntries, vuEntries, hangoutEntries, absaEntries, showES, showVU, showHangout, showABSA]);
+  const genderCounts = useMemo(
+    () =>
+      aggregateGenderCounts({
+        esEntries,
+        vuEntries,
+        hangoutEntries,
+        absaEntries,
+        showES,
+        showVU,
+        showHangout,
+        showABSA,
+      }),
+    [esEntries, vuEntries, hangoutEntries, absaEntries, showES, showVU, showHangout, showABSA]
+  );
 
   // ─── Demographics: Age Bracket (grouped bar by program) ───────
 
-  const ageBracketByProgram = useMemo(() => {
-    const series: { name: string; data: Record<string, number> }[] = [];
-
-    if (showES) {
-      series.push({
-        name: "Enterprise Spotlight",
-        data: countByField(esEntries, "age_bracket"),
-      });
-    }
-    if (showVU) {
-      const counts: Record<string, number> = {};
-      for (const e of vuEntries) {
-        for (const [k, v] of Object.entries(e.demographics?.age_brackets ?? {})) {
-          counts[k] = (counts[k] || 0) + v;
-        }
-      }
-      series.push({ name: "Virtual University", data: counts });
-    }
-    if (showHangout) {
-      const counts: Record<string, number> = {};
-      for (const e of hangoutEntries) {
-        for (const [k, v] of Object.entries(e.demographics?.age_brackets ?? {})) {
-          counts[k] = (counts[k] || 0) + v;
-        }
-      }
-      series.push({ name: "Hangout", data: counts });
-    }
-    if (showABSA) {
-      series.push({
-        name: "ABSA Onboarding",
-        data: countByField(absaEntries, "age_bracket"),
-      });
-    }
-
-    return series;
-  }, [esEntries, vuEntries, hangoutEntries, absaEntries, showES, showVU, showHangout, showABSA]);
+  const ageBracketByProgram = useMemo(
+    () =>
+      aggregateAgeBracketByProgram({
+        esEntries,
+        vuEntries,
+        hangoutEntries,
+        absaEntries,
+        showES,
+        showVU,
+        showHangout,
+        showABSA,
+      }),
+    [esEntries, vuEntries, hangoutEntries, absaEntries, showES, showVU, showHangout, showABSA]
+  );
 
   // ─── Demographics: Disability (ES + ABSA combined) ────────────
 
-  const disabilityCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    if (showES) {
-      for (const e of esEntries) {
-        if (e.disability_status)
-          counts[e.disability_status] = (counts[e.disability_status] || 0) + 1;
-      }
-    }
-    if (showABSA) {
-      for (const e of absaEntries) {
-        if (e.disability_status)
-          counts[e.disability_status] = (counts[e.disability_status] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [esEntries, absaEntries, showES, showABSA]);
+  const disabilityCounts = useMemo(
+    () => aggregateDisabilityCounts(esEntries, absaEntries, showES, showABSA),
+    [esEntries, absaEntries, showES, showABSA]
+  );
 
   // ─── Geographic: Region (horizontal bar) ──────────────────────
 
-  const regionCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    if (showES) {
-      for (const e of esEntries) {
-        if (e.region) counts[e.region] = (counts[e.region] || 0) + 1;
-      }
-    }
-    if (showABSA) {
-      for (const e of absaEntries) {
-        if (e.region) counts[e.region] = (counts[e.region] || 0) + 1;
-      }
-    }
-    return counts;
-  }, [esEntries, absaEntries, showES, showABSA]);
+  const regionCounts = useMemo(
+    () => aggregateRegionCounts(esEntries, absaEntries, showES, showABSA),
+    [esEntries, absaEntries, showES, showABSA]
+  );
 
   const uniqueRegionCount = Object.keys(regionCounts).length;
 
@@ -259,79 +252,38 @@ export function ExecutiveDashboard({ programFilter }: Props) {
 
   // ─── Media Programs: Monthly views (dual-line) ────────────────
 
-  const mediaMonthlyViews = useMemo(() => {
-    const series: { name: string; data: Record<string, number> }[] = [];
-
-    if (showVU) {
-      const groups = groupByGranularity(vuEntries, "date_aired", granularity);
-      const totals: Record<string, number> = {};
-      for (const [period, items] of Object.entries(groups)) {
-        totals[period] = (items as MediaProgramEntry[]).reduce(
-          (sum, e) => sum + totalMediaViews(e),
-          0
-        );
-      }
-      series.push({ name: "Virtual University", data: totals });
-    }
-
-    if (showHangout) {
-      const groups = groupByGranularity(hangoutEntries, "date_aired", granularity);
-      const totals: Record<string, number> = {};
-      for (const [period, items] of Object.entries(groups)) {
-        totals[period] = (items as MediaProgramEntry[]).reduce(
-          (sum, e) => sum + totalMediaViews(e),
-          0
-        );
-      }
-      series.push({ name: "Hangout", data: totals });
-    }
-
-    return series;
-  }, [vuEntries, hangoutEntries, showVU, showHangout, granularity]);
+  const mediaMonthlyViews = useMemo(
+    () =>
+      aggregateMediaViewsByPeriod(
+        vuEntries,
+        hangoutEntries,
+        granularity,
+        showVU,
+        showHangout
+      ),
+    [vuEntries, hangoutEntries, showVU, showHangout, granularity]
+  );
 
   // ─── Media Programs: Monthly episodes (grouped bar) ───────────
 
-  const mediaMonthlyEpisodes = useMemo(() => {
-    const series: { name: string; data: Record<string, number> }[] = [];
-
-    if (showVU) {
-      const groups = groupByGranularity(vuEntries, "date_aired", granularity);
-      const counts: Record<string, number> = {};
-      for (const [period, items] of Object.entries(groups)) {
-        counts[period] = items.length;
-      }
-      series.push({ name: "Virtual University", data: counts });
-    }
-
-    if (showHangout) {
-      const groups = groupByGranularity(hangoutEntries, "date_aired", granularity);
-      const counts: Record<string, number> = {};
-      for (const [period, items] of Object.entries(groups)) {
-        counts[period] = items.length;
-      }
-      series.push({ name: "Hangout", data: counts });
-    }
-
-    return series;
-  }, [vuEntries, hangoutEntries, showVU, showHangout, granularity]);
+  const mediaMonthlyEpisodes = useMemo(
+    () =>
+      aggregateEpisodeCountsByPeriod(
+        vuEntries,
+        hangoutEntries,
+        granularity,
+        showVU,
+        showHangout
+      ),
+    [vuEntries, hangoutEntries, showVU, showHangout, granularity]
+  );
 
   // ─── Media Programs: Views per platform (stacked bar) ─────────
 
-  const mediaPlatformViews = useMemo(() => {
-    let facebookTotal = 0;
-    let youtubeTotal = 0;
-
-    const mediaEntries: MediaProgramEntry[] = [];
-    if (showVU) mediaEntries.push(...vuEntries);
-    if (showHangout) mediaEntries.push(...hangoutEntries);
-
-    for (const e of mediaEntries) {
-      if (e.metrics.facebook) facebookTotal += e.metrics.facebook.views;
-      if (e.metrics.youtube) youtubeTotal += e.metrics.youtube.views;
-    }
-
-    return { Facebook: facebookTotal, YouTube: youtubeTotal };
-  }, [vuEntries, hangoutEntries, showVU, showHangout]);
+  const mediaPlatformViews = useMemo(
+    () => aggregatePlatformViews(vuEntries, hangoutEntries, showVU, showHangout),
+    [vuEntries, hangoutEntries, showVU, showHangout]
+  );
 
   // ─── ABSA: Region breakdown ───────────────────────────────────
 
@@ -437,21 +389,52 @@ export function ExecutiveDashboard({ programFilter }: Props) {
       {/* KPI Summary Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {showES && (
-          <KpiCard label="Total Applications" value={totalApplications} trend={trends["es"]} accent="green" />
+          <KpiCard
+            label="Total Applications"
+            value={totalApplications}
+            trend={trends["es"]}
+            accent="green"
+            colorAccent="#3B6D11"
+          />
         )}
         {showVU && (
-          <KpiCard label="VU Episodes" value={totalVuEpisodes} trend={trends["vu"]} accent="blue" />
+          <KpiCard
+            label="VU Episodes"
+            value={totalVuEpisodes}
+            trend={trends["vu"]}
+            accent="blue"
+            colorAccent="#6B2D7B"
+          />
         )}
         {showHangout && (
-          <KpiCard label="Hangout Episodes" value={totalHangoutEpisodes} trend={trends["hangout"]} accent="purple" />
+          <KpiCard
+            label="Hangout Episodes"
+            value={totalHangoutEpisodes}
+            trend={trends["hangout"]}
+            accent="purple"
+            colorAccent="#6B2D7B"
+          />
         )}
         {showABSA && (
-          <KpiCard label="ABSA Participants" value={totalAbsaParticipants} trend={trends["absa"]} accent="amber" />
+          <KpiCard
+            label="ABSA Participants"
+            value={totalAbsaParticipants}
+            trend={trends["absa"]}
+            accent="amber"
+            colorAccent="#3B6D11"
+          />
         )}
         {(showES || showABSA) && (
-          <KpiCard label="Regions Represented" value={uniqueRegionCount} accent="teal" />
+          <KpiCard
+            label="Regions Represented"
+            value={uniqueRegionCount}
+            accent="teal"
+            colorAccent="#0d9488"
+          />
         )}
       </div>
+
+      <ExecutiveMilestoneView bundles={projectBundles} />
 
       {/* Demographics Section — only programs/projects with participant-level M&E data */}
       {(showES || showVU || showHangout || showABSA) && (
@@ -491,13 +474,6 @@ export function ExecutiveDashboard({ programFilter }: Props) {
       )}
 
       {/* Enterprise Spotlight — project activity progress */}
-      {showES && (
-        <section>
-          <SectionHeading>Project Progress</SectionHeading>
-          <EmbeddedProjectOverview slug="enterprise-spotlight" />
-        </section>
-      )}
-
       {/* Enterprise Spotlight Specifics */}
       {showES && (
         <section>
@@ -582,20 +558,8 @@ export function ExecutiveDashboard({ programFilter }: Props) {
       )}
 
       {/* Nkabom Collaborative — surface project activity progress */}
-      {showNkabom && (
-        <section>
-          <SectionHeading>Nkabom Collaborative</SectionHeading>
-          <EmbeddedProjectOverview slug="nkabom-collaborative" />
-        </section>
-      )}
 
       {/* ABSA Onboarding — project activity progress */}
-      {showABSA && (
-        <section>
-          <SectionHeading>Project Progress</SectionHeading>
-          <EmbeddedProjectOverview slug="absa-onboarding" />
-        </section>
-      )}
 
       {/* ABSA Section */}
       {showABSA && (

@@ -48,6 +48,8 @@ export async function updateProject(
 export async function createMilestone(input: {
   project_id: string;
   name: string;
+  description?: string | null;
+  target_date?: string | null;
   order_index?: number;
 }): Promise<ProjectMilestone> {
   const supabase = createClient();

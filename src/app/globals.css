@@ -107,6 +107,12 @@
   --sidebar-accent-foreground: hsl(104 53% 25%);
   --sidebar-border: hsl(260 10% 88%);
   --sidebar-ring: hsl(104 53% 49%);
+  --activity-sub-indent: 38px;
+  --milestone-header-h: 44px;
+  --progress-bar-h: 5px;
+  --priority-flag-w: 5px;
+  --priority-flag-h: 12px;
+  --mobile-bottom-nav-h: 56px;
 }
 
 .dark {
