@@ -3,20 +3,38 @@
 import type { ProjectActivity } from "@/lib/projects/types";
 import { PriorityFlag } from "./priority-flag";
 import { cn } from "@/lib/utils";
+import { Circle, CheckCircle2, Loader2, AlertCircle, ChevronRight } from "lucide-react";
 
-const STATUS_LABEL = {
-  not_started: "Not Started",
-  in_progress: "In Progress",
-  done: "Done",
-  blocked: "Blocked",
-} as const;
-
-const STATUS_CLASS: Record<ProjectActivity["status"], string> = {
-  not_started: "bg-muted text-muted-foreground",
-  in_progress:
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200",
-  done: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200",
-  blocked: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+const STATUS_CONFIG: Record<ProjectActivity["status"], { 
+  label: string;
+  icon: React.ReactNode;
+  class: string;
+  bgClass: string;
+}> = {
+  not_started: {
+    label: "To do",
+    icon: <Circle className="w-4 h-4" />,
+    class: "text-slate-500 border-slate-300",
+    bgClass: "bg-slate-50 hover:bg-slate-100",
+  },
+  in_progress: {
+    label: "In progress",
+    icon: <Loader2 className="w-4 h-4 animate-spin" />,
+    class: "text-blue-600 border-blue-400",
+    bgClass: "bg-blue-50 hover:bg-blue-100",
+  },
+  done: {
+    label: "Complete",
+    icon: <CheckCircle2 className="w-4 h-4" />,
+    class: "text-green-600 border-green-400",
+    bgClass: "bg-green-50 hover:bg-green-100",
+  },
+  blocked: {
+    label: "Blocked",
+    icon: <AlertCircle className="w-4 h-4" />,
+    class: "text-red-600 border-red-400",
+    bgClass: "bg-red-50 hover:bg-red-100",
+  },
 };
 
 interface Props {
@@ -28,6 +46,10 @@ interface Props {
   childCount?: number;
   /** Visual indent for sub-activities. */
   indent?: boolean;
+  /** Show tree connector line (for sub-activities) */
+  showTreeLine?: boolean;
+  /** Is last child in list (affects tree line rendering) */
+  isLastChild?: boolean;
 }
 
 export function ActivityRow({
@@ -36,6 +58,8 @@ export function ActivityRow({
   displayPercent,
   childCount = 0,
   indent = false,
+  showTreeLine = false,
+  isLastChild = false,
 }: Props) {
   const overdue =
     activity.due_date &&
@@ -43,45 +67,118 @@ export function ActivityRow({
     new Date(activity.due_date) < new Date();
 
   const pct = displayPercent ?? activity.percent_complete;
+  const status = STATUS_CONFIG[activity.status];
+  const hasChildren = childCount > 0;
+  const isSubActivity = indent;
+  const isMainActivity = !indent;
 
   return (
-    <button
-      onClick={() => onOpen(activity.id)}
-      className={cn(
-        "w-full text-left flex items-center gap-3 px-3 py-2 rounded hover:bg-accent/60",
-        indent && "pl-9 bg-muted/20",
+    <div className={cn("flex", isSubActivity && "relative")}>
+      {/* Tree connector line for sub-activities */}
+      {showTreeLine && isSubActivity && (
+        <div className="absolute left-[19px] top-0 bottom-0 w-px bg-slate-300">
+          {/* Horizontal branch line */}
+          <div className="absolute top-5 left-0 w-4 h-px bg-slate-300" />
+          {/* Stop vertical line early for last child */}
+          {isLastChild && (
+            <div className="absolute top-0 left-0 w-px h-5 bg-slate-50" />
+          )}
+        </div>
       )}
-    >
-      <span
+
+      <button
+        onClick={() => onOpen(activity.id)}
         className={cn(
-          "px-2 py-0.5 rounded-full text-[11px] font-medium",
-          STATUS_CLASS[activity.status],
+          "flex-1 text-left flex items-center gap-3 py-3 transition-colors",
+          isMainActivity 
+            ? "px-3 rounded-lg border border-transparent hover:border-slate-200 hover:bg-white hover:shadow-sm"
+            : "pl-12 pr-3",
+          isSubActivity && "text-sm",
+          status.bgClass
         )}
       >
-        {STATUS_LABEL[activity.status]}
-      </span>
-      <PriorityFlag priority={activity.priority} />
-      <span className="flex-1 min-w-0 truncate text-sm">
-        {activity.title}
-        {childCount > 0 && (
-          <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
-            {childCount} sub
-          </span>
-        )}
-      </span>
-      {activity.due_date && (
-        <span
+        {/* Status Icon/Button */}
+        <span 
           className={cn(
-            "text-xs",
-            overdue ? "text-red-600" : "text-muted-foreground",
+            "flex items-center justify-center rounded-full border-2 transition-colors",
+            isMainActivity ? "w-6 h-6" : "w-5 h-5",
+            status.class,
+            activity.status === "not_started" && "hover:bg-slate-200"
           )}
         >
-          {new Date(activity.due_date).toLocaleDateString()}
+          <span className={isMainActivity ? "scale-100" : "scale-90"}>
+            {status.icon}
+          </span>
         </span>
-      )}
-      <span className="text-xs text-muted-foreground w-10 text-right tabular-nums">
-        {pct}%
-      </span>
-    </button>
+
+        {/* Priority & Title */}
+        <div className="flex-1 min-w-0 flex items-center gap-2">
+          <span className={cn(
+            "truncate font-medium",
+            isMainActivity ? "text-sm" : "text-xs",
+            activity.status === "done" && "text-slate-500 line-through"
+          )}>
+            {activity.title}
+          </span>
+          
+          {/* Sub-activity count badge (only for parents) */}
+          {hasChildren && (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 px-2 py-0.5 text-[10px] font-medium">
+              <ChevronRight className="w-3 h-3" />
+              {childCount}
+            </span>
+          )}
+        </div>
+
+        {/* Right side: Priority, Due Date, Progress */}
+        <div className="flex items-center gap-3 shrink-0">
+          <PriorityFlag priority={activity.priority} />
+          
+          {activity.due_date && (
+            <span
+              className={cn(
+                "text-xs tabular-nums",
+                overdue ? "text-red-600 font-medium" : "text-slate-500",
+                isSubActivity && "hidden sm:block"
+              )}
+            >
+              {new Date(activity.due_date).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          )}
+          
+          {/* Progress indicator */}
+          <div className={cn(
+            "flex items-center gap-1.5",
+            isSubActivity && "hidden md:flex"
+          )}>
+            <div className={cn(
+              "rounded-full bg-slate-200 overflow-hidden",
+              isMainActivity ? "w-16 h-1.5" : "w-12 h-1"
+            )}>
+              <div
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  pct === 100 
+                    ? "bg-green-500" 
+                    : pct >= 50 
+                      ? "bg-blue-500" 
+                      : "bg-slate-400"
+                )}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className={cn(
+              "text-xs tabular-nums text-slate-500",
+              isSubActivity && "text-[10px]"
+            )}>
+              {pct}%
+            </span>
+          </div>
+        </div>
+      </button>
+    </div>
   );
 }
