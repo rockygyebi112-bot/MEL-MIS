@@ -211,8 +211,8 @@ export function ActivitySidePanel({
         </div>
 
         <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-6">
-          {/* Sub-activities list (parents only) */}
-          {(isParent || onAddSubactivity) && !isSubactivity && (
+          {/* Sub-activities list (main activities only - not for sub-activities) */}
+          {!isSubactivity && (isParent || onAddSubactivity) && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold">
@@ -308,11 +308,6 @@ export function ActivitySidePanel({
                     );
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {isParent
-                    ? "Progress for parent activities is computed from sub-activities."
-                    : "Progress is set automatically: Not Started 0%, In Progress / Blocked 50%, Done 100%. To track finer progress, break this into sub-activities."}
-                </p>
               </div>
 
               {blockDone && (
