@@ -94,14 +94,26 @@ export function computeProgressPercent(activities: ProjectActivity[]): number {
   return Math.round(total / leaves.length);
 }
 
+/**
+ * Activity % is now status-derived; the stored percent_complete column is
+ * kept in sync but no longer manually settable from the UI. If you need
+ * finer-grained tracking, break the activity down into sub-activities.
+ */
 export function normalizePercentComplete(
   status: ActivityStatus,
-  percentComplete: number,
+  // kept for call-site compatibility; ignored
+  _percentComplete?: number,
 ): number {
-  if (status === "done") return 100;
-  if (status === "not_started") return 0;
-  if (!Number.isFinite(percentComplete)) return 0;
-  return Math.min(100, Math.max(0, percentComplete));
+  switch (status) {
+    case "not_started":
+      return 0;
+    case "in_progress":
+      return 50;
+    case "blocked":
+      return 50;
+    case "done":
+      return 100;
+  }
 }
 
 export function countOverdue(

@@ -13,7 +13,6 @@ import {
   computeActivityPercent,
   getChildren,
   isParent as activityIsParent,
-  normalizePercentComplete,
 } from "@/lib/projects/status";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,7 +81,6 @@ export function ActivitySidePanel({
   const [updates, setUpdates] = useState<ProjectActivityUpdate[]>([]);
   const [note, setNote] = useState("");
   const [newStatus, setNewStatus] = useState<ActivityStatus>(activity.status);
-  const [newPercent, setNewPercent] = useState(activity.percent_complete);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,13 +90,11 @@ export function ActivitySidePanel({
 
   useEffect(() => {
     setNewStatus(activity.status);
-    setNewPercent(activity.percent_complete);
     setError(null);
-  }, [activity.id, activity.percent_complete, activity.status]);
+  }, [activity.id, activity.status]);
 
   const blockDone =
     !isParent && newStatus === "done" && attachmentCount === 0;
-  const showSlider = !isParent && (newStatus === "in_progress" || newStatus === "blocked");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -111,12 +107,7 @@ export function ActivitySidePanel({
         user_id: currentUserId,
         note,
         new_status: newStatus !== activity.status ? newStatus : undefined,
-        new_percent:
-          !isParent && newPercent !== activity.percent_complete
-            ? newPercent
-            : undefined,
         current_status: activity.status,
-        current_percent: activity.percent_complete,
       });
       setNote("");
       onChange();
@@ -141,7 +132,7 @@ export function ActivitySidePanel({
       <div className="flex-1 bg-black/40" onClick={onClose} />
       <aside className="w-full max-w-xl bg-background border-l border-border overflow-y-auto">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-border bg-muted/20">
+        <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border bg-muted/20">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -200,7 +191,7 @@ export function ActivitySidePanel({
           </div>
         </div>
 
-        <div className="px-6 py-5 space-y-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-6">
           {/* Sub-activities list (parents only) */}
           {(isParent || onAddSubactivity) && !isSubactivity && (
             <div>
@@ -285,14 +276,7 @@ export function ActivitySidePanel({
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => {
-                          setNewStatus(opt.value);
-                          if (!isParent) {
-                            setNewPercent((cur) =>
-                              normalizePercentComplete(opt.value, cur),
-                            );
-                          }
-                        }}
+                        onClick={() => setNewStatus(opt.value)}
                         className={cn(
                           "px-3 py-1.5 rounded-full text-xs font-medium border transition",
                           active
@@ -305,33 +289,12 @@ export function ActivitySidePanel({
                     );
                   })}
                 </div>
-                {isParent && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Progress for parent activities is computed from sub-activities and cannot be set manually.
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {isParent
+                    ? "Progress for parent activities is computed from sub-activities."
+                    : "Progress is set automatically: Not Started 0%, In Progress / Blocked 50%, Done 100%. To track finer progress, break this into sub-activities."}
+                </p>
               </div>
-
-              {showSlider && (
-                <div className="grid gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="upd-pct">Progress</Label>
-                    <span className="text-sm font-semibold tabular-nums">
-                      {newPercent}%
-                    </span>
-                  </div>
-                  <input
-                    id="upd-pct"
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={5}
-                    value={newPercent}
-                    onChange={(e) => setNewPercent(Number(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-              )}
 
               {blockDone && (
                 <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-800 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">

@@ -177,33 +177,29 @@ export function ActivityFormModal({
                 </p>
               </div>
             )}
-            <div className="grid gap-1.5">
-              <Label htmlFor="act-ms">Milestone</Label>
-              <select
-                id="act-ms"
-                value={milestoneId ?? ""}
-                onChange={(e) => setMilestoneId(e.target.value)}
-                disabled={!!parentId}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-60"
-              >
-                <option value="">None</option>
-                {milestones.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-              {parentId && (
-                <p className="text-xs text-muted-foreground">
-                  Inherited from parent activity.
-                </p>
-              )}
-              {users.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  No active users are available to assign.
-                </p>
-              )}
-            </div>
+            {!parentId && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="act-ms">Milestone</Label>
+                <select
+                  id="act-ms"
+                  value={milestoneId ?? ""}
+                  onChange={(e) => setMilestoneId(e.target.value)}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="">None</option>
+                  {milestones.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+                {users.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    No active users are available to assign.
+                  </p>
+                )}
+              </div>
+            )}
             <div className="grid gap-1.5">
               <Label htmlFor="act-owner">Owner</Label>
               <select

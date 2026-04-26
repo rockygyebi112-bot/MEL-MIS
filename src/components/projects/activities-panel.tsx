@@ -123,7 +123,7 @@ export function ActivitiesPanel({
   return (
     <div>
       {isMELManager && (
-        <div className="flex justify-end gap-2 mb-3">
+        <div className="flex flex-wrap justify-end gap-2 mb-3">
           <Button
             variant="outline"
             size="sm"
@@ -143,7 +143,7 @@ export function ActivitiesPanel({
         </div>
       )}
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         {(["all", "overdue", "attention", "mine"] as Filter[]).map((f) => (
           <button
             key={f}
