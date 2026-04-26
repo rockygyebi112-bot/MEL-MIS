@@ -5,38 +5,55 @@ import type {
   ProjectActivity,
 } from "@/lib/projects/types";
 import { cn } from "@/lib/utils";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronRight,
+  FolderTree,
+  UserRound,
+} from "lucide-react";
 
 const STATUS_CONFIG: Record<
   ProjectActivity["status"],
-  { dot: string; icon: string | null }
+  { dot: string; icon: string | null; chip: string; label: string }
 > = {
   not_started: {
     dot: "border-slate-300 text-slate-400 dark:border-slate-600",
     icon: null,
+    chip: "border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300",
+    label: "Not started",
   },
   in_progress: {
     dot: "border-blue-300 bg-blue-50 text-blue-600 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     icon: "\u25D1",
+    chip: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    label: "In progress",
   },
   done: {
     dot: "border-green-300 bg-green-50 text-green-600 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400",
     icon: "\u2713",
+    chip: "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300",
+    label: "Done",
   },
   blocked: {
     dot: "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-900/30 dark:text-red-400",
     icon: "\u2715",
+    chip: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300",
+    label: "Blocked",
   },
 };
 
 const PRIORITY_FLAG: Record<ActivityPriority, string> = {
-  high: "bg-red-500",
-  medium: "bg-amber-400",
-  low: "bg-slate-300 dark:bg-slate-600",
+  high: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300",
+  medium:
+    "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  low: "border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 interface Props {
   activity: ProjectActivity;
   onOpen: (id: string) => void;
+  ownerNameMap?: Record<string, string>;
   displayPercent?: number;
   childCount?: number;
   indent?: boolean;
@@ -49,6 +66,7 @@ interface Props {
 export function ActivityRow({
   activity,
   onOpen,
+  ownerNameMap,
   displayPercent,
   childCount = 0,
   indent = false,
@@ -65,111 +83,163 @@ export function ActivityRow({
   const isSubActivity = indent;
   const isMainActivity = !indent;
   const canExpand = isMainActivity && hasChildren && onToggleExpand;
+  const ownerName =
+    ownerNameMap?.[activity.owner_user_id ?? ""] ?? "Unassigned";
+  const statusMeta = STATUS_CONFIG[activity.status];
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 transition-colors",
-        isMainActivity
-          ? "px-3 py-2.5 hover:bg-muted/50"
-          : "pl-[var(--activity-sub-indent)] pr-3 py-2 bg-muted/30 hover:bg-muted/50",
-        activity.status === "blocked" && "bg-red-50/60 dark:bg-red-900/10",
+        "px-2 py-2 transition-colors sm:px-3",
+        isSubActivity && "pl-[var(--activity-sub-indent)]",
       )}
     >
-      {canExpand ? (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand?.();
-          }}
-          className="text-[9px] text-muted-foreground w-3 shrink-0 hover:text-foreground"
-        >
-          {isExpanded ? "\u25BC" : "\u25B6"}
-        </button>
-      ) : isMainActivity ? (
-        <span className="w-3 shrink-0" />
-      ) : null}
-
-      <button
-        onClick={() => onOpen(activity.id)}
-        className={cn(
-          "flex items-center justify-center rounded-full border-[1.5px] shrink-0 transition-colors",
-          isMainActivity ? "w-[18px] h-[18px] text-[9px]" : "w-[14px] h-[14px] text-[7px]",
-          STATUS_CONFIG[activity.status].dot,
-        )}
-      >
-        {STATUS_CONFIG[activity.status].icon}
-      </button>
-
-      <button
-        onClick={() => onOpen(activity.id)}
-        className="flex-1 flex items-center gap-2 text-left min-w-0"
-      >
-        <span
-          className={cn(
-            "truncate",
-            isMainActivity ? "text-xs font-medium" : "text-[11px]",
-            activity.status === "done" && "line-through text-muted-foreground",
-          )}
-        >
-          {activity.title}
-        </span>
-
-        {hasChildren && (
-          <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-medium">
-            {childCount}
-          </span>
-        )}
-      </button>
-
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div
-          className={cn("rounded-sm shrink-0", PRIORITY_FLAG[activity.priority])}
-          style={{
-            width: "var(--priority-flag-w)",
-            height: "var(--priority-flag-h)",
-          }}
-        />
-
-        {activity.due_date && (
-          <span
-            className={cn(
-              "text-[10px] tabular-nums",
-              overdue
-                ? "text-red-600 font-medium dark:text-red-400"
-                : "text-muted-foreground",
-              isSubActivity && "hidden sm:block",
-            )}
+      <div className="flex items-start gap-2">
+        {canExpand ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand?.();
+            }}
+            className="mt-3 hidden shrink-0 rounded-full border border-transparent p-1 text-muted-foreground transition hover:border-border hover:bg-background hover:text-foreground sm:block"
+            aria-label={isExpanded ? "Collapse activity" : "Expand activity"}
           >
-            {new Date(activity.due_date).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        )}
+            {isExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" />
+            )}
+          </button>
+        ) : isMainActivity ? (
+          <span className="hidden w-7 shrink-0 sm:block" />
+        ) : null}
 
-        <div
-          className={cn("flex items-center gap-1", isSubActivity && "hidden md:flex")}
+        <button
+          onClick={() => onOpen(activity.id)}
+          className={cn(
+            "flex-1 rounded-[22px] border text-left transition-all hover:-translate-y-px hover:shadow-sm",
+            isMainActivity
+              ? "border-stone-200 bg-white px-4 py-3.5 dark:border-slate-800 dark:bg-slate-950"
+              : "border-stone-200/80 bg-stone-50/90 px-3.5 py-3 dark:border-slate-800 dark:bg-slate-900/70",
+            activity.status === "blocked" &&
+              "border-red-200/80 bg-red-50/60 dark:border-red-900/60 dark:bg-red-950/20",
+          )}
         >
           <div
             className={cn(
-              "rounded-full bg-muted overflow-hidden",
-              isMainActivity ? "w-[40px] h-[3px]" : "w-[30px] h-[2px]",
+              "flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+              isSubActivity && "sm:gap-4",
             )}
           >
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${pct}%`,
-                background:
-                  pct === 100 ? "#16a34a" : pct >= 50 ? "#3B6D11" : "#94a3b8",
-              }}
-            />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={cn(
+                    "flex shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors",
+                    isMainActivity ? "h-5 w-5 text-[9px]" : "h-4 w-4 text-[7px]",
+                    statusMeta.dot,
+                  )}
+                >
+                  {statusMeta.icon}
+                </span>
+                <span
+                  className={cn(
+                    "truncate font-medium text-foreground",
+                    isMainActivity ? "text-sm" : "text-[13px]",
+                    activity.status === "done" && "text-muted-foreground line-through",
+                  )}
+                >
+                  {activity.title}
+                </span>
+                <span className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  {isSubActivity ? "Sub-activity" : "Activity"}
+                </span>
+                {hasChildren && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-[10px] font-medium text-stone-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <FolderTree className="h-3 w-3" />
+                    {childCount} sub-activities
+                  </span>
+                )}
+                {overdue && (
+                  <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+                    Overdue
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <UserRound className="h-3 w-3" />
+                  {ownerName}
+                </span>
+                {activity.due_date && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1",
+                      overdue && "font-medium text-red-600 dark:text-red-400",
+                    )}
+                  >
+                    <CalendarDays className="h-3 w-3" />
+                    Due{" "}
+                    {new Date(activity.due_date).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                )}
+                {activity.last_update_at && (
+                  <span>
+                    Updated{" "}
+                    {new Date(activity.last_update_at).toLocaleDateString(
+                      undefined,
+                      {
+                        month: "short",
+                        day: "numeric",
+                      },
+                    )}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                <span
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[10px] font-semibold",
+                    statusMeta.chip,
+                  )}
+                >
+                  {statusMeta.label}
+                </span>
+                <span
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-[10px] font-semibold capitalize",
+                    PRIORITY_FLAG[activity.priority],
+                  )}
+                >
+                  {activity.priority} priority
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="h-1.5 w-20 overflow-hidden rounded-full bg-stone-200 dark:bg-slate-800">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${pct}%`,
+                      background:
+                        pct === 100 ? "#16a34a" : pct >= 50 ? "#3d9922" : "#94a3b8",
+                    }}
+                  />
+                </div>
+                <span className="min-w-10 text-right font-medium tabular-nums text-foreground">
+                  {pct}%
+                </span>
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] text-muted-foreground tabular-nums w-5 text-right">
-            {pct}%
-          </span>
-        </div>
+        </button>
       </div>
     </div>
   );

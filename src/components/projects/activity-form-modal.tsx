@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -27,7 +28,15 @@ import type {
   ProjectMilestone,
 } from "@/lib/projects/types";
 import { cn } from "@/lib/utils";
-import { Target, AlignLeft, User, Calendar, Flag, LayoutList, ChevronRight } from "lucide-react";
+import {
+  AlignLeft,
+  CalendarDays,
+  Flag,
+  FolderTree,
+  LayoutList,
+  Target,
+  UserRound,
+} from "lucide-react";
 
 interface UserOption {
   id: string;
@@ -38,16 +47,21 @@ interface UserOption {
 interface Props {
   projectId: string;
   milestones: ProjectMilestone[];
-  /** Existing top-level activities; sub-activities will reference one of these. */
   parentCandidates?: ProjectActivity[];
   currentUserId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: Partial<ProjectActivity>;
-  /** When set, the form is locked into "create sub-activity" mode for this parent. */
   fixedParentId?: string;
   onSaved: () => void;
 }
+
+const PRIORITY_TONES: Record<ActivityPriority, string> = {
+  low: "border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300",
+  medium:
+    "border-amber-200 bg-amber-50 text-amber-700 hover:border-amber-300 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300",
+  high: "border-red-200 bg-red-50 text-red-700 hover:border-red-300 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300",
+};
 
 export function ActivityFormModal({
   projectId,
@@ -60,56 +74,87 @@ export function ActivityFormModal({
   fixedParentId,
   onSaved,
 }: Props) {
-  const [title, setTitle] = useState(initial?.title ?? "");
-  const [description, setDescription] = useState(initial?.description ?? "");
-  const [parentId, setParentId] = useState(
-    fixedParentId ?? initial?.parent_activity_id ?? "",
+  const resolvedParentId = fixedParentId ?? initial?.parent_activity_id ?? "";
+  const parentActivity = useMemo(
+    () =>
+      resolvedParentId
+        ? parentCandidates.find((candidate) => candidate.id === resolvedParentId) ??
+          null
+        : null,
+    [parentCandidates, resolvedParentId],
   );
-  const [milestoneId, setMilestoneId] = useState(initial?.milestone_id ?? "");
-  const [ownerId, setOwnerId] = useState(initial?.owner_user_id ?? "");
-  const [dueDate, setDueDate] = useState(initial?.due_date ?? "");
-  const [priority, setPriority] = useState<ActivityPriority>(
-    initial?.priority ?? "medium",
-  );
+  const isSubActivity = !!resolvedParentId;
+  const isEdit = !!initial?.id;
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [milestoneId, setMilestoneId] = useState("");
+  const [ownerId, setOwnerId] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState<ActivityPriority>("medium");
   const [users, setUsers] = useState<UserOption[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // When a parent is selected, inherit its milestone (and lock the field).
   useEffect(() => {
-    if (!parentId) return;
-    const parent = parentCandidates.find((p) => p.id === parentId);
-    if (parent) setMilestoneId(parent.milestone_id ?? "");
-  }, [parentId, parentCandidates]);
+    if (!open) return;
+
+    setTitle(initial?.title ?? "");
+    setDescription(initial?.description ?? "");
+    setMilestoneId(
+      resolvedParentId
+        ? parentActivity?.milestone_id ?? ""
+        : initial?.milestone_id ?? "",
+    );
+    setOwnerId(initial?.owner_user_id ?? "");
+    setDueDate(initial?.due_date ?? "");
+    setPriority(initial?.priority ?? "medium");
+    setError(null);
+  }, [open, initial, resolvedParentId, parentActivity]);
 
   useEffect(() => {
     if (!open) return;
-    (async () => {
+
+    let active = true;
+
+    async function loadUsers() {
       const supabase = createClient();
       const { data } = await supabase
         .from("user_profiles")
         .select("id, full_name, email")
         .eq("status", "active")
         .order("full_name", { ascending: true });
+
+      if (!active) return;
       setUsers((data ?? []) as UserOption[]);
-    })();
+    }
+
+    void loadUsers();
+
+    return () => {
+      active = false;
+    };
   }, [open]);
+
+  const milestone = milestones.find((item) => item.id === milestoneId) ?? null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!ownerId) {
-      setError("Please select an owner for this activity.");
+      setError("Please select an owner for this item.");
       return;
     }
+
     setSubmitting(true);
     setError(null);
+
     try {
       if (initial?.id) {
         await updateActivity(initial.id, {
           title,
           description: description || null,
-          milestone_id: milestoneId || null,
-          parent_activity_id: parentId || null,
+          milestone_id: isSubActivity ? parentActivity?.milestone_id ?? null : milestoneId || null,
+          parent_activity_id: isSubActivity ? resolvedParentId : null,
           owner_user_id: ownerId || null,
           due_date: dueDate || null,
           priority,
@@ -119,14 +164,15 @@ export function ActivityFormModal({
           project_id: projectId,
           title,
           description: description || null,
-          milestone_id: milestoneId || null,
-          parent_activity_id: parentId || null,
+          milestone_id: isSubActivity ? parentActivity?.milestone_id ?? null : milestoneId || null,
+          parent_activity_id: isSubActivity ? resolvedParentId : null,
           owner_user_id: ownerId || null,
           due_date: dueDate || null,
           priority,
           created_by: currentUserId,
         });
       }
+
       onSaved();
       onOpenChange(false);
     } catch (err) {
@@ -136,198 +182,327 @@ export function ActivityFormModal({
     }
   }
 
-  const isSubActivity = !!fixedParentId || !!parentId;
+  const titleText = isEdit
+    ? isSubActivity
+      ? "Edit sub-activity"
+      : "Edit activity"
+    : isSubActivity
+      ? "New sub-activity"
+      : "New activity";
+
+  const descriptionText = isSubActivity
+    ? "Capture a concrete execution task. Parent activity and milestone are inherited and locked."
+    : "Create a planning item that can stand alone or coordinate a set of sub-activities.";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-[calc(100%-1rem)] gap-0 overflow-hidden rounded-[28px] border border-stone-200 bg-stone-50 p-0 text-foreground shadow-2xl sm:max-w-3xl dark:border-slate-800 dark:bg-slate-950"
+      >
         <form onSubmit={onSubmit}>
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <span className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-lg",
-                isSubActivity ? "bg-indigo-100 text-indigo-600" : "bg-blue-100 text-blue-600"
-              )}>
-                {isSubActivity ? <ChevronRight className="w-5 h-5" /> : <LayoutList className="w-5 h-5" />}
-              </span>
-              {initial?.id
-                ? "Edit Activity"
-                : isSubActivity
-                  ? "New Sub-activity"
-                  : "New Activity"}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="px-6 py-5 space-y-5">
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="act-title" className="flex items-center gap-2 text-sm font-medium">
-                <Target className="w-4 h-4 text-slate-400" />
-                Title
-              </Label>
-              <Input
-                id="act-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="What needs to be done?"
-                required
-                className="h-11"
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="act-desc" className="flex items-center gap-2 text-sm font-medium">
-                <AlignLeft className="w-4 h-4 text-slate-400" />
-                Description
-              </Label>
-              <Textarea
-                id="act-desc"
-                value={description ?? ""}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                placeholder="Add details about this activity..."
-                className="resize-none"
-              />
-            </div>
-            {/* Parent & Milestone - Grid Layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {!fixedParentId && parentCandidates.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Parent Activity</Label>
-                  <Select
-                    value={parentId || "__none__"}
-                    onValueChange={(v) =>
-                      setParentId(v === "__none__" ? "" : (v ?? ""))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="None — top-level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None — top-level</SelectItem>
-                      {parentCandidates.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              
-              {!parentId && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Milestone</Label>
-                  <Select
-                    value={milestoneId || "__none__"}
-                    onValueChange={(v) =>
-                      setMilestoneId(v === "__none__" ? "" : (v ?? ""))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select milestone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      {milestones.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            {/* Owner, Due Date, Priority - 3 Column Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="act-owner" className="flex items-center gap-2 text-sm font-medium">
-                  <User className="w-4 h-4 text-slate-400" />
-                  Owner
-                </Label>
-                <Select
-                  value={ownerId ?? ""}
-                  onValueChange={(v) => setOwnerId(v ?? "")}
+          <DialogHeader className="border-b border-stone-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(240,246,234,0.92))] px-6 py-5 dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.92),rgba(30,41,59,0.96))]">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
+                    isSubActivity
+                      ? "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300"
+                      : "border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/40 dark:text-green-300",
+                  )}
                 >
-                  <SelectTrigger id="act-owner" className={cn(!ownerId && "border-amber-300")}>
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.full_name || u.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  {isSubActivity ? (
+                    <FolderTree className="h-5 w-5" />
+                  ) : (
+                    <LayoutList className="h-5 w-5" />
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="act-due" className="flex items-center gap-2 text-sm font-medium">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  Due Date
-                </Label>
-                <Input
-                  id="act-due"
-                  type="date"
-                  value={dueDate ?? ""}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-sm font-medium">
-                  <Flag className="w-4 h-4 text-slate-400" />
-                  Priority
-                </Label>
-                <div className="flex gap-2">
-                  {(["low", "medium", "high"] as ActivityPriority[]).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPriority(p)}
-                      className={cn(
-                        "flex-1 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all border",
-                        priority === p
-                          ? p === "high"
-                            ? "bg-red-50 border-red-300 text-red-700"
-                            : p === "medium"
-                              ? "bg-amber-50 border-amber-300 text-amber-700"
-                              : "bg-slate-100 border-slate-300 text-slate-700"
-                          : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                      )}
-                    >
-                      {p}
-                    </button>
-                  ))}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-stone-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                      {isSubActivity ? "Sub-activity" : "Activity"}
+                    </span>
+                    {isEdit && (
+                      <span className="rounded-full border border-stone-200 bg-stone-100 px-2.5 py-1 text-[10px] font-semibold text-stone-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                        Editing existing item
+                      </span>
+                    )}
+                  </div>
+                  <DialogTitle className="text-xl font-semibold tracking-tight">
+                    {titleText}
+                  </DialogTitle>
+                  <DialogDescription className="max-w-2xl text-sm text-stone-600 dark:text-slate-300">
+                    {descriptionText}
+                  </DialogDescription>
                 </div>
               </div>
-            </div>
 
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {error}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="shrink-0"
+              >
+                Close
+              </Button>
+            </div>
+          </DialogHeader>
+
+          <div className="max-h-[75vh] overflow-y-auto px-6 py-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="space-y-6">
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="act-title"
+                    className="flex items-center gap-2 text-sm font-semibold"
+                  >
+                    <Target className="h-4 w-4 text-stone-400" />
+                    Title
+                  </Label>
+                  <Input
+                    id="act-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={
+                      isSubActivity
+                        ? "What specific task needs to happen?"
+                        : "What outcome or workstream needs to be tracked?"
+                    }
+                    required
+                    className="h-12 rounded-2xl border-stone-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="act-desc"
+                    className="flex items-center gap-2 text-sm font-semibold"
+                  >
+                    <AlignLeft className="h-4 w-4 text-stone-400" />
+                    Description
+                  </Label>
+                  <Textarea
+                    id="act-desc"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={5}
+                    placeholder={
+                      isSubActivity
+                        ? "Add execution notes, expected output, or dependencies."
+                        : "Describe scope, constraints, or what this activity coordinates."
+                    }
+                    className="min-h-[132px] rounded-2xl border-stone-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-900"
+                  />
+                </div>
+
+                {!isSubActivity && (
+                  <div className="grid gap-2">
+                    <Label className="text-sm font-semibold">Milestone</Label>
+                    <Select
+                      value={milestoneId || "__none__"}
+                      onValueChange={(value) =>
+                        setMilestoneId(value === "__none__" ? "" : (value ?? ""))
+                      }
+                    >
+                      <SelectTrigger className="h-12 rounded-2xl border-stone-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900">
+                        <SelectValue placeholder="Choose a milestone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">No milestone</SelectItem>
+                        {milestones.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Activities can stay ungrouped, but milestones help organize major phases.
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label
+                      htmlFor="act-owner"
+                      className="flex items-center gap-2 text-sm font-semibold"
+                    >
+                      <UserRound className="h-4 w-4 text-stone-400" />
+                      Owner
+                    </Label>
+                    <Select
+                      value={ownerId || "__none__"}
+                      onValueChange={(value) =>
+                        setOwnerId(value === "__none__" ? "" : (value ?? ""))
+                      }
+                    >
+                      <SelectTrigger
+                        id="act-owner"
+                        className={cn(
+                          "h-12 rounded-2xl border-stone-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900",
+                          !ownerId && "border-amber-300 dark:border-amber-700",
+                        )}
+                      >
+                        <SelectValue placeholder="Select owner" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select owner</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.full_name || user.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label
+                      htmlFor="act-due"
+                      className="flex items-center gap-2 text-sm font-semibold"
+                    >
+                      <CalendarDays className="h-4 w-4 text-stone-400" />
+                      Due date
+                    </Label>
+                    <Input
+                      id="act-due"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="h-12 rounded-2xl border-stone-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label className="flex items-center gap-2 text-sm font-semibold">
+                    <Flag className="h-4 w-4 text-stone-400" />
+                    Priority
+                  </Label>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {(["low", "medium", "high"] as ActivityPriority[]).map(
+                      (item) => {
+                        const active = priority === item;
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => setPriority(item)}
+                            className={cn(
+                              "rounded-2xl border px-4 py-3 text-left transition-all",
+                              PRIORITY_TONES[item],
+                              active
+                                ? "ring-2 ring-offset-2 ring-offset-stone-50 dark:ring-offset-slate-950"
+                                : "opacity-80 hover:opacity-100",
+                            )}
+                          >
+                            <div className="text-sm font-semibold capitalize">
+                              {item}
+                            </div>
+                            <div className="mt-1 text-xs opacity-80">
+                              {item === "high"
+                                ? "Needs close attention or carries risk."
+                                : item === "medium"
+                                  ? "Important work with normal follow-up."
+                                  : "Useful but not urgent."}
+                            </div>
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+
+              <aside className="space-y-4">
+                <div className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
+                    Workflow
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-foreground">
+                    {isSubActivity ? "Execution task" : "Planning container"}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {isSubActivity
+                      ? "Sub-activities are leaf tasks. They collect proof, updates, blockers, and completion history."
+                      : "Activities can stand alone or hold sub-activities. Progress rolls up from child work when children exist."}
+                  </p>
+                </div>
+
+                {isSubActivity ? (
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
+                      Inherited context
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
+                        <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
+                          Parent activity
+                        </div>
+                        <div className="mt-1 text-sm font-medium text-foreground">
+                          {parentActivity?.title ?? "Selected parent"}
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
+                        <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
+                          Milestone
+                        </div>
+                        <div className="mt-1 text-sm font-medium text-foreground">
+                          {milestone?.name ?? "No milestone assigned"}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      This context is locked so the hierarchy stays clean and sub-activities cannot drift into another branch accidentally.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
+                      Design intent
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                      <li>Use activities to describe the workstream or outcome.</li>
+                      <li>Use sub-activities only when execution needs separate owners or proofs.</li>
+                      <li>Keep titles action-oriented so the panel remains scannable.</li>
+                    </ul>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                    {error}
+                  </div>
+                )}
+              </aside>
+            </div>
           </div>
 
-          <DialogFooter className="px-6 py-4 border-t border-slate-100 gap-3">
+          <DialogFooter className="m-0 rounded-none border-t border-stone-200 bg-white/90 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/95">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-11 px-6"
+              className="h-11 rounded-xl px-5"
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={submitting || !ownerId}
-              className="h-11 px-6"
+              className="h-11 rounded-xl bg-srsf-green-600 px-5 text-white hover:bg-srsf-green-700"
             >
-              {submitting ? "Saving…" : initial?.id ? "Save Changes" : "Create Activity"}
+              {submitting
+                ? "Saving..."
+                : isEdit
+                  ? "Save changes"
+                  : isSubActivity
+                    ? "Create sub-activity"
+                    : "Create activity"}
             </Button>
           </DialogFooter>
         </form>
