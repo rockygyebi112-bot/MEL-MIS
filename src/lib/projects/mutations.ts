@@ -60,6 +60,15 @@ export async function createMilestone(input: {
   return data as ProjectMilestone;
 }
 
+export async function deleteMilestone(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("project_milestones")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
+}
+
 // ---------- Activities ----------
 export async function createActivity(input: {
   project_id: string;
@@ -80,6 +89,15 @@ export async function createActivity(input: {
     .single();
   if (error) throw error;
   return data as ProjectActivity;
+}
+
+export async function deleteActivity(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("project_activities")
+    .delete()
+    .eq("id", id);
+  if (error) throw error;
 }
 
 export async function updateActivity(
