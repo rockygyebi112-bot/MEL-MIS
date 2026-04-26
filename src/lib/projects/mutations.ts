@@ -107,28 +107,19 @@ export async function postActivityUpdate(input: {
   user_id: string;
   note: string;
   new_status?: ActivityStatus;
-  new_percent?: number;
   current_status: ActivityStatus;
-  current_percent: number;
 }): Promise<void> {
   const supabase = createClient();
   const nowIso = new Date().toISOString();
   const nextStatus = input.new_status ?? input.current_status;
-  const nextPercent = normalizePercentComplete(
-    nextStatus,
-    typeof input.new_percent === "number"
-      ? input.new_percent
-      : input.current_percent,
-  );
+  const nextPercent = normalizePercentComplete(nextStatus);
 
   const activityPatch: Partial<ProjectActivity> = {
     last_update_text: input.note,
     last_update_at: nowIso,
+    percent_complete: nextPercent,
   };
   if (input.new_status) activityPatch.status = input.new_status;
-  if (input.new_status || nextPercent !== input.current_percent) {
-    activityPatch.percent_complete = nextPercent;
-  }
 
   const { error: actErr } = await supabase
     .from("project_activities")

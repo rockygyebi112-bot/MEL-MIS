@@ -61,7 +61,7 @@ export function ActivityRow({
         {STATUS_LABEL[activity.status]}
       </span>
       <PriorityFlag priority={activity.priority} />
-      <span className="flex-1 truncate text-sm">
+      <span className="flex-1 min-w-0 truncate text-sm">
         {activity.title}
         {childCount > 0 && (
           <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
