@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { X, Trash2 } from "lucide-react";
 
 interface Props {
   project: Project;
@@ -29,6 +30,7 @@ interface Props {
   onClose: () => void;
   onChange: () => void;
   onAddSubactivity?: (parentId: string) => void;
+  onDelete?: () => void | Promise<void>;
   children?: React.ReactNode;
 }
 
@@ -65,6 +67,7 @@ export function ActivitySidePanel({
   onClose,
   onChange,
   onAddSubactivity,
+  onDelete,
   children,
 }: Props) {
   const isParent = activityIsParent(activity, allActivities);
@@ -130,26 +133,42 @@ export function ActivitySidePanel({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/40" onClick={onClose} />
-      <aside className="w-full max-w-xl bg-background border-l border-border overflow-y-auto">
+      <aside className="w-full sm:max-w-md md:max-w-md lg:max-w-md bg-background border-l border-border overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border bg-muted/20">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                 {isSubactivity && <span>Sub-activity</span>}
-                {isParent && <span>Parent activity · rolls up from sub-activities</span>}
+                {isParent && (
+                  <span>Parent · rolls up from sub-activities</span>
+                )}
               </div>
-              <h2 className="text-lg font-semibold leading-tight break-words">
+              <h2 className="text-base sm:text-lg font-semibold leading-tight break-words">
                 {activity.title}
               </h2>
             </div>
-            <button
-              onClick={onClose}
-              className="text-sm text-muted-foreground hover:text-foreground shrink-0"
-              aria-label="Close"
-            >
-              Close
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={() => onDelete()}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                  aria-label="Delete activity"
+                  title="Delete activity"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {activity.description && (

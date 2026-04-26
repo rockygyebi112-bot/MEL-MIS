@@ -14,6 +14,8 @@ import { ActivityFormModal } from "./activity-form-modal";
 import { AttachmentsGallery } from "./attachments-gallery";
 import { useUser } from "@/hooks/use-user";
 import { Button } from "@/components/ui/button";
+import { deleteActivity, deleteMilestone } from "@/lib/projects/mutations";
+import { Trash2 } from "lucide-react";
 
 type Filter = "all" | "overdue" | "attention" | "mine";
 
@@ -167,13 +169,49 @@ export function ActivitiesPanel({
 
       {milestones.map((m) => {
         const rows = byMilestone.get(m.id) ?? [];
-        if (rows.length === 0) return null;
+        // Hide milestones with no rows ONLY when a non-"all" filter is active,
+        // so admins can still delete empty milestones in the default view.
+        if (rows.length === 0 && filter !== "all") return null;
         return (
           <section key={m.id} className="mb-6">
-            <h3 className="text-sm font-semibold mb-2">{m.name}</h3>
-            <div className="rounded border border-border divide-y divide-border">
-              {rows.map(renderRow)}
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold">{m.name}</h3>
+              {isMELManager && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (
+                      !confirm(
+                        `Delete milestone "${m.name}"? Activities under it will become Ungrouped.`,
+                      )
+                    )
+                      return;
+                    try {
+                      await deleteMilestone(m.id);
+                      onChange();
+                    } catch (err) {
+                      alert(
+                        err instanceof Error ? err.message : String(err),
+                      );
+                    }
+                  }}
+                  className="text-xs text-muted-foreground hover:text-red-600 inline-flex items-center gap-1"
+                  aria-label={`Delete milestone ${m.name}`}
+                  title="Delete milestone"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+            {rows.length === 0 ? (
+              <div className="rounded border border-dashed border-border px-3 py-3 text-xs text-muted-foreground">
+                No activities under this milestone yet.
+              </div>
+            ) : (
+              <div className="rounded border border-border divide-y divide-border">
+                {rows.map(renderRow)}
+              </div>
+            )}
           </section>
         );
       })}
@@ -208,6 +246,26 @@ export function ActivitiesPanel({
               ? (parentId) => {
                   setSubParentId(parentId);
                   setShowActivityModal(true);
+                }
+              : undefined
+          }
+          onDelete={
+            isMELManager
+              ? async () => {
+                  if (!openActivity) return;
+                  const childCount = childrenByParent.get(openActivity.id)?.length ?? 0;
+                  const msg =
+                    childCount > 0
+                      ? `Delete "${openActivity.title}" and its ${childCount} sub-activit${childCount === 1 ? "y" : "ies"}? This cannot be undone.`
+                      : `Delete "${openActivity.title}"? This cannot be undone.`;
+                  if (!confirm(msg)) return;
+                  try {
+                    await deleteActivity(openActivity.id);
+                    setOpenId(null);
+                    onChange();
+                  } catch (err) {
+                    alert(err instanceof Error ? err.message : String(err));
+                  }
                 }
               : undefined
           }

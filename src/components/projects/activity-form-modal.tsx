@@ -12,6 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createClient } from "@/lib/supabase/client";
 import { createActivity, updateActivity } from "@/lib/projects/mutations";
 import type {
@@ -88,6 +95,10 @@ export function ActivityFormModal({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!ownerId) {
+      setError("Please select an owner for this activity.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
@@ -158,41 +169,53 @@ export function ActivityFormModal({
             {!fixedParentId && parentCandidates.length > 0 && (
               <div className="grid gap-1.5">
                 <Label htmlFor="act-parent">Parent activity (optional)</Label>
-                <select
-                  id="act-parent"
-                  value={parentId ?? ""}
-                  onChange={(e) => setParentId(e.target.value)}
-                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                <Select
+                  value={parentId || "__none__"}
+                  onValueChange={(v) =>
+                    setParentId(v === "__none__" ? "" : (v ?? ""))
+                  }
                 >
-                  <option value="">None — top-level activity</option>
-                  {parentCandidates.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.title}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="act-parent">
+                    <SelectValue placeholder="None — top-level activity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">
+                      None — top-level activity
+                    </SelectItem>
+                    {parentCandidates.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
-                  Selecting a parent makes this a sub-activity. Its milestone is
-                  inherited from the parent.
+                  Selecting a parent makes this a sub-activity. Its milestone
+                  is inherited from the parent.
                 </p>
               </div>
             )}
             {!parentId && (
               <div className="grid gap-1.5">
                 <Label htmlFor="act-ms">Milestone</Label>
-                <select
-                  id="act-ms"
-                  value={milestoneId ?? ""}
-                  onChange={(e) => setMilestoneId(e.target.value)}
-                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                <Select
+                  value={milestoneId || "__none__"}
+                  onValueChange={(v) =>
+                    setMilestoneId(v === "__none__" ? "" : (v ?? ""))
+                  }
                 >
-                  <option value="">None</option>
-                  {milestones.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger id="act-ms">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {milestones.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {users.length === 0 && (
                   <p className="text-xs text-muted-foreground">
                     No active users are available to assign.
@@ -202,20 +225,26 @@ export function ActivityFormModal({
             )}
             <div className="grid gap-1.5">
               <Label htmlFor="act-owner">Owner</Label>
-              <select
-                id="act-owner"
+              <Select
                 value={ownerId ?? ""}
-                onChange={(e) => setOwnerId(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-                required
+                onValueChange={(v) => setOwnerId(v ?? "")}
               >
-                <option value="">Select owner…</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.full_name || u.email}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="act-owner">
+                  <SelectValue placeholder="Select owner…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.full_name || u.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!ownerId && (
+                <p className="text-xs text-muted-foreground">
+                  Owner is required.
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
