@@ -1,16 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { listProjects, listActivities } from "@/lib/projects/queries";
-import type { Project, ProjectActivity } from "@/lib/projects/types";
-import { computeProjectStatus } from "@/lib/projects/status";
+import { useMemo, useState } from "react";
+import {
+  useProjects,
+  useProjectActivitiesMap,
+  computeProjectStatus,
+  type ComputedProjectStatus,
+} from "@/features/projects";
 import { ProjectCard } from "@/components/projects/project-card";
 import { ProjectFormModal } from "@/components/projects/project-form-modal";
 import { Button } from "@/components/ui/button";
+import { AsyncBoundary } from "@/components/ui/async-boundary";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { useUser } from "@/hooks/use-user";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ComputedProjectStatus } from "@/lib/projects/types";
 
 const FILTERS = [
   "All",
@@ -31,54 +35,48 @@ const FILTER_TO_STATUS: Record<FilterKey, ComputedProjectStatus | null> = {
   Done: "done",
 };
 
+function ProjectGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  );
+}
+
 export default function ProjectsPage() {
   const { isMELManager } = useUser();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [activities, setActivities] = useState<
-    Record<string, ProjectActivity[]>
-  >({});
-  const [loading, setLoading] = useState(true);
+  const {
+    projects,
+    loading: projectsLoading,
+    error: projectsError,
+    refresh: refreshProjects,
+  } = useProjects();
+  const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
+  const {
+    activitiesMap,
+    loading: activitiesLoading,
+    error: activitiesError,
+    refresh: refreshActivities,
+  } = useProjectActivitiesMap(projectIds);
+
   const [showNew, setShowNew] = useState(false);
   const [filter, setFilter] = useState<FilterKey>("All");
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    const ps = await listProjects();
-    setProjects(ps);
-    const entries = await Promise.all(
-      ps.map(async (p) => [p.id, await listActivities(p.id)] as const),
-    );
-    setActivities(Object.fromEntries(entries));
-    setLoading(false);
-  }, []);
+  const loading = projectsLoading || activitiesLoading;
+  const error = projectsError ?? activitiesError;
 
-  useEffect(() => {
-    let active = true;
-
-    void (async () => {
-      const ps = await listProjects();
-      if (!active) return;
-      setProjects(ps);
-      const entries = await Promise.all(
-        ps.map(async (p) => [p.id, await listActivities(p.id)] as const),
-      );
-      if (!active) return;
-      setActivities(Object.fromEntries(entries));
-      setLoading(false);
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const refresh = () =>
+    Promise.all([refreshProjects(), refreshActivities()]);
 
   const filteredProjects = useMemo(() => {
     const target = FILTER_TO_STATUS[filter];
     if (!target) return projects;
     return projects.filter(
-      (p) => computeProjectStatus(p, activities[p.id] ?? []) === target,
+      (p) => computeProjectStatus(p, activitiesMap[p.id] ?? []) === target,
     );
-  }, [projects, activities, filter]);
+  }, [projects, activitiesMap, filter]);
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -114,25 +112,30 @@ export default function ProjectsPage() {
         ))}
       </div>
 
-      {loading ? (
-        <div className="text-sm text-muted-foreground">Loading projects...</div>
-      ) : filteredProjects.length === 0 ? (
-        <div className="text-sm text-muted-foreground">
-          {projects.length === 0
-            ? "No projects yet."
-            : "No projects match this filter."}
-        </div>
-      ) : (
+      <AsyncBoundary
+        loading={loading}
+        error={error}
+        onRetry={refresh}
+        empty={!loading && filteredProjects.length === 0}
+        loadingFallback={<ProjectGridSkeleton />}
+        emptyFallback={
+          <div className="text-sm text-muted-foreground py-8">
+            {projects.length === 0
+              ? "No projects yet."
+              : "No projects match this filter."}
+          </div>
+        }
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {filteredProjects.map((p) => (
             <ProjectCard
               key={p.id}
               project={p}
-              activities={activities[p.id] ?? []}
+              activities={activitiesMap[p.id] ?? []}
             />
           ))}
         </div>
-      )}
+      </AsyncBoundary>
 
       <ProjectFormModal
         open={showNew}

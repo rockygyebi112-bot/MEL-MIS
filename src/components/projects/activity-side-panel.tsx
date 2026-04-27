@@ -226,6 +226,47 @@ export function ActivitySidePanel({
     if (editingDescription) descriptionRef.current?.focus();
   }, [editingDescription]);
 
+  const submitUpdate = useCallback(async () => {
+    if (!currentUserId || !note.trim()) return;
+
+    setSubmitting(true);
+    setError(null);
+    const statusAfter = newStatus;
+
+    try {
+      await postActivityUpdate({
+        activity_id: localActivity.id,
+        user_id: currentUserId,
+        note: note.trim(),
+        new_status: statusAfter !== localActivity.status ? statusAfter : undefined,
+        current_status: localActivity.status,
+      });
+
+      const nowIso = new Date().toISOString();
+      setLocalActivity((current) => ({
+        ...current,
+        status: statusAfter,
+        percent_complete: normalizePercentComplete(statusAfter),
+        last_update_text: note.trim(),
+        last_update_at: nowIso,
+        updated_at: nowIso,
+      }));
+      setNote("");
+      onChange();
+      const fresh = await listUpdates(localActivity.id);
+      setUpdates(fresh);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(
+        message.toLowerCase().includes("proof")
+          ? "Upload proof before marking this task done."
+          : message,
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }, [currentUserId, localActivity, newStatus, note, onChange]);
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       const target = event.target as HTMLElement | null;
@@ -329,47 +370,6 @@ export function ActivitySidePanel({
       percent_complete: normalizePercentComplete(nextStatusValue),
     });
   }
-
-  const submitUpdate = useCallback(async () => {
-    if (!currentUserId || !note.trim()) return;
-
-    setSubmitting(true);
-    setError(null);
-    const statusAfter = newStatus;
-
-    try {
-      await postActivityUpdate({
-        activity_id: localActivity.id,
-        user_id: currentUserId,
-        note: note.trim(),
-        new_status: statusAfter !== localActivity.status ? statusAfter : undefined,
-        current_status: localActivity.status,
-      });
-
-      const nowIso = new Date().toISOString();
-      setLocalActivity((current) => ({
-        ...current,
-        status: statusAfter,
-        percent_complete: normalizePercentComplete(statusAfter),
-        last_update_text: note.trim(),
-        last_update_at: nowIso,
-        updated_at: nowIso,
-      }));
-      setNote("");
-      onChange();
-      const fresh = await listUpdates(localActivity.id);
-      setUpdates(fresh);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(
-        message.toLowerCase().includes("proof")
-          ? "Upload proof before marking this task done."
-          : message,
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }, [currentUserId, localActivity, newStatus, note, onChange]);
 
   async function createQuickSubtask() {
     const nextTitle = subtaskTitle.trim();
