@@ -50,6 +50,9 @@ export function ActivitiesPanel({
   const [editingActivity, setEditingActivity] = useState<ProjectActivity | null>(
     null,
   );
+  const [activityDraftSeed, setActivityDraftSeed] = useState<
+    Partial<ProjectActivity> | null
+  >(null);
   const [subParentId, setSubParentId] = useState<string | null>(null);
   const [attachmentCount, setAttachmentCount] = useState(0);
   const [ownerNameMap, setOwnerNameMap] = useState<Record<string, string>>({});
@@ -220,6 +223,7 @@ export function ActivitiesPanel({
             size="sm"
             className="bg-srsf-green-600 hover:bg-srsf-green-700 text-white"
             onClick={() => {
+              setActivityDraftSeed(null);
               setEditingActivity(null);
               setSubParentId(null);
               setShowActivityModal(true);
@@ -307,11 +311,12 @@ export function ActivitiesPanel({
                   </div>
 
                   {isMELManager && (
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-0.5">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setActivityDraftSeed({ milestone_id: m.id });
                           setEditingActivity(null);
                           setSubParentId(null);
                           setShowActivityModal(true);
@@ -406,6 +411,7 @@ export function ActivitiesPanel({
           onAddSubactivity={
             isMELManager
               ? (parentId) => {
+                  setActivityDraftSeed(null);
                   setEditingActivity(null);
                   setSubParentId(parentId);
                   setShowActivityModal(true);
@@ -481,9 +487,10 @@ export function ActivitiesPanel({
                 if (!o) {
                   setSubParentId(null);
                   setEditingActivity(null);
+                  setActivityDraftSeed(null);
                 }
               }}
-              initial={editingActivity ?? undefined}
+              initial={editingActivity ?? activityDraftSeed ?? undefined}
               fixedParentId={subParentId ?? undefined}
               onSaved={onChange}
             />
