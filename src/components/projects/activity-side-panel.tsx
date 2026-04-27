@@ -403,9 +403,9 @@ export function ActivitySidePanel({
         </div>
 
         <header className="sticky top-0 z-10 border-b border-[#E5E7EB] bg-white">
-          <div className="flex items-start justify-between gap-3 px-4 py-3">
+          <div className="flex items-start justify-between gap-3 px-5 py-4">
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B7280]">
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-[#6B7280]">
                 {isSubActivity && parentActivity && (
                   <button
                     type="button"
@@ -438,13 +438,13 @@ export function ActivitySidePanel({
                   </>
                 )}
               </div>
-              <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#9CA3AF]">
+              <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-[#9CA3AF]">
                 <Clock3 className="h-3 w-3" />
                 Last updated {formatRelativeTime(lastUpdatedAt)}
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {canEdit && (
                 <Button
                   type="button"
@@ -479,10 +479,10 @@ export function ActivitySidePanel({
         </header>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_156px]">
-            <div className="space-y-5 px-4 py-4">
-              <section className="space-y-3">
-                <div className="flex items-start gap-3">
+          <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="space-y-6 px-5 py-5">
+              <section className="space-y-4">
+                <div className="flex items-start gap-3.5">
                   <button
                     type="button"
                     disabled={!canPostUpdate || (localActivity.status !== "done" && doneBlocked)}
@@ -540,7 +540,7 @@ export function ActivitySidePanel({
                   </div>
                 </div>
 
-                <div className="pl-9">
+                <div className="pl-10">
                   {editingDescription && canEdit ? (
                     <textarea
                       ref={descriptionRef}
@@ -554,7 +554,7 @@ export function ActivitySidePanel({
                         }
                       }}
                       rows={4}
-                      className="min-h-[84px] w-full resize-none border-none bg-transparent px-0 py-0 text-sm text-[#111827] outline-none"
+                      className="min-h-[96px] w-full resize-none border-none bg-transparent px-0 py-0 text-sm text-[#111827] outline-none"
                     />
                   ) : (
                     <button
@@ -575,13 +575,13 @@ export function ActivitySidePanel({
               </section>
 
               {!isSubActivity && (
-                <section className="space-y-3 border-t border-[#E5E7EB] pt-4">
+                <section className="space-y-4 border-t border-[#E5E7EB] pt-5">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <h2 className="text-sm font-semibold text-[#111827]">Subtasks</h2>
                       <span
                         className={cn(
-                          "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                          "rounded-full px-2.5 py-0.5 text-[10px] font-medium",
                           incompleteChildren.length === 0 && childActivities.length > 0
                             ? "bg-[#EAF3DE] text-[#3B6D11]"
                             : "bg-[#F3F4F6] text-[#6B7280]",
@@ -600,13 +600,13 @@ export function ActivitySidePanel({
                           onAddSubactivity?.(localActivity.id);
                         }
                       }}
-                      className="text-[12px] font-medium text-[#185FA5]"
+                      className="rounded-md px-2 py-1 text-[12px] font-medium text-[#185FA5] transition hover:bg-[#E6F1FB]"
                     >
                       + Add subtask
                     </button>
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {incompleteChildren.map((child) => {
                       const childOwner =
                         ownerNameMap?.[child.owner_user_id ?? ""] ?? "Unassigned";
@@ -620,11 +620,11 @@ export function ActivitySidePanel({
                           key={child.id}
                           type="button"
                           onClick={() => onOpenActivity?.(child.id)}
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-[#F9FAFB]"
+                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition hover:bg-[#F9FAFB]"
                         >
                           <span
                             className={cn(
-                              "flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border text-[9px]",
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px]",
                               child.status === "done"
                                 ? "border-[#C0DD97] bg-[#EAF3DE] text-[#3B6D11]"
                                 : "border-[#D3D1C7] bg-white",
@@ -638,7 +638,7 @@ export function ActivitySidePanel({
                           {child.due_date && (
                             <span
                               className={cn(
-                                "hidden text-[10px] sm:block",
+                                "hidden text-[11px] sm:block",
                                 childOverdue ? "text-[#A32D2D]" : "text-[#6B7280]",
                               )}
                             >
@@ -650,7 +650,7 @@ export function ActivitySidePanel({
                           )}
                           <span
                             className={cn(
-                              "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-semibold",
+                              "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
                               getAvatarTone(child.owner_user_id ?? childOwner),
                             )}
                             title={childOwner}
@@ -662,7 +662,7 @@ export function ActivitySidePanel({
                     })}
 
                     {addingSubtask && (
-                      <div className="flex items-center gap-2 rounded-md border border-[#E5E7EB] px-2 py-2">
+                      <div className="flex items-center gap-2.5 rounded-lg border border-[#E5E7EB] px-3 py-2.5">
                         <Plus className="h-4 w-4 text-[#9CA3AF]" />
                         <Input
                           value={subtaskTitle}
@@ -687,7 +687,7 @@ export function ActivitySidePanel({
                       <button
                         type="button"
                         onClick={() => setShowCompletedSubtasks((current) => !current)}
-                        className="pt-1 text-[12px] text-[#6B7280]"
+                        className="pt-2 text-[12px] font-medium text-[#6B7280] transition hover:text-[#111827]"
                       >
                         {showCompletedSubtasks
                           ? "Hide completed"
@@ -701,9 +701,9 @@ export function ActivitySidePanel({
                           key={child.id}
                           type="button"
                           onClick={() => onOpenActivity?.(child.id)}
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-[#F9FAFB]"
+                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition hover:bg-[#F9FAFB]"
                         >
-                          <span className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border border-[#C0DD97] bg-[#EAF3DE] text-[9px] text-[#3B6D11]">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#C0DD97] bg-[#EAF3DE] text-[10px] text-[#3B6D11]">
                             {"\u2713"}
                           </span>
                           <span className="min-w-0 flex-1 truncate text-sm text-[#9CA3AF] line-through">
@@ -715,10 +715,10 @@ export function ActivitySidePanel({
                 </section>
               )}
 
-              <section className="space-y-3 border-t border-[#E5E7EB] pt-4">
+              <section className="space-y-4 border-t border-[#E5E7EB] pt-5">
                 <h2 className="text-sm font-semibold text-[#111827]">Activity</h2>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {updates.length === 0 ? (
                     <p className="text-[12px] text-[#9CA3AF]">No activity yet.</p>
                   ) : (
@@ -728,25 +728,26 @@ export function ActivitySidePanel({
                         update.status_before !== update.status_after;
 
                       return (
-                        <div key={update.id} className="space-y-1.5">
-                          <div className="text-[11px] text-[#9CA3AF]">
+                        <div key={update.id} className="space-y-2">
+                          <div className="flex items-center gap-2 text-[11px] text-[#9CA3AF]">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[#D1D5DB]" />
                             {formatRelativeTime(update.created_at)}
                           </div>
-                          <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5">
-                            <p className="whitespace-pre-wrap text-[12px] leading-5 text-[#111827]">
+                          <div className="rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 shadow-sm">
+                            <p className="whitespace-pre-wrap text-[13px] leading-[1.6] text-[#111827]">
                               {update.note}
                             </p>
                             {changed && (
-                              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#6B7280]">
-                                <span>
+                              <div className="mt-2.5 flex items-center gap-2 rounded-md bg-[#F3F4F6] px-2 py-1 text-[11px] text-[#6B7280]">
+                                <span className="rounded-sm bg-white px-1.5 py-0.5 text-[#9CA3AF]">
                                   {
                                     STATUS_OPTIONS.find(
                                       (item) => item.value === update.status_before,
                                     )?.label
                                   }
                                 </span>
-                                <span>-&gt;</span>
-                                <span className="font-medium text-[#111827]">
+                                <span className="text-[#9CA3AF]">→</span>
+                                <span className="rounded-sm bg-white px-1.5 py-0.5 font-medium text-[#111827]">
                                   {
                                     STATUS_OPTIONS.find(
                                       (item) => item.value === update.status_after,
@@ -763,8 +764,8 @@ export function ActivitySidePanel({
                 </div>
 
                 {canPostUpdate && (
-                  <div className="space-y-3 border-t border-[#E5E7EB] pt-3">
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="space-y-4 border-t border-[#E5E7EB] pt-4">
+                    <div className="flex flex-wrap gap-2">
                       {STATUS_OPTIONS.map((option) => {
                         const disabled = option.value === "done" && blockDone;
                         return (
@@ -774,7 +775,7 @@ export function ActivitySidePanel({
                             disabled={disabled}
                             onClick={() => setNewStatus(option.value)}
                             className={cn(
-                              "rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
+                              "rounded-full border px-3 py-1.5 text-[12px] font-medium transition",
                               newStatus === option.value
                                 ? option.tone
                                 : "border-[#E5E7EB] bg-white text-[#6B7280]",
@@ -793,22 +794,22 @@ export function ActivitySidePanel({
                       onChange={(event) => setNote(event.target.value)}
                       rows={3}
                       placeholder="Write a comment or update..."
-                      className="min-h-[88px] rounded-lg border-[#E5E7EB] bg-white px-3 py-2.5"
+                      className="min-h-[96px] rounded-xl border-[#E5E7EB] bg-white px-4 py-3 text-[13px]"
                     />
 
                     {blockDone && (
-                      <div className="rounded-md border border-[#FAC775] bg-[#FAEEDA] px-3 py-2 text-[11px] text-[#BA7517]">
+                      <div className="rounded-lg border border-[#FAC775] bg-[#FAEEDA] px-4 py-2.5 text-[12px] text-[#BA7517]">
                         Upload proof of activity before marking complete.
                       </div>
                     )}
 
                     {error && (
-                      <div className="rounded-md border border-[#F7C1C1] bg-[#FCEBEB] px-3 py-2 text-[11px] text-[#A32D2D]">
+                      <div className="rounded-lg border border-[#F7C1C1] bg-[#FCEBEB] px-4 py-2.5 text-[12px] text-[#A32D2D]">
                         {error}
                       </div>
                     )}
 
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2.5">
                       <Button
                         type="button"
                         variant="outline"
@@ -837,16 +838,16 @@ export function ActivitySidePanel({
               </section>
             </div>
 
-            <aside className="space-y-4 border-t border-[#E5E7EB] bg-[#F9FAFB] px-4 py-4 sm:border-l sm:border-t-0">
-              <div className="space-y-3">
-                <div className="space-y-1">
+            <aside className="space-y-5 border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-5 sm:border-l sm:border-t-0">
+              <div className="space-y-4">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Assignee
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-[#111827]">
+                  <div className="flex items-center gap-2.5 text-sm text-[#111827]">
                     <span
                       className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold",
+                        "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold",
                         getAvatarTone(localActivity.owner_user_id ?? ownerName),
                       )}
                     >
@@ -856,7 +857,7 @@ export function ActivitySidePanel({
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Due date
                   </div>
@@ -867,21 +868,21 @@ export function ActivitySidePanel({
                       onChange={(event) =>
                         void persistPatch({ due_date: event.target.value || null })
                       }
-                      className="h-8 rounded-md border-[#E5E7EB] bg-white px-2.5 text-[12px]"
+                      className="h-9 rounded-lg border-[#E5E7EB] bg-white px-3 text-[13px]"
                     />
                   ) : (
-                    <div className="flex items-center gap-2 text-sm text-[#111827]">
-                      <CalendarDays className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                    <div className="flex items-center gap-2.5 text-sm text-[#111827]">
+                      <CalendarDays className="h-4 w-4 text-[#9CA3AF]" />
                       <span>{localActivity.due_date ? formatDate(localActivity.due_date) : "No date"}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Priority
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {(["low", "medium", "high"] as const).map((priority) => (
                       <button
                         key={priority}
@@ -889,7 +890,7 @@ export function ActivitySidePanel({
                         disabled={!canEdit}
                         onClick={() => void persistPatch({ priority })}
                         className={cn(
-                          "rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
+                          "rounded-full border px-3 py-1.5 text-[12px] font-medium capitalize",
                           localActivity.priority === priority
                             ? PRIORITY_TONES[priority]
                             : "border-[#E5E7EB] bg-white text-[#6B7280]",
@@ -902,11 +903,11 @@ export function ActivitySidePanel({
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Status
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {STATUS_OPTIONS.map((option) => {
                       const disabled =
                         !canPostUpdate || (option.value === "done" && doneBlocked);
@@ -941,7 +942,7 @@ export function ActivitySidePanel({
                   </div>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Milestone
                   </div>
@@ -951,7 +952,7 @@ export function ActivitySidePanel({
                       onChange={(event) =>
                         void persistPatch({ milestone_id: event.target.value || null })
                       }
-                      className="h-8 w-full rounded-md border border-[#E5E7EB] bg-white px-2.5 text-[12px] text-[#111827]"
+                      className="h-9 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[13px] text-[#111827]"
                     >
                       <option value="">No milestone</option>
                       {milestones.map((item) => (
@@ -961,24 +962,24 @@ export function ActivitySidePanel({
                       ))}
                     </select>
                   ) : (
-                    <div className="text-sm text-[#111827]">
+                    <div className="truncate text-sm text-[#111827]" title={milestone?.name ?? "No milestone"}>
                       {milestone?.name ?? "No milestone"}
                     </div>
                   )}
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
                     Progress
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
                       <div
-                        className="h-full rounded-full bg-[#3B6D11]"
+                        className="h-full rounded-full bg-[#3B6D11] transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <span className="font-mono text-[10px] text-[#6B7280]">{progress}%</span>
+                    <span className="font-mono text-[11px] text-[#6B7280]">{progress}%</span>
                   </div>
                 </div>
               </div>
