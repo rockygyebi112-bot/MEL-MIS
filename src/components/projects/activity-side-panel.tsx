@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   ActivityStatus,
   Project,
@@ -9,26 +9,28 @@ import type {
   ProjectMilestone,
 } from "@/lib/projects/types";
 import { listUpdates } from "@/lib/projects/queries";
-import { postActivityUpdate } from "@/lib/projects/mutations";
+import {
+  createActivity,
+  postActivityUpdate,
+  updateActivity,
+} from "@/lib/projects/mutations";
 import {
   computeActivityPercent,
   getChildren,
-  isParent as activityIsParent,
+  normalizePercentComplete,
 } from "@/lib/projects/status";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
-  ArrowUpRight,
   CalendarDays,
-  CheckCircle2,
-  FolderTree,
-  ListTodo,
-  PencilLine,
-  ShieldAlert,
+  Check,
+  ChevronLeft,
+  Clock3,
+  Plus,
   Trash2,
-  UserRound,
   X,
 } from "lucide-react";
 
@@ -55,37 +57,29 @@ const STATUS_OPTIONS: { value: ActivityStatus; label: string; tone: string }[] =
     {
       value: "not_started",
       label: "Not started",
-      tone: "border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300",
+      tone: "border-[#D3D1C7] bg-[#F1EFE8] text-[#5F5E5A]",
     },
     {
       value: "in_progress",
       label: "In progress",
-      tone: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+      tone: "border-[#B5D4F4] bg-[#E6F1FB] text-[#185FA5]",
     },
     {
       value: "done",
       label: "Done",
-      tone: "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300",
+      tone: "border-[#C0DD97] bg-[#EAF3DE] text-[#3B6D11]",
     },
     {
       value: "blocked",
       label: "Blocked",
-      tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300",
+      tone: "border-[#F7C1C1] bg-[#FCEBEB] text-[#A32D2D]",
     },
   ];
 
-const STATUS_LABELS: Record<ActivityStatus, string> = {
-  not_started: "Not started",
-  in_progress: "In progress",
-  done: "Done",
-  blocked: "Blocked",
-};
-
 const PRIORITY_TONES = {
-  high: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300",
-  medium:
-    "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  low: "border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  low: "border-[#D3D1C7] bg-[#F1EFE8] text-[#5F5E5A]",
+  medium: "border-[#FAC775] bg-[#FAEEDA] text-[#BA7517]",
+  high: "border-[#F7C1C1] bg-[#FCEBEB] text-[#A32D2D]",
 } as const;
 
 function formatDate(value: string) {
@@ -94,6 +88,43 @@ function formatDate(value: string) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function formatRelativeTime(value?: string | null) {
+  if (!value) return "Recently";
+
+  const deltaMs = Date.now() - new Date(value).getTime();
+  const minutes = Math.max(1, Math.floor(deltaMs / 60000));
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(value);
+}
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function getAvatarTone(seed: string) {
+  const palette = [
+    "bg-[#E6F1FB] text-[#185FA5]",
+    "bg-[#EAF3DE] text-[#3B6D11]",
+    "bg-[#FAEEDA] text-[#BA7517]",
+    "bg-[#FCEBEB] text-[#A32D2D]",
+    "bg-[#EEEDFE] text-[#5847C5]",
+    "bg-[#E1F5EE] text-[#0D7A52]",
+    "bg-[#FBEAF0] text-[#B53D67]",
+    "bg-[#F1EFE8] text-[#5F5E5A]",
+  ];
+  const hash = seed.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return palette[hash % palette.length];
 }
 
 export function ActivitySidePanel({
@@ -113,12 +144,7 @@ export function ActivitySidePanel({
   onDelete,
   children,
 }: Props) {
-  const isParent = activityIsParent(activity, allActivities);
-  const isSubactivity = !!activity.parent_activity_id;
-  const childActivities = useMemo(
-    () => getChildren(activity, allActivities),
-    [activity, allActivities],
-  );
+  const isSubActivity = !!activity.parent_activity_id;
   const parentActivity = useMemo(
     () =>
       activity.parent_activity_id
@@ -127,27 +153,55 @@ export function ActivitySidePanel({
         : null,
     [activity.parent_activity_id, allActivities],
   );
-  const milestoneId = activity.milestone_id ?? parentActivity?.milestone_id ?? null;
-  const milestone = useMemo(
-    () => milestones.find((item) => item.id === milestoneId) ?? null,
-    [milestones, milestoneId],
+  const initialMilestoneId =
+    activity.milestone_id ?? parentActivity?.milestone_id ?? null;
+  const milestoneActivities = useMemo(
+    () =>
+      allActivities.filter((item) => {
+        const itemMilestoneId =
+          item.milestone_id ??
+          (item.parent_activity_id
+            ? allActivities.find((candidate) => candidate.id === item.parent_activity_id)
+                ?.milestone_id ?? null
+            : null);
+        return itemMilestoneId === initialMilestoneId;
+      }),
+    [allActivities, initialMilestoneId],
   );
-  const isLeafTask = childActivities.length === 0;
-  const progress = computeActivityPercent(activity, allActivities);
-  const ownerName =
-    ownerNameMap?.[activity.owner_user_id ?? ""] ?? "Unassigned";
-  const overdue =
-    activity.due_date &&
-    activity.status !== "done" &&
-    new Date(activity.due_date) < new Date();
-  const canAddSubactivity = !isSubactivity && !!onAddSubactivity;
-  const proofRequired = isLeafTask;
+  const milestoneProgress = useMemo(() => {
+    if (milestoneActivities.length === 0) return 0;
+    const completeCount = milestoneActivities.filter(
+      (item) => computeActivityPercent(item, allActivities) === 100,
+    ).length;
+    return Math.round((completeCount / milestoneActivities.length) * 100);
+  }, [allActivities, milestoneActivities]);
 
+  const [localActivity, setLocalActivity] = useState(activity);
   const [updates, setUpdates] = useState<ProjectActivityUpdate[]>([]);
   const [note, setNote] = useState("");
   const [newStatus, setNewStatus] = useState<ActivityStatus>(activity.status);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(activity.title);
+  const [descriptionDraft, setDescriptionDraft] = useState(activity.description ?? "");
+  const [addingSubtask, setAddingSubtask] = useState(false);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
+  const [showCompletedSubtasks, setShowCompletedSubtasks] = useState(false);
+  const titleRef = useRef<HTMLTextAreaElement | null>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    setLocalActivity(activity);
+    setTitleDraft(activity.title);
+    setDescriptionDraft(activity.description ?? "");
+    setNewStatus(activity.status);
+    setError(null);
+    setAddingSubtask(false);
+    setSubtaskTitle("");
+    setShowCompletedSubtasks(false);
+  }, [activity]);
 
   useEffect(() => {
     let active = true;
@@ -165,518 +219,769 @@ export function ActivitySidePanel({
   }, [activity.id]);
 
   useEffect(() => {
-    setNewStatus(activity.status);
-    setNote("");
-    setError(null);
-  }, [activity.id, activity.status]);
+    if (editingTitle) titleRef.current?.focus();
+  }, [editingTitle]);
 
-  const blockDone = proofRequired && newStatus === "done" && attachmentCount === 0;
+  useEffect(() => {
+    if (editingDescription) descriptionRef.current?.focus();
+  }, [editingDescription]);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!currentUserId) return;
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const editingInput =
+        target &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && note.trim()) {
+        event.preventDefault();
+        void submitUpdate();
+        return;
+      }
+
+      if (editingInput) return;
+
+      if (event.key.toLowerCase() === "e" && !!onEditActivity) {
+        event.preventDefault();
+        setEditingTitle(true);
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [note, onClose, onEditActivity, submitUpdate]);
+
+  const childActivities = useMemo(
+    () => getChildren(localActivity, allActivities),
+    [allActivities, localActivity],
+  );
+  const incompleteChildren = childActivities.filter((item) => item.status !== "done");
+  const completeChildren = childActivities.filter((item) => item.status === "done");
+  const resolvedMilestoneId = localActivity.milestone_id ?? initialMilestoneId;
+  const milestone =
+    milestones.find((item) => item.id === resolvedMilestoneId) ?? null;
+  const ownerName =
+    ownerNameMap?.[localActivity.owner_user_id ?? ""] ?? "Unassigned";
+  const progress = computeActivityPercent(localActivity, allActivities);
+  const canEdit = !!onEditActivity;
+  const blockDone =
+    childActivities.length === 0 &&
+    newStatus === "done" &&
+    attachmentCount === 0;
+  const doneBlocked = childActivities.length === 0 && attachmentCount === 0;
+  const lastUpdatedAt = localActivity.last_update_at ?? localActivity.updated_at;
+
+  async function persistPatch(patch: Partial<ProjectActivity>) {
+    const previous = localActivity;
+    const optimistic = {
+      ...previous,
+      ...patch,
+      updated_at: new Date().toISOString(),
+    } as ProjectActivity;
+
+    setLocalActivity(optimistic);
+    if (patch.status) setNewStatus(patch.status);
+
+    try {
+      const saved = await updateActivity(previous.id, patch);
+      setLocalActivity(saved);
+      onChange();
+      return saved;
+    } catch (err) {
+      setLocalActivity(previous);
+      setNewStatus(previous.status);
+      toast.error(err instanceof Error ? err.message : String(err));
+      throw err;
+    }
+  }
+
+  async function saveTitle() {
+    const nextTitle = titleDraft.trim();
+    setEditingTitle(false);
+    if (!nextTitle || nextTitle === localActivity.title) {
+      setTitleDraft(localActivity.title);
+      return;
+    }
+    await persistPatch({ title: nextTitle });
+  }
+
+  async function saveDescription() {
+    const nextDescription = descriptionDraft.trim();
+    setEditingDescription(false);
+    if ((localActivity.description ?? "") === nextDescription) return;
+    await persistPatch({ description: nextDescription || null });
+  }
+
+  async function toggleComplete() {
+    if (!canPostUpdate) return;
+    const nextStatusValue: ActivityStatus =
+      localActivity.status === "done" ? "not_started" : "done";
+
+    if (nextStatusValue === "done" && doneBlocked) return;
+
+    await persistPatch({
+      status: nextStatusValue,
+      percent_complete: normalizePercentComplete(nextStatusValue),
+    });
+  }
+
+  const submitUpdate = useCallback(async () => {
+    if (!currentUserId || !note.trim()) return;
 
     setSubmitting(true);
     setError(null);
+    const statusAfter = newStatus;
 
     try {
       await postActivityUpdate({
-        activity_id: activity.id,
+        activity_id: localActivity.id,
         user_id: currentUserId,
-        note,
-        new_status: newStatus !== activity.status ? newStatus : undefined,
-        current_status: activity.status,
+        note: note.trim(),
+        new_status: statusAfter !== localActivity.status ? statusAfter : undefined,
+        current_status: localActivity.status,
       });
+
+      const nowIso = new Date().toISOString();
+      setLocalActivity((current) => ({
+        ...current,
+        status: statusAfter,
+        percent_complete: normalizePercentComplete(statusAfter),
+        last_update_text: note.trim(),
+        last_update_at: nowIso,
+        updated_at: nowIso,
+      }));
       setNote("");
       onChange();
-      const fresh = await listUpdates(activity.id);
+      const fresh = await listUpdates(localActivity.id);
       setUpdates(fresh);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      if (message.toLowerCase().includes("proof")) {
-        setError(
-          "Upload at least one proof item before marking this leaf task as done.",
-        );
-      } else {
-        setError(message);
-      }
+      setError(
+        message.toLowerCase().includes("proof")
+          ? "Upload proof before marking this task done."
+          : message,
+      );
     } finally {
       setSubmitting(false);
+    }
+  }, [currentUserId, localActivity, newStatus, note, onChange]);
+
+  async function createQuickSubtask() {
+    const nextTitle = subtaskTitle.trim();
+    if (!currentUserId || !nextTitle) return;
+
+    try {
+      await createActivity({
+        project_id: project.id,
+        milestone_id: resolvedMilestoneId,
+        parent_activity_id: localActivity.id,
+        title: nextTitle,
+        owner_user_id: localActivity.owner_user_id,
+        priority: "medium",
+        created_by: currentUserId,
+      });
+      setSubtaskTitle("");
+      setAddingSubtask(false);
+      onChange();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="hidden flex-1 bg-stone-950/35 backdrop-blur-[2px] sm:block" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-end sm:items-stretch">
+      <div className="hidden flex-1 bg-black/25 sm:block" onClick={onClose} />
 
-      <aside className="flex h-full w-full flex-col border-l border-stone-200 bg-[linear-gradient(180deg,#fcfcfb_0%,#f6f4ef_100%)] shadow-2xl sm:max-w-[780px] dark:border-slate-800 dark:bg-[linear-gradient(180deg,#020617_0%,#0f172a_100%)]">
-        <div className="sticky top-0 z-10 border-b border-stone-200 bg-background/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
-          <div className="px-4 py-4 sm:px-6 sm:py-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-muted-foreground">
-                  <span>{project.name}</span>
-                  <span>/</span>
-                  <span>{milestone?.name ?? "Ungrouped"}</span>
-                  {isSubactivity && (
-                    <>
-                      <span>/</span>
-                      <span>{parentActivity?.title ?? "Parent activity"}</span>
-                    </>
-                  )}
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-stone-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                    {isSubactivity ? "Sub-activity" : "Activity"}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-[10px] font-semibold",
-                      STATUS_OPTIONS.find((item) => item.value === activity.status)?.tone,
-                    )}
-                  >
-                    {STATUS_LABELS[activity.status]}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full border px-2.5 py-1 text-[10px] font-semibold capitalize",
-                      PRIORITY_TONES[activity.priority],
-                    )}
-                  >
-                    {activity.priority} priority
-                  </span>
-                  {overdue && (
-                    <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
-                      Overdue
-                    </span>
-                  )}
-                </div>
-
-                <h2 className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight text-foreground">
-                  {activity.title}
-                </h2>
-
-                {activity.description && (
-                  <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-                    {activity.description}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex shrink-0 items-center gap-2">
-                {onEditActivity && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditActivity(activity)}
-                  >
-                    <PencilLine className="h-3.5 w-3.5" />
-                    Edit
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void onDelete()}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
-                )}
-                <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+      <aside className="flex h-[92vh] w-full flex-col rounded-t-[18px] border border-[#E5E7EB] bg-white shadow-2xl sm:h-full sm:max-w-[440px] sm:rounded-none sm:border-l">
+        <div className="flex justify-center py-2 sm:hidden">
+          <div className="h-1 w-10 rounded-full bg-[#D1D5DB]" />
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_290px]">
-            <div className="space-y-6">
-              {isSubactivity && parentActivity && (
-                <section className="rounded-[26px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                        Parent activity
-                      </p>
-                      <h3 className="mt-2 text-base font-semibold text-foreground">
-                        {parentActivity.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        This item is a leaf task. It can carry proof, updates, blockers, and completion history, but it cannot contain more sub-activities.
-                      </p>
-                    </div>
-                    {onOpenActivity && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onOpenActivity(parentActivity.id)}
-                      >
-                        View parent
-                        <ArrowUpRight className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                </section>
-              )}
-
-              {!isSubactivity && (
-                <section className="rounded-[26px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                        Sub-activities
-                      </p>
-                      <h3 className="mt-2 text-base font-semibold text-foreground">
-                        Break execution into leaf tasks
-                      </h3>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Use sub-activities when work needs separate ownership, proof, or update history.
-                      </p>
-                    </div>
-                    {canAddSubactivity && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => onAddSubactivity?.(activity.id)}
-                        className="bg-srsf-green-600 text-white hover:bg-srsf-green-700"
-                      >
-                        Add sub-activity
-                      </Button>
-                    )}
-                  </div>
-
-                  {childActivities.length === 0 ? (
-                    <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-950">
-                      No sub-activities yet. This activity can still be tracked on its own, or you can break it down into execution tasks.
-                    </div>
-                  ) : (
-                    <div className="mt-4 space-y-3">
-                      {childActivities.map((child) => {
-                        const childProgress = computeActivityPercent(child, allActivities);
-                        const childOwner =
-                          ownerNameMap?.[child.owner_user_id ?? ""] ?? "Unassigned";
-                        const childOverdue =
-                          child.due_date &&
-                          child.status !== "done" &&
-                          new Date(child.due_date) < new Date();
-
-                        return (
-                          <button
-                            key={child.id}
-                            type="button"
-                            onClick={() => onOpenActivity?.(child.id)}
-                            className={cn(
-                              "flex w-full flex-col gap-3 rounded-[22px] border px-4 py-4 text-left transition-all hover:-translate-y-px hover:shadow-sm sm:flex-row sm:items-center sm:justify-between",
-                              child.status === "blocked"
-                                ? "border-red-200 bg-red-50/60 dark:border-red-900/60 dark:bg-red-950/20"
-                                : "border-stone-200 bg-stone-50/80 dark:border-slate-800 dark:bg-slate-950/70",
-                            )}
-                          >
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm font-semibold text-foreground">
-                                  {child.title}
-                                </span>
-                                <span
-                                  className={cn(
-                                    "rounded-full border px-2 py-0.5 text-[10px] font-semibold",
-                                    STATUS_OPTIONS.find((item) => item.value === child.status)
-                                      ?.tone,
-                                  )}
-                                >
-                                  {STATUS_LABELS[child.status]}
-                                </span>
-                                {childOverdue && (
-                                  <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                    Overdue
-                                  </span>
-                                )}
-                              </div>
-                              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                                <span className="inline-flex items-center gap-1">
-                                  <UserRound className="h-3 w-3" />
-                                  {childOwner}
-                                </span>
-                                {child.due_date && (
-                                  <span className="inline-flex items-center gap-1">
-                                    <CalendarDays className="h-3 w-3" />
-                                    Due {formatDate(child.due_date)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex shrink-0 items-center gap-3">
-                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                <div className="h-1.5 w-20 overflow-hidden rounded-full bg-stone-200 dark:bg-slate-800">
-                                  <div
-                                    className="h-full rounded-full"
-                                    style={{
-                                      width: `${childProgress}%`,
-                                      background:
-                                        childProgress === 100
-                                          ? "#16a34a"
-                                          : childProgress >= 50
-                                            ? "#3d9922"
-                                            : "#94a3b8",
-                                    }}
-                                  />
-                                </div>
-                                <span className="min-w-9 text-right font-medium text-foreground">
-                                  {childProgress}%
-                                </span>
-                              </div>
-                              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-              )}
-
-              {canPostUpdate && (
-                <form
-                  onSubmit={submit}
-                  className="rounded-[26px] border border-stone-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="border-b border-stone-200 px-5 py-4 dark:border-slate-800">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Post update
-                    </p>
-                    <h3 className="mt-2 text-base font-semibold text-foreground">
-                      Capture progress, blockers, or next steps
-                    </h3>
-                  </div>
-
-                  <div className="space-y-4 px-5 py-5">
-                    <div className="grid gap-2">
-                      <Label htmlFor="upd-note" className="text-sm font-semibold">
-                        What changed?
-                      </Label>
-                      <Textarea
-                        id="upd-note"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        rows={4}
-                        placeholder="Describe what moved forward, what is blocked, and what should happen next."
-                        required
-                        className="min-h-[120px] rounded-2xl border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950"
+        <header className="sticky top-0 z-10 border-b border-[#E5E7EB] bg-white">
+          <div className="flex items-start justify-between gap-3 px-4 py-3">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B7280]">
+                {isSubActivity && parentActivity && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenActivity?.(parentActivity.id)}
+                    className="rounded p-0.5 text-[#6B7280] transition hover:bg-[#F3F4F6] hover:text-[#111827]"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <span className="truncate">{project.name}</span>
+                <span>/</span>
+                <span className="truncate">{milestone?.name ?? "Ungrouped"}</span>
+                {isSubActivity && (
+                  <>
+                    <span>/</span>
+                    <span className="truncate">{parentActivity?.title ?? "Parent"}</span>
+                    <span>/</span>
+                    <span>Sub-activity</span>
+                  </>
+                )}
+                {!isSubActivity && (
+                  <>
+                    <div className="mx-1 h-1 w-10 overflow-hidden rounded-full bg-[#E5E7EB]">
+                      <div
+                        className="h-full rounded-full bg-[#3B6D11]"
+                        style={{ width: `${milestoneProgress}%` }}
                       />
                     </div>
+                    <span className="font-mono text-[10px]">{milestoneProgress}%</span>
+                  </>
+                )}
+              </div>
+              <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-[#9CA3AF]">
+                <Clock3 className="h-3 w-3" />
+                Last updated {formatRelativeTime(lastUpdatedAt)}
+              </div>
+            </div>
 
-                    <div>
-                      <Label className="mb-2 block text-sm font-semibold">
-                        Status after this update
-                      </Label>
-                      <div className="flex flex-wrap gap-2">
-                        {STATUS_OPTIONS.map((option) => {
-                          const active = newStatus === option.value;
-                          return (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => setNewStatus(option.value)}
-                              className={cn(
-                                "rounded-full border px-3 py-2 text-xs font-semibold transition-all",
-                                active
-                                  ? option.tone
-                                  : "border-stone-200 bg-white text-muted-foreground hover:border-stone-300 hover:text-foreground dark:border-slate-700 dark:bg-slate-900",
-                              )}
-                            >
-                              {option.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {blockDone && (
-                      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200">
-                        Proof is required before this leaf task can be marked done.
-                      </div>
-                    )}
-
-                    {error && (
-                      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-                        {error}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex justify-end border-t border-stone-200 px-5 py-4 dark:border-slate-800">
-                    <Button
-                      type="submit"
-                      disabled={submitting || blockDone}
-                      title={
-                        blockDone
-                          ? "Upload proof before marking this task done"
-                          : undefined
-                      }
-                      className="h-11 rounded-xl bg-srsf-green-600 px-5 text-white hover:bg-srsf-green-700"
-                    >
-                      {submitting ? "Saving..." : "Post update"}
-                    </Button>
-                  </div>
-                </form>
+            <div className="flex items-center gap-1">
+              {canEdit && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEditActivity?.(localActivity)}
+                  className="h-8 rounded-md border-[#E5E7EB] px-2.5"
+                >
+                  Edit
+                </Button>
               )}
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={() => void onDelete()}
+                  className="rounded-md p-2 text-[#A32D2D] transition hover:bg-[#FCEBEB]"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-md p-2 text-[#6B7280] transition hover:bg-[#F3F4F6] hover:text-[#111827]"
+                title="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </header>
 
-              <section className="rounded-[26px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Update history
-                    </p>
-                    <h3 className="mt-2 text-base font-semibold text-foreground">
-                      Activity timeline
-                    </h3>
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_156px]">
+            <div className="space-y-5 px-4 py-4">
+              <section className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <button
+                    type="button"
+                    disabled={!canPostUpdate || (localActivity.status !== "done" && doneBlocked)}
+                    onClick={() => void toggleComplete()}
+                    className={cn(
+                      "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
+                      localActivity.status === "done"
+                        ? "border-[#C0DD97] bg-[#EAF3DE] text-[#3B6D11]"
+                        : "border-[#D3D1C7] bg-white text-transparent",
+                      (!canPostUpdate || (localActivity.status !== "done" && doneBlocked)) &&
+                        "cursor-not-allowed opacity-50",
+                    )}
+                    title={
+                      doneBlocked && localActivity.status !== "done"
+                        ? "Upload proof of activity first"
+                        : "Toggle complete"
+                    }
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
+
+                  <div className="min-w-0 flex-1">
+                    {editingTitle && canEdit ? (
+                      <textarea
+                        ref={titleRef}
+                        value={titleDraft}
+                        onChange={(event) => setTitleDraft(event.target.value)}
+                        onBlur={() => void saveTitle()}
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setTitleDraft(localActivity.title);
+                            setEditingTitle(false);
+                          }
+                          if (event.key === "Enter" && !event.shiftKey) {
+                            event.preventDefault();
+                            void saveTitle();
+                          }
+                        }}
+                        rows={1}
+                        className="w-full resize-none border-none bg-transparent p-0 text-[18px] font-semibold text-[#111827] outline-none"
+                      />
+                    ) : (
+                      <h1
+                        className={cn(
+                          "cursor-pointer text-[18px] font-semibold leading-6 text-[#111827]",
+                          localActivity.status === "done" &&
+                            "text-[#3B6D11] line-through decoration-[#C0DD97]",
+                          !canEdit && "cursor-default",
+                        )}
+                        onClick={() => canEdit && setEditingTitle(true)}
+                      >
+                        {localActivity.title || "Task name"}
+                      </h1>
+                    )}
                   </div>
-                  <span className="rounded-full border border-stone-200 bg-stone-50 px-2.5 py-1 text-[10px] font-semibold text-stone-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300">
-                    {updates.length} {updates.length === 1 ? "entry" : "entries"}
-                  </span>
                 </div>
 
-                {updates.length === 0 ? (
-                  <div className="mt-4 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-4 py-5 text-sm text-muted-foreground dark:border-slate-700 dark:bg-slate-950">
-                    No updates yet. The first post here will become the running narrative for this task.
+                <div className="pl-9">
+                  {editingDescription && canEdit ? (
+                    <textarea
+                      ref={descriptionRef}
+                      value={descriptionDraft}
+                      onChange={(event) => setDescriptionDraft(event.target.value)}
+                      onBlur={() => void saveDescription()}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          setDescriptionDraft(localActivity.description ?? "");
+                          setEditingDescription(false);
+                        }
+                      }}
+                      rows={4}
+                      className="min-h-[84px] w-full resize-none border-none bg-transparent px-0 py-0 text-sm text-[#111827] outline-none"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => canEdit && setEditingDescription(true)}
+                      className={cn(
+                        "text-left text-sm leading-5",
+                        localActivity.description
+                          ? "text-[#111827]"
+                          : "text-[#9CA3AF]",
+                        !canEdit && "cursor-default",
+                      )}
+                    >
+                      {localActivity.description || "Add a description..."}
+                    </button>
+                  )}
+                </div>
+              </section>
+
+              {!isSubActivity && (
+                <section className="space-y-3 border-t border-[#E5E7EB] pt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold text-[#111827]">Subtasks</h2>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                          incompleteChildren.length === 0 && childActivities.length > 0
+                            ? "bg-[#EAF3DE] text-[#3B6D11]"
+                            : "bg-[#F3F4F6] text-[#6B7280]",
+                        )}
+                      >
+                        {completeChildren.length} of {childActivities.length}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (currentUserId) {
+                          setAddingSubtask(true);
+                        } else {
+                          onAddSubactivity?.(localActivity.id);
+                        }
+                      }}
+                      className="text-[12px] font-medium text-[#185FA5]"
+                    >
+                      + Add subtask
+                    </button>
                   </div>
-                ) : (
-                  <ol className="mt-5 space-y-4">
-                    {updates.map((update) => {
+
+                  <div className="space-y-1">
+                    {incompleteChildren.map((child) => {
+                      const childOwner =
+                        ownerNameMap?.[child.owner_user_id ?? ""] ?? "Unassigned";
+                      const childOverdue =
+                        child.due_date &&
+                        child.status !== "done" &&
+                        new Date(child.due_date) < new Date();
+
+                      return (
+                        <button
+                          key={child.id}
+                          type="button"
+                          onClick={() => onOpenActivity?.(child.id)}
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-[#F9FAFB]"
+                        >
+                          <span
+                            className={cn(
+                              "flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border text-[9px]",
+                              child.status === "done"
+                                ? "border-[#C0DD97] bg-[#EAF3DE] text-[#3B6D11]"
+                                : "border-[#D3D1C7] bg-white",
+                            )}
+                          >
+                            {child.status === "done" ? "\u2713" : ""}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm text-[#111827]">
+                            {child.title}
+                          </span>
+                          {child.due_date && (
+                            <span
+                              className={cn(
+                                "hidden text-[10px] sm:block",
+                                childOverdue ? "text-[#A32D2D]" : "text-[#6B7280]",
+                              )}
+                            >
+                              {new Date(child.due_date).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          )}
+                          <span
+                            className={cn(
+                              "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[9px] font-semibold",
+                              getAvatarTone(child.owner_user_id ?? childOwner),
+                            )}
+                            title={childOwner}
+                          >
+                            {getInitials(childOwner || "U")}
+                          </span>
+                        </button>
+                      );
+                    })}
+
+                    {addingSubtask && (
+                      <div className="flex items-center gap-2 rounded-md border border-[#E5E7EB] px-2 py-2">
+                        <Plus className="h-4 w-4 text-[#9CA3AF]" />
+                        <Input
+                          value={subtaskTitle}
+                          onChange={(event) => setSubtaskTitle(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Escape") {
+                              setAddingSubtask(false);
+                              setSubtaskTitle("");
+                            }
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              void createQuickSubtask();
+                            }
+                          }}
+                          placeholder="Subtask name"
+                          className="h-7 border-none bg-transparent px-0 text-sm shadow-none ring-0"
+                        />
+                      </div>
+                    )}
+
+                    {completeChildren.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCompletedSubtasks((current) => !current)}
+                        className="pt-1 text-[12px] text-[#6B7280]"
+                      >
+                        {showCompletedSubtasks
+                          ? "Hide completed"
+                          : `Show ${completeChildren.length} completed`}
+                      </button>
+                    )}
+
+                    {showCompletedSubtasks &&
+                      completeChildren.map((child) => (
+                        <button
+                          key={child.id}
+                          type="button"
+                          onClick={() => onOpenActivity?.(child.id)}
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-[#F9FAFB]"
+                        >
+                          <span className="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border border-[#C0DD97] bg-[#EAF3DE] text-[9px] text-[#3B6D11]">
+                            {"\u2713"}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate text-sm text-[#9CA3AF] line-through">
+                            {child.title}
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                </section>
+              )}
+
+              <section className="space-y-3 border-t border-[#E5E7EB] pt-4">
+                <h2 className="text-sm font-semibold text-[#111827]">Activity</h2>
+
+                <div className="space-y-3">
+                  {updates.length === 0 ? (
+                    <p className="text-[12px] text-[#9CA3AF]">No activity yet.</p>
+                  ) : (
+                    updates.map((update) => {
                       const changed =
                         (update.status_before || update.status_after) &&
                         update.status_before !== update.status_after;
 
                       return (
-                        <li key={update.id} className="relative pl-8">
-                          <span className="absolute left-0 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                          </span>
-                          <div className="rounded-[22px] border border-stone-200 bg-stone-50/80 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/70">
-                            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                              <span>{new Date(update.created_at).toLocaleString()}</span>
-                            </div>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-foreground">
+                        <div key={update.id} className="space-y-1.5">
+                          <div className="text-[11px] text-[#9CA3AF]">
+                            {formatRelativeTime(update.created_at)}
+                          </div>
+                          <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5">
+                            <p className="whitespace-pre-wrap text-[12px] leading-5 text-[#111827]">
                               {update.note}
                             </p>
                             {changed && (
-                              <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
-                                <span className="rounded-full border border-stone-200 bg-white px-2 py-0.5 text-muted-foreground line-through dark:border-slate-700 dark:bg-slate-900">
-                                  {STATUS_LABELS[update.status_before ?? "not_started"]}
+                              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#6B7280]">
+                                <span>
+                                  {
+                                    STATUS_OPTIONS.find(
+                                      (item) => item.value === update.status_before,
+                                    )?.label
+                                  }
                                 </span>
-                                <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span className="rounded-full border border-green-200 bg-green-50 px-2 py-0.5 font-semibold text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300">
-                                  {STATUS_LABELS[update.status_after ?? "not_started"]}
+                                <span>-&gt;</span>
+                                <span className="font-medium text-[#111827]">
+                                  {
+                                    STATUS_OPTIONS.find(
+                                      (item) => item.value === update.status_after,
+                                    )?.label
+                                  }
                                 </span>
                               </div>
                             )}
                           </div>
-                        </li>
+                        </div>
                       );
-                    })}
-                  </ol>
+                    })
+                  )}
+                </div>
+
+                {canPostUpdate && (
+                  <div className="space-y-3 border-t border-[#E5E7EB] pt-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {STATUS_OPTIONS.map((option) => {
+                        const disabled = option.value === "done" && blockDone;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            disabled={disabled}
+                            onClick={() => setNewStatus(option.value)}
+                            className={cn(
+                              "rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
+                              newStatus === option.value
+                                ? option.tone
+                                : "border-[#E5E7EB] bg-white text-[#6B7280]",
+                              disabled && "cursor-not-allowed opacity-50",
+                            )}
+                            title={disabled ? "Upload proof of activity first" : undefined}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <Textarea
+                      value={note}
+                      onChange={(event) => setNote(event.target.value)}
+                      rows={3}
+                      placeholder="Write a comment or update..."
+                      className="min-h-[88px] rounded-lg border-[#E5E7EB] bg-white px-3 py-2.5"
+                    />
+
+                    {blockDone && (
+                      <div className="rounded-md border border-[#FAC775] bg-[#FAEEDA] px-3 py-2 text-[11px] text-[#BA7517]">
+                        Upload proof of activity before marking complete.
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="rounded-md border border-[#F7C1C1] bg-[#FCEBEB] px-3 py-2 text-[11px] text-[#A32D2D]">
+                        {error}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNote("");
+                          setError(null);
+                          setNewStatus(localActivity.status);
+                        }}
+                        className="h-8 rounded-md border-[#E5E7EB] px-3"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={submitting || !note.trim() || blockDone}
+                        onClick={() => void submitUpdate()}
+                        className="h-8 rounded-md bg-srsf-green-600 px-3 text-white hover:bg-srsf-green-700"
+                      >
+                        {submitting ? "Posting..." : "Post update"}
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </section>
             </div>
 
-            <aside className="space-y-4">
-              <section className="rounded-[26px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                  Overview
-                </p>
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Owner
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
-                      <UserRound className="h-4 w-4 text-stone-400" />
-                      {ownerName}
-                    </div>
+            <aside className="space-y-4 border-t border-[#E5E7EB] bg-[#F9FAFB] px-4 py-4 sm:border-l sm:border-t-0">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Assignee
                   </div>
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Due date
-                    </div>
-                    <div className="mt-1 flex items-center gap-2 text-sm font-medium text-foreground">
-                      <CalendarDays className="h-4 w-4 text-stone-400" />
-                      {activity.due_date ? formatDate(activity.due_date) : "Not set"}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Progress
-                    </div>
-                    <div className="mt-2 flex items-center gap-3">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-slate-800">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${progress}%`,
-                            background:
-                              progress === 100 ? "#16a34a" : progress >= 50 ? "#3d9922" : "#94a3b8",
-                          }}
-                        />
-                      </div>
-                      <span className="min-w-10 text-right text-sm font-semibold text-foreground">
-                        {progress}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
-                    <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Structure
-                    </div>
-                    <div className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
-                      {isSubactivity ? (
-                        <ListTodo className="h-4 w-4 text-stone-400" />
-                      ) : (
-                        <FolderTree className="h-4 w-4 text-stone-400" />
+                  <div className="flex items-center gap-2 text-sm text-[#111827]">
+                    <span
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold",
+                        getAvatarTone(localActivity.owner_user_id ?? ownerName),
                       )}
-                      {isSubactivity
-                        ? "Leaf task"
-                        : isParent
-                          ? `${childActivities.length} sub-activities`
-                          : "Standalone activity"}
-                    </div>
+                    >
+                      {getInitials(ownerName || "U")}
+                    </span>
+                    <span>{ownerName}</span>
                   </div>
                 </div>
-              </section>
 
-              <section className="rounded-[26px] border border-stone-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-2xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
-                    <ShieldAlert className="h-4 w-4" />
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Due date
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-slate-400">
-                      Completion rule
-                    </p>
-                    <h3 className="mt-2 text-sm font-semibold text-foreground">
-                      {proofRequired
-                        ? "Proof required before done"
-                        : "Progress rolls up from child tasks"}
-                    </h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {proofRequired
-                        ? attachmentCount > 0
-                          ? "This leaf task has proof attached, so it can be completed once the update is ready."
-                          : "Upload at least one proof item before changing this task to done."
-                        : "This parent activity should stay focused on coordination. Completion is reflected automatically as sub-activities move forward."}
-                    </p>
+                  {canEdit ? (
+                    <Input
+                      type="date"
+                      value={localActivity.due_date ?? ""}
+                      onChange={(event) =>
+                        void persistPatch({ due_date: event.target.value || null })
+                      }
+                      className="h-8 rounded-md border-[#E5E7EB] bg-white px-2.5 text-[12px]"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-[#111827]">
+                      <CalendarDays className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                      <span>{localActivity.due_date ? formatDate(localActivity.due_date) : "No date"}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Priority
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(["low", "medium", "high"] as const).map((priority) => (
+                      <button
+                        key={priority}
+                        type="button"
+                        disabled={!canEdit}
+                        onClick={() => void persistPatch({ priority })}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-[11px] font-medium capitalize",
+                          localActivity.priority === priority
+                            ? PRIORITY_TONES[priority]
+                            : "border-[#E5E7EB] bg-white text-[#6B7280]",
+                          !canEdit && "cursor-default",
+                        )}
+                      >
+                        {priority}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </section>
+
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Status
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {STATUS_OPTIONS.map((option) => {
+                      const disabled =
+                        !canPostUpdate || (option.value === "done" && doneBlocked);
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          disabled={disabled}
+                          onClick={() =>
+                            void persistPatch({
+                              status: option.value,
+                              percent_complete: normalizePercentComplete(option.value),
+                            })
+                          }
+                          className={cn(
+                            "rounded-full border px-2.5 py-1 text-[11px] font-medium transition",
+                            localActivity.status === option.value
+                              ? option.tone
+                              : "border-[#E5E7EB] bg-white text-[#6B7280]",
+                            disabled && "cursor-not-allowed opacity-50",
+                          )}
+                          title={
+                            disabled && option.value === "done"
+                              ? "Upload proof of activity first"
+                              : undefined
+                          }
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Milestone
+                  </div>
+                  {canEdit && !isSubActivity ? (
+                    <select
+                      value={localActivity.milestone_id ?? ""}
+                      onChange={(event) =>
+                        void persistPatch({ milestone_id: event.target.value || null })
+                      }
+                      className="h-8 w-full rounded-md border border-[#E5E7EB] bg-white px-2.5 text-[12px] text-[#111827]"
+                    >
+                      <option value="">No milestone</option>
+                      {milestones.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-sm text-[#111827]">
+                      {milestone?.name ?? "No milestone"}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
+                    Progress
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#E5E7EB]">
+                      <div
+                        className="h-full rounded-full bg-[#3B6D11]"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <span className="font-mono text-[10px] text-[#6B7280]">{progress}%</span>
+                  </div>
+                </div>
+              </div>
 
               {children}
             </aside>

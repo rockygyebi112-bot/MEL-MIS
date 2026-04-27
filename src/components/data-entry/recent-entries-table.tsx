@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ProgramSlug, PROGRAM_TABLE_MAP } from "@/lib/types";
+import { type ProgramSlug } from "@/lib/types";
+import { getTableForProgram } from "@/lib/db/tables";
 import {
   Table,
   TableBody,
@@ -73,10 +74,11 @@ export function RecentEntriesTable({
   const [entries, setEntries] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
-  const tableName = PROGRAM_TABLE_MAP[programSlug];
+  const tableName = getTableForProgram(programSlug);
   const columns = getDisplayColumns(programSlug);
 
   const loadEntries = useCallback(async () => {
+    await Promise.resolve();
     setLoading(true);
     const {
       data: { user },
@@ -102,7 +104,7 @@ export function RecentEntriesTable({
   }, [supabase, tableName]);
 
   useEffect(() => {
-    loadEntries();
+    void loadEntries();
   }, [loadEntries, refreshKey]);
 
   function handleDelete(id: string) {
