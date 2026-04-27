@@ -5,13 +5,14 @@ import type {
   ComputedProjectStatus,
   Project,
   ProjectActivity,
-} from "@/lib/projects/types";
+} from "@/features/projects";
 import {
   computeProgressPercent,
   computeProjectStatus,
   countOverdue,
   countNeedsAttention,
-} from "@/lib/projects/status";
+} from "@/features/projects";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 const STATUS_STRIPE: Record<ComputedProjectStatus, string> = {
@@ -22,17 +23,6 @@ const STATUS_STRIPE: Record<ComputedProjectStatus, string> = {
   done: "#16a34a",
 };
 
-const STATUS_PILL: Record<ComputedProjectStatus, string> = {
-  not_started:
-    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-  in_progress:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  at_risk:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  blocked: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  done: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-};
-
 function initialsOf(name: string): string {
   return name
     .split(/\s+/)
@@ -41,32 +31,6 @@ function initialsOf(name: string): string {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-}
-
-function ProjectCardStatusPill({
-  status,
-}: {
-  status: ComputedProjectStatus;
-}) {
-  const label = {
-    not_started: "Not started",
-    in_progress: "In progress",
-    at_risk: "At risk",
-    blocked: "Blocked",
-    done: "Done",
-  }[status];
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0",
-        STATUS_PILL[status],
-      )}
-    >
-      <span className="w-[5px] h-[5px] rounded-full bg-current" />
-      {label}
-    </span>
-  );
 }
 
 type Variant = "full" | "compact";
@@ -113,7 +77,7 @@ export function ProjectCard({
               {project.name}
             </h3>
           </div>
-          <ProjectCardStatusPill status={status} />
+          <StatusBadge status={status} />
         </div>
 
         {!isCompact && project.description && (
