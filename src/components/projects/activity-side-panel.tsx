@@ -397,7 +397,7 @@ export function ActivitySidePanel({
     <div className="fixed inset-0 z-50 flex items-end sm:items-stretch">
       <div className="hidden flex-1 bg-black/25 sm:block" onClick={onClose} />
 
-      <aside className="flex h-[92vh] w-full flex-col rounded-t-[18px] border border-[#E5E7EB] bg-white shadow-2xl sm:h-full sm:max-w-[440px] sm:rounded-none sm:border-l">
+      <aside className="flex h-[92vh] w-full flex-col rounded-t-[18px] border border-[#E5E7EB] bg-white shadow-2xl sm:h-full sm:max-w-[520px] lg:max-w-[640px] sm:rounded-none sm:border-l">
         <div className="flex justify-center py-2 sm:hidden">
           <div className="h-1 w-10 rounded-full bg-[#D1D5DB]" />
         </div>
@@ -479,7 +479,7 @@ export function ActivitySidePanel({
         </header>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="grid gap-0 sm:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_260px]">
             <div className="space-y-6 px-5 py-5">
               <section className="space-y-4">
                 <div className="flex items-start gap-3.5">
@@ -527,7 +527,7 @@ export function ActivitySidePanel({
                     ) : (
                       <h1
                         className={cn(
-                          "cursor-pointer text-[18px] font-semibold leading-6 text-[#111827]",
+                          "cursor-pointer text-[18px] font-semibold leading-6 text-[#111827] break-words",
                           localActivity.status === "done" &&
                             "text-[#3B6D11] line-through decoration-[#C0DD97]",
                           !canEdit && "cursor-default",
@@ -838,7 +838,7 @@ export function ActivitySidePanel({
               </section>
             </div>
 
-            <aside className="space-y-5 border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-5 sm:border-l sm:border-t-0">
+            <aside className="space-y-5 border-t border-[#E5E7EB] bg-[#F9FAFB] px-5 py-5 lg:border-l lg:border-t-0">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9CA3AF]">
