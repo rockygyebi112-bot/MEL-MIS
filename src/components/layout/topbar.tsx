@@ -29,7 +29,7 @@ export function Topbar() {
     : "?";
 
   return (
-    <header className="sticky top-0 z-30 h-14 bg-card/80 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4 sm:px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+    <header className="sticky top-0 z-30 h-14 bg-card/90 dark:bg-card/95 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4 sm:px-6 lg:px-10 shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
       {/* Left: hamburger (mobile) + logo (mobile) */}
       <div className="flex items-center gap-3 lg:hidden">
         <button
@@ -64,7 +64,7 @@ export function Topbar() {
         {user?.role && (
           <Badge
             variant="secondary"
-            className="bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200 font-medium text-[11px] px-2.5 py-0.5 tracking-wide hidden sm:inline-flex"
+            className="bg-srsf-purple-50 text-srsf-purple-700 border border-srsf-purple-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-700/50 font-medium text-[11px] px-2.5 py-0.5 tracking-wide hidden sm:inline-flex"
           >
             {user.role.name}
           </Badge>

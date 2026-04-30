@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTheme } from "next-themes";
 import { EChart } from "@/components/dashboard/echart";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import {
@@ -42,6 +43,8 @@ export function ProjectOverviewDashboard({
   milestones,
   activities,
 }: ProjectOverviewDashboardProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const overallProgress = computeProgressPercent(activities);
   const overdueCount = countOverdue(activities);
   const attentionCount = countNeedsAttention(activities);
@@ -141,13 +144,14 @@ export function ProjectOverviewDashboard({
 
       <div className="grid gap-4 xl:grid-cols-2">
         <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-          <EChart option={donutChartOption(statusCounts, "Activity Status")} />
+          <EChart option={donutChartOption(statusCounts, "Activity Status", isDark)} />
         </div>
         <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
           <EChart
             option={horizontalBarChartOption(
               milestoneCounts,
               "Activities by Milestone",
+              isDark,
             )}
           />
         </div>
@@ -192,7 +196,7 @@ export function ProjectOverviewDashboard({
         </div>
 
         <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-          <EChart option={donutChartOption(priorityCounts, "Priority Mix")} />
+          <EChart option={donutChartOption(priorityCounts, "Priority Mix", isDark)} />
         </div>
       </div>
     </div>

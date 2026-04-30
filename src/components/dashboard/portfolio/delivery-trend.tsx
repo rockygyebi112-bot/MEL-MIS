@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTheme } from "next-themes";
 import { EChart } from "@/components/dashboard/echart";
 import { lineChartOption } from "@/components/dashboard/chart-builders";
 import type { DeliveryTrendPoint } from "@/lib/portfolio/types";
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function DeliveryTrend({ points }: Props) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const data = useMemo(() => {
     const out: Record<string, number> = {};
     for (const p of points) out[p.bucket_label] = p.completed;
@@ -33,6 +36,7 @@ export function DeliveryTrend({ points }: Props) {
           data,
           "Activities Completed Over Time",
           "Completed activities",
+          isDark,
         )}
       />
     </div>

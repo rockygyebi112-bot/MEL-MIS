@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { MediaProgramEntry } from "@/lib/types";
 import { EChart } from "./echart";
@@ -59,6 +60,8 @@ export function MediaProgramDashboard({
   programSlug,
   programLabel,
 }: MediaProgramDashboardProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [entries, setEntries] = useState<MediaProgramEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
@@ -257,32 +260,32 @@ export function MediaProgramDashboard({
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-            <EChart option={lineChartOption(monthlyViewTotals, `${periodLabel} Trend Analysis`, "Views")} />
+            <EChart option={lineChartOption(monthlyViewTotals, `${periodLabel} Trend Analysis`, "Views", isDark)} />
           </div>
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-            <EChart option={barChartOption(monthlyEpisodeCounts, `${periodLabel} Episodes Aired`)} />
+            <EChart option={barChartOption(monthlyEpisodeCounts, `${periodLabel} Episodes Aired`, isDark)} />
           </div>
           <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-            <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform")} />
+            <EChart option={stackedBarChartOption(platformViewsByMonth, "Views per Platform", isDark)} />
           </div>
         </div>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(totalSharesSaves, "Shares / Saves")} />
+          <EChart option={barChartOption(totalSharesSaves, "Shares / Saves", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(totalLikes, "Likes")} />
+          <EChart option={barChartOption(totalLikes, "Likes", isDark)} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
+          <EChart option={donutChartOption(genderCounts, "Gender Distribution", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(ageBracketCounts, "Age Bracket")} />
+          <EChart option={barChartOption(ageBracketCounts, "Age Bracket", isDark)} />
         </div>
       </div>
 
