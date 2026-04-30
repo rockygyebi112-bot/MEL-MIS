@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTheme } from "next-themes";
 import { EChart } from "@/components/dashboard/echart";
 import { stackedBarChartOption } from "@/components/dashboard/chart-builders";
 import type { WorkloadRow } from "@/lib/portfolio/types";
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export function WorkloadChart({ rows }: Props) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const seriesData = useMemo(() => {
     const onTrack: Record<string, number> = {};
     const overdue: Record<string, number> = {};
@@ -34,7 +37,7 @@ export function WorkloadChart({ rows }: Props) {
 
   return (
     <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
-      <EChart option={stackedBarChartOption(seriesData, "Open Activities by Owner")} />
+      <EChart option={stackedBarChartOption(seriesData, "Open Activities by Owner", isDark)} />
     </div>
   );
 }

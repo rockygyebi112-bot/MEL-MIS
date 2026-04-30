@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { AbsaOnboardingEntry } from "@/lib/types";
 import { EChart } from "./echart";
@@ -19,6 +20,8 @@ import { CustomIndicatorCharts } from "./custom-indicator-charts";
 import { DashboardSkeleton } from "./dashboard-skeleton";
 
 export function AbsaOnboardingDashboard() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [entries, setEntries] = useState<AbsaOnboardingEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
@@ -93,14 +96,14 @@ export function AbsaOnboardingDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
+          <EChart option={donutChartOption(genderCounts, "Gender Distribution", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(ageCounts, "Age Bracket")} />
+          <EChart option={barChartOption(ageCounts, "Age Bracket", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart
-            option={horizontalBarChartOption(regionCounts, "Region")}
+            option={horizontalBarChartOption(regionCounts, "Region", isDark)}
             height={320}
           />
         </div>
@@ -108,10 +111,10 @@ export function AbsaOnboardingDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={pieChartOption(employmentCounts, "Employment Status")} />
+          <EChart option={pieChartOption(employmentCounts, "Employment Status", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
+          <EChart option={donutChartOption(disabilityCounts, "Disability Status", isDark)} />
         </div>
       </div>
 

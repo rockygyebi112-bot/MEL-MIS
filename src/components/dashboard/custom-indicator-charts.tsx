@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { EChart } from "./echart";
 import { KpiCard } from "./kpi-card";
@@ -21,6 +22,8 @@ export function CustomIndicatorCharts({
   entries,
   showOnExecutiveOnly = false,
 }: CustomIndicatorChartsProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [indicators, setIndicators] = useState<Indicator[]>([]);
 
   useEffect(() => {
@@ -107,8 +110,8 @@ export function CustomIndicatorCharts({
                   <EChart
                     option={
                       Object.keys(counts).length <= 5
-                        ? donutChartOption(counts, c.indicator.name)
-                        : horizontalBarChartOption(counts, c.indicator.name)
+                        ? donutChartOption(counts, c.indicator.name, isDark)
+                        : horizontalBarChartOption(counts, c.indicator.name, isDark)
                     }
                     height={Object.keys(counts).length > 5 ? 320 : undefined}
                   />

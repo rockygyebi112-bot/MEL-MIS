@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { EnterpriseSpotlightEntry } from "@/lib/types";
 import { EChart } from "./echart";
@@ -29,6 +30,8 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 export function EnterpriseSpotlightDashboard() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [entries, setEntries] = useState<EnterpriseSpotlightEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [from, setFrom] = useState("");
@@ -139,53 +142,53 @@ export function EnterpriseSpotlightDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart
-            option={horizontalBarChartOption(regionCounts, "Regional Representation")}
+            option={horizontalBarChartOption(regionCounts, "Regional Representation", isDark)}
             height={320}
           />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
+          <EChart option={donutChartOption(genderCounts, "Gender Distribution", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(ageCounts, "Age Bracket")} />
+          <EChart option={barChartOption(ageCounts, "Age Bracket", isDark)} />
         </div>
       </div>
 
       <SectionHeading>Demographics</SectionHeading>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(disabilityCounts, "Disability Status")} />
+          <EChart option={donutChartOption(disabilityCounts, "Disability Status", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
           <EChart
-            option={barChartOption(disabilityTypeCounts, "Disability Type")}
+            option={barChartOption(disabilityTypeCounts, "Disability Type", isDark)}
             height={Math.max(280, Object.keys(disabilityTypeCounts).length * 40 + 90)}
           />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={pieChartOption(ownershipCounts, "Ownership Type")} />
+          <EChart option={pieChartOption(ownershipCounts, "Ownership Type", isDark)} />
         </div>
       </div>
 
       <SectionHeading>Business Information</SectionHeading>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(longevityCounts, "Business Longevity")} />
+          <EChart option={barChartOption(longevityCounts, "Business Longevity", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={barChartOption(businessSizeCounts, "Business Size")} />
+          <EChart option={barChartOption(businessSizeCounts, "Business Size", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={pieChartOption(fundingCounts, "Funding Status")} />
+          <EChart option={pieChartOption(fundingCounts, "Funding Status", isDark)} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={donutChartOption(registrationCounts, "Registration Status")} />
+          <EChart option={donutChartOption(registrationCounts, "Registration Status", isDark)} />
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
-          <EChart option={horizontalBarChartOption(sectorCounts, "Business Sector")} />
+          <EChart option={horizontalBarChartOption(sectorCounts, "Business Sector", isDark)} />
         </div>
       </div>
 

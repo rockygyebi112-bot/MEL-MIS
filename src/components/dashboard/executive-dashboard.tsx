@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import {
   EnterpriseSpotlightEntry,
@@ -71,6 +72,8 @@ interface Props {
 }
 
 export function ExecutiveDashboard({ programFilter }: Props) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [esEntries, setEsEntries] = useState<EnterpriseSpotlightEntry[]>([]);
   const [vuEntries, setVuEntries] = useState<MediaProgramEntry[]>([]);
   const [hangoutEntries, setHangoutEntries] = useState<MediaProgramEntry[]>([]);
@@ -448,17 +451,17 @@ export function ExecutiveDashboard({ programFilter }: Props) {
           <SectionHeading>Demographics</SectionHeading>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className={chartCard}>
-              <EChart option={donutChartOption(genderCounts, "Gender Distribution")} />
+              <EChart option={donutChartOption(genderCounts, "Gender Distribution", isDark)} />
             </div>
             <div className={chartCard}>
               <EChart
-                option={groupedBarChartOption(ageBracketByProgram, "Age Bracket by Program")}
+                option={groupedBarChartOption(ageBracketByProgram, "Age Bracket by Program", isDark)}
               />
             </div>
             {(showES || showABSA) && (
               <div className={chartCard}>
                 <EChart
-                  option={donutChartOption(disabilityCounts, "Disability Status")}
+                  option={donutChartOption(disabilityCounts, "Disability Status", isDark)}
                 />
               </div>
             )}
@@ -472,7 +475,7 @@ export function ExecutiveDashboard({ programFilter }: Props) {
           <SectionHeading>Geographic</SectionHeading>
           <div className={chartCard}>
             <EChart
-              option={horizontalBarChartOption(regionCounts, "Regional Representation")}
+              option={horizontalBarChartOption(regionCounts, "Regional Representation", isDark)}
               height={Math.max(320, Object.keys(regionCounts).length * 40 + 90)}
             />
           </div>
@@ -487,12 +490,12 @@ export function ExecutiveDashboard({ programFilter }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart
-                option={pieChartOption(esRegistrationCounts, "Business Registration Status")}
+                option={pieChartOption(esRegistrationCounts, "Business Registration Status", isDark)}
               />
             </div>
             <div className={chartCard}>
               <EChart
-                option={horizontalBarChartOption(esSectorCounts, "Business Sector")}
+                option={horizontalBarChartOption(esSectorCounts, "Business Sector", isDark)}
                 height={Math.max(300, Object.keys(esSectorCounts).length * 40 + 90)}
               />
             </div>
@@ -522,8 +525,8 @@ export function ExecutiveDashboard({ programFilter }: Props) {
               <EChart
                 option={
                   mediaMonthlyViews.length > 0
-                    ? multiLineChartOption(mediaMonthlyViews, `${periodLabel} Views Trend`)
-                    : barChartOption({}, `${periodLabel} Views Trend`)
+                    ? multiLineChartOption(mediaMonthlyViews, `${periodLabel} Views Trend`, isDark)
+                    : barChartOption({}, `${periodLabel} Views Trend`, isDark)
                 }
               />
             </div>
@@ -531,14 +534,14 @@ export function ExecutiveDashboard({ programFilter }: Props) {
               <EChart
                 option={
                   mediaMonthlyEpisodes.length > 0
-                    ? groupedBarChartOption(mediaMonthlyEpisodes, `${periodLabel} Episodes Aired`)
-                    : barChartOption({}, `${periodLabel} Episodes Aired`)
+                    ? groupedBarChartOption(mediaMonthlyEpisodes, `${periodLabel} Episodes Aired`, isDark)
+                    : barChartOption({}, `${periodLabel} Episodes Aired`, isDark)
                 }
               />
             </div>
             <div className={chartCard}>
               <EChart
-                option={barChartOption(mediaPlatformViews, "Views per Platform")}
+                option={barChartOption(mediaPlatformViews, "Views per Platform", isDark)}
               />
             </div>
           </div>
@@ -574,7 +577,7 @@ export function ExecutiveDashboard({ programFilter }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className={chartCard}>
               <EChart
-                option={horizontalBarChartOption(absaRegionCounts, "Region Breakdown")}
+                option={horizontalBarChartOption(absaRegionCounts, "Region Breakdown", isDark)}
                 height={320}
               />
             </div>
